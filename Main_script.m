@@ -264,7 +264,117 @@ for start_idx = 1:window_length_samples:length(filtered_EMG) - window_length_sam
         last_movement_end = end_idx;
     end
 end
+%% Teesting new HR detection with overlapping windows
 
+% Design a bandpass filter
+bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+    'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
+    'SampleRate', EEG_fs);
+
+% Apply the bandpass filter to your EMG data
+filtered_EMG = filtfilt(bpFilt, EMG);
+
+% Initialize selected peaks storage
+selected_peaks = [];
+selected_peak_locs = [];
+
+% Calculate mean and standard deviation of the filtered EMG signal
+mean_EMG = mean(filtered_EMG);
+sd_EMG = std(filtered_EMG);
+
+% Set threshold as mean + 3.5 * SD for movement detection
+threshold = mean_EMG + 3.5 * sd_EMG;
+
+% Find movement peaks in the filtered EMG signal using the predefined threshold
+[movement, movement_locs] = findpeaks(filtered_EMG, 'MinPeakHeight', threshold);
+movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
+
+% Define window length in seconds (1 second) and ensure window_length_samples is an integer
+window_length_sec = 1;
+window_length_samples = round(window_length_sec * EEG_fs);
+
+% Initialize a variable to keep track of the last movement to handle consecutive movements
+last_movement_end = -Inf;
+
+% Calculate overlap
+overlap = 0.1; % 10% overlap
+overlap_samples = round(window_length_samples * overlap);
+
+for start_idx = 1:(window_length_samples - overlap_samples):length(filtered_EMG) - window_length_samples + 1
+    end_idx = start_idx + window_length_samples - 1;
+    
+    % Check for movement within the current window
+    movement_in_window = movement_sec(movement_sec >= sec_signal_EMG(start_idx) & movement_sec <= sec_signal_EMG(end_idx));
+    
+    exclude_after_movement = ceil(EEG_fs * 0.25); % Convert 0.25 seconds to samples
+    valid_indices = true(window_length_samples, 1); % Initialize all indices as valid
+    
+    % Exclude data after movements within the window
+    for i = 1:length(movement_in_window)
+    movement_time = movement_in_window(i);
+    movement_idx = find(sec_signal_EMG == movement_time, 1, 'first');
+        if ~isempty(movement_idx) && movement_idx <= end_idx
+        end_exclude_idx = min(movement_idx + exclude_after_movement, end_idx);
+        valid_range_start = max(1, movement_idx - start_idx + 1);
+        valid_range_end = min(window_length_samples, end_exclude_idx - start_idx + 1);
+        if valid_range_end >= valid_range_start % Ensure the range is valid
+            valid_indices(valid_range_start:valid_range_end) = false;
+        end
+        end
+    end
+
+    valid_data = filtered_EMG(start_idx:end_idx);
+    valid_data = valid_data(valid_indices);
+    
+    if ~isempty(valid_data) && length(valid_data) >= 3
+        mean_EMG_window = mean(valid_data);
+        sd_EMG_window = std(valid_data);
+        
+        % Calculate the dynamic threshold for peak detection
+        dynamic_threshold = mean_EMG_window + 2.5*sd_EMG_window;
+        
+        % Check if any data point exceeds the dynamic threshold
+    if any(valid_data > dynamic_threshold)
+        [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
+        
+        % Ensure actual_locs_window is adjusted based on the indices of valid_data
+        actual_locs_window = start_idx - 1 + find(valid_indices); % This line seems incorrect
+        actual_locs_window = actual_locs_window(locs_window); % This might need adjustment
+        
+        % Correct the way actual_locs_window is calculated
+        % If valid_indices directly correlates to locs_window, you need to map locs_window back to the original time
+        actual_locs_window = start_idx - 1 + locs_window; % This directly maps locs_window to global indices
+
+        % Ensure peaks_window and actual_locs_window are column vectors before concatenation
+        peaks_window = peaks_window(:);
+        actual_locs_window = actual_locs_window(:);
+
+        % Concatenate peaks and locations
+        selected_peaks = [selected_peaks; peaks_window];
+        selected_peak_locs = [selected_peak_locs; actual_locs_window];
+    end
+        end
+   
+    % If there is movement in the current window and the previous one, consider removing peaks between those movements
+    % Specific logic will depend on your requirements
+    
+    % Update the last movement end index
+    if ~isempty(movement_in_window)
+        last_movement_end = end_idx;
+    end
+    % Remove duplicate peaks in the overlapping regions
+
+% Assuming selected_peak_locs is sorted, which it should be if the data is processed in sequential order
+if ~isempty(selected_peak_locs)
+    % Find differences between consecutive peak locations
+    diff_locs = diff(selected_peak_locs);
+    % Find indices where the difference is less than or equal to overlap_samples (duplicates within overlap)
+    duplicate_indices = find(diff_locs <= overlap_samples);
+    % Remove duplicates - keep the first occurrence of the peak
+    selected_peaks(duplicate_indices) = [];
+    selected_peak_locs(duplicate_indices) = [];
+end
+end
 
 %% Plot movement and selected peaks
 
@@ -374,9 +484,26 @@ filtered_RR_smooth = movmean(filtered_RR, window_size);
 
 % filtered_RR_smooth = filtfilt(MeanFilter,1,double(filtered_RR));
 
+%% Resample RR at 64 hz
+
+% Define the target sampling rate
+new_fs = 64; % 64 Hz
+
+% Create a new time vector with a fixed sampling rate of 64 Hz, starting from the first to the last observation in the original time vector
+new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
+
+% Use interpolation to resample RR intervals at these new time points
+% 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
+resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+
 %% HRB calculation
 
-% Assuming filtered_RR and filtered_RR_time are given
+%Input which RR it should be based on
+time = new_time_vector;
+RR_data = resampled_RR;
+
+% Assuming filtered_RR and filtered_RR_time are given (if these are your
+% standard variables)
 % Average heart rate for mice
 average_mouse_HR = 600; % BPM
 
@@ -392,22 +519,35 @@ mouse_window_seconds = mouse_window_minutes * 60; % Convert minutes to seconds
 HRB = [];
 HRB_time = [];
 
-for i = 1:mouse_window_seconds:length(filtered_RR_time)
-    window_end = min(i + mouse_window_seconds - 1, length(filtered_RR_time));
-    window_RR = filtered_RR_smooth(i:window_end);
-    window_RR_time = filtered_RR_time(i:window_end);
+for i = 1:mouse_window_seconds:length(time)
+    window_end = min(i + mouse_window_seconds - 1, length(time));
+    window_RR = RR_data(i:window_end);
+    window_RR_time = time(i:window_end);
 
     % Calculate the mean and standard deviation for the current window
     mean_RR_window = mean(window_RR);
     std_RR_window = std(window_RR);
 
-    % Find minima in the window
-    [min_val, min_idx] = min(window_RR);
+    % Find local minima in the window
+    localMinima = islocalmin(window_RR);
+    minimaValues = window_RR(localMinima);
+    minimaIndices = find(localMinima);
+    minimaTimes = window_RR_time(localMinima);
 
-    % Check if the minima is greater than two standard deviations below the mean for the current window
-    if min_val < mean_RR_window - 2 * std_RR_window
+    % Filter minima based on criteria
+    criteriaIndices = minimaValues < mean_RR_window - 2 * std_RR_window;
+    filteredMinimaValues = minimaValues(criteriaIndices);
+    filteredMinimaTimes = minimaTimes(criteriaIndices);
+
+    % Check if there are any minima that meet the criteria
+    if ~isempty(filteredMinimaValues)
+        % Find the minimal trough
+        [min_val, min_criteria_idx] = min(filteredMinimaValues);
+        min_time = filteredMinimaTimes(min_criteria_idx);
+
+        % Store the minimal trough value and its corresponding time
         HRB = [HRB, min_val];
-        HRB_time = [HRB_time, window_RR_time(min_idx)];
+        HRB_time = [HRB_time, min_time];
     end
 end
 
@@ -418,7 +558,7 @@ filtered_HRB_time = [];
 % Iterate through HRB events
 i = 1;
 while i <= length(HRB_time)
-    % Check if the next event is within 5 seconds
+    % Check if the next event is within 10 seconds
     if i < length(HRB_time) && (HRB_time(i + 1) - HRB_time(i) < 15)
         % Compare the R-R intervals and keep the one with the lower value
         if HRB(i) < HRB(i + 1)
@@ -447,14 +587,13 @@ HRB_time = filtered_HRB_time;
 sleepscore_time_cut = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
 
 figure;
-plot_sleep(filtered_RR_time, filtered_RR_smooth, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+plot_sleep(time, RR_data, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
 hold on;
 plot(HRB_time, HRB, 'ro', 'MarkerFaceColor', 'g', 'MarkerSize', 4);
 xlabel('time (s)');
 ylabel('RR-intervals');
 title('HRV');
 grid on;
-
 
 % Plot for determining RR look
 
@@ -733,8 +872,8 @@ filtered_mean_spectrogram = conv2(mean_spectrogram, gaussian_filter, 'same');
 %% Determine transition phases in sleep 
 
 % Time window in seconds before transition
-time_window = 20; % seconds
-time_window_REM = 50;
+time_window = 10; % seconds
+time_window_REM = 20;
 
 % Creating one vector with different behaviors represented by unique
 % numbers (1=wake, 4=sws, 9=REM, 15=MA) at frequency 1Hz
@@ -781,14 +920,17 @@ totalDuration = length(boutscore_vector);
 SWS_before_MA_periods = findPeriodsBeforeTransition(transition_sws_MA, time_window, totalDuration);
 SWS_before_wake_periods = findPeriodsBeforeTransition(transition_sws_wake, time_window, totalDuration);
 SWS_before_REM_periods = findPeriodsBeforeTransition(transition_sws_REM, time_window_REM, totalDuration);
+REM_before_wake_periods = findPeriodsBeforeTransition(transition_REM_wake, time_window, totalDuration);
 
 % Filter the identified periods to ensure they are within actual SWS periods
 SWS_before_MA_filtered = filterSWSPeriods(SWS_before_MA_periods, NREMinclMA_periods_cut);
 SWS_before_wake_filtered = filterSWSPeriods(SWS_before_wake_periods, NREMinclMA_periods_cut);
 SWS_before_REM_filtered = filterSWSPeriods(SWS_before_REM_periods, NREMinclMA_periods_cut);
+REM_before_wake_filtered = filterSWSPeriods(REM_before_wake_periods, REM_periods_cut);
+
 %% Define NREMexclMA_periods_cut
 % Set the exclusion interval in seconds
-exclusion_interval = 5;
+exclusion_interval = 10;
 
 % Initialize NREMexclMA_periods_cut
 NREMexclMA_periods_cut = [];
@@ -845,16 +987,16 @@ NREMinclMA_periods_cut_pklocs = find_NE_troughs(NREMinclMA_periods_cut, signal_f
 REM_periods_cut_pklocs = find_NE_troughs(REM_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.5);
 NREMexclMA_periods_cut_pklocs = find_NE_troughs(NREMexclMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 wake_periods_cut_pklocs = find_NE_troughs(wake_woMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-SWS_before_MA_filtered_pklocs = find_NE_troughs(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-SWS_before_wake_filtered_pklocs = find_NE_troughs(SWS_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-SWS_before_REM_filtered_pklocs = find_NE_troughs(SWS_before_REM_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-
+SWS_before_MA_filtered_pklocs = find_NE_troughs_transistions(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
+SWS_before_wake_filtered_pklocs = find_NE_troughs_transistions(SWS_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
+SWS_before_REM_filtered_pklocs = find_NE_troughs_transistions(SWS_before_REM_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
+REM_before_wake_filtered_pklocs = find_NE_troughs_transistions(REM_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 
 %% visualize NE troughs (plocs_all)
 figure
 plot_sleep(ds_sec_signal_2(1000:end), ds_delta465_filt_2(1000:end), sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on
-plot(wake_periods_cut_pklocs, delta465_filt_2(round(wake_periods_cut_pklocs*signal_fs)), 'r*')
+plot(SWS_before_REM_filtered_pklocs, delta465_filt_2(round(SWS_before_REM_filtered_pklocs*signal_fs)), 'r*')
 title('NE with selected peaks');
 %}
 %pklocs_all has all the peaks (which really are dips/valleys)
@@ -866,8 +1008,8 @@ title('NE with selected peaks');
 % Assuming delta465_filt_2 is your NE data and sec_signal_2 contains timestamps
 % signal_fs is the sampling frequency for NE data
 
-pklocs_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
-titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
+pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
 figure; % Create a new figure
 
 for subplot_idx = 1:4
@@ -894,7 +1036,7 @@ for subplot_idx = 1:4
 end
 
 % Enhance plot readability
-sgtitle('NE Activity around Events');
+sgtitle('NE Activity around Troughs');
 
 %% Sanity check: RR during HRB event plots for different sleep stages
 % Define sleep stages and their periods
@@ -1063,12 +1205,17 @@ linkaxes([a, b, c, d], 'x');
 
 %% Get time averaged plot for events for 60 sec after
 
-variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time, NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
-titles = {'HRB NREM excl MA', 'HRB NREM incl MA', 'HRB Wake', 'HRB REM', 'NE troughs NREM excl MA', 'NE troughs NREM incl MA', 'NE troughs Wake', 'NE troughs REM'};
+% variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time, NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
+% titles = {'HRB NREM excl MA', 'HRB NREM incl MA', 'HRB Wake', 'HRB REM', 'NE troughs NREM excl MA', 'NE troughs NREM incl MA', 'NE troughs Wake', 'NE troughs REM'};
 
-for idx = 1:length(variables)
+pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
+
+power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
+
+for idx = 1:length(pklocs_variables)
     % Correctly assign the current event set from variables
-    event_type = variables{idx};
+    event_type = pklocs_variables{idx};
     
     % Update event_name to reflect the current title and number of events
     event_name = sprintf('%s - %d events', titles{idx}, length(event_type));
@@ -1281,7 +1428,10 @@ epoc_end = 60; % seconds after event
 
 % Sleep stage variables and titles
 NE_trough_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
-titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
+%titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
+
+pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
 
 epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
 
@@ -1289,8 +1439,8 @@ epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * 
 figure;
 
 % Iterate over each sleep stage and its NE trough variables
-for stage_idx = 1:length(NE_trough_variables)
-    event_type = NE_trough_variables{stage_idx}; % Select the current event type
+for stage_idx = 1:length(pklocs_variables)
+    event_type = pklocs_variables{stage_idx}; % Select the current event type
     event_name = titles{stage_idx}; % Current event name for titles
     num_events = length(event_type); % Number of events for the current sleep stage
     
@@ -1376,7 +1526,7 @@ for stage_idx = 1:length(NE_trough_variables)
 end
 
 % Adjust overall plot settings
-sgtitle('Averaged NE Activity and EEG Bands for Different Sleep Stages');
+sgtitle('Averaged NE Activity and EEG Bands');
 
 %% Get HRB_time for each sleep stage
 % Define sleep stages and their periods
@@ -1546,190 +1696,209 @@ sgtitle('Averaged RR Interval Activity and EEG Bands for Different Sleep Stages'
 signal_trace = delta465_filt_2; %             <<< Specify which trace the analysis should be used for
 sec_signal = sec_signal_2
 fs = signal_fs; %                           <<< Specify sampling frequency of your signal trace
-min_period_dur = 20; %                     <<< Specify minimum bout duration for bout to be included in the analysis
+min_period_dur = 120; %                     <<< Specify minimum bout duration for bout to be included in the analysis
 
-% Define the sleep period variables and their respective labels and colors
-sleep_periods = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
-labels = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
-colors = {'blue', 'red', 'green', 'black'};
+sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
+titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+max_freq = 0.1;
+sample_pr_sec = 0.0005;
 
-% Initialize containers for storing weighted mean PSDs and frequencies
-psd_data = struct();
-frequencies = [];
+figure;
+hold on;
 
-% Loop over each set of periods corresponding to different sleep stages
-for i = 1:length(sleep_periods)
-    analysis_periods = sleep_periods{i};
+for stage_idx = 1:length(sleep_variables)
+    analysis_periods = sleep_variables{stage_idx};
+    % power spectral densities
     t1 = analysis_periods(:,1);
     t2 = analysis_periods(:,2);
-    tsamp1 = floor(analysis_periods(:,1) * fs);
-    tsamp2 = floor(analysis_periods(:,2) * fs);
-    label = labels{i};
+    
+    tsamp1 = floor(t1*fs); %eeg start time 
+    tsamp2 = floor(t2*fs); %eeg end time
+    NREM_data = cell(1, numel(tsamp1));
 
-    % Initialize containers for individual sleep period PSDs and their durations
-    weighted_sum_PXX = []; % This will accumulate the weighted PSDs
-    total_period_duration = 0; % This will accumulate the total duration
-
-    for j = 1:numel(tsamp1)
-        % Ensure indices are within valid range
-        tsamp1(j) = max(tsamp1(j), 1);
-        tsamp2(j) = min(tsamp2(j), length(signal_trace));
-        
-        if tsamp1(j) >= tsamp2(j)
-            % Skip if adjusted indices are invalid
-            continue;
+    PXX = [];
+    PXXlog = [];
+    PXX_pk_f = [];
+    PXX_pk = [];
+    
+    NREM_data_collect = [];
+    period_duration = [];
+    for i=1:numel(tsamp1)
+        period_length_i = tsamp2(i)-tsamp1(i);
+        if period_length_i < min_period_dur*fs % periods shorter than 120 s are excluded from analysis
+            continue
         end
-        
-        % Debugging output
-        fprintf('Processing segment: start=%d, end=%d, signal length=%d\n', tsamp1(j), tsamp2(j), length(signal_trace));
-        
-        % Attempt to extract segment
-        % Extract segment and calculate PSD
-        signal_segment = signal_trace(tsamp1(j):tsamp2(j));
-        [pxx, f] = pwelch(signal_segment, [], [], [0:0.002:0.1], fs);
-
-        period_duration_j = (tsamp2(j) - tsamp1(j)) / fs; % Duration in seconds
-
-        % Accumulate weighted PSDs
-        if isempty(weighted_sum_PXX)
-            weighted_sum_PXX = pxx * period_duration_j;
-        else
-            weighted_sum_PXX = weighted_sum_PXX + pxx * period_duration_j;
+        if tsamp2(i) > length(signal_trace) % if last period ends after trace 
+           tsamp2(i) = length(signal_trace);
+        end
+            % Check if there are enough data points to fit a 5th-degree polynomial
+        if (tsamp2(i) - tsamp1(i) + 1) < 6
+            continue; % Skip to the next iteration if there are not enough data points
         end
 
-        total_period_duration = total_period_duration + period_duration_j;
-    end
+        % Adjust tsamp1 to ensure it starts from at least 1
+        tsamp1(i) = max(tsamp1(i), 1);
 
-    % Calculate weighted mean PSD
-    if total_period_duration > 0
-        weighted_mean_PXX_iso = weighted_sum_PXX / total_period_duration;
-    else
-        weighted_mean_PXX_iso = zeros(length(f), 1); % No data case
+        period_duration = [period_duration period_length_i/fs];
+    
+        NREM_data{i} = signal_trace(tsamp1(i):tsamp2(i));
+        timetrace_i = sec_signal(tsamp1(i):tsamp2(i));
+        
+        %detrend (and center around 0)
+        [p,s,mu] = polyfit((1:numel(NREM_data{i}))',NREM_data{i},5);
+        f_y = polyval(p,(1:numel(NREM_data{i}))',[],mu);
+        detrend_data = NREM_data{i} - f_y';        % Detrend data
+        
+        [pxx, f] = pwelch(detrend_data, [], [],[0:sample_pr_sec:max_freq], fs); %
+        logpxx = 10*log10(pxx);
+        FX{i} = f;
+        [pxx_pk_psd, max_idx] = max(pxx);
+        PXX_pk = [PXX_pk pxx_pk_psd];
+        pxx_pk_f = f(max_idx);
+        PXX_pk_f = [PXX_pk_f pxx_pk_f];
+        %PXXlog = [PXXlog logpxx'];
+        PXX = [PXX pxx'];
+        
+        % figure
+        % set(gcf, 'Position',  [100, 300, 1500, 250])
+        % a = subplot(1,2,1);
+        %     %a.Position = [0.1300 0.1100 0.6200 0.8150];
+        %     plot(timetrace_i,NREM_data{i});
+        %     hold on
+        %     plot(timetrace_i,detrend_data);
+        %     legend({'raw','fitted'})
+        %     hold off
+        % b = subplot(1,2,2);
+        %     %b.Position = [0.8140 0.1100 0.1533 0.8150];
+        %     plot(f,pxx);
     end
+    
+    weighted_mean_PXX_iso = sum(period_duration.*PXX,2)/sum(period_duration); % weigthed mean trace (period durations are used as weights)
+    
+    [PXX_iso_pk_mean, PXX_iso_pk_idx] = max(weighted_mean_PXX_iso); % peak power from mean trace
+    PXX_iso_f_mean = f(PXX_iso_pk_idx);
+    
+    prism_psd_iso = weighted_mean_PXX_iso;
+    prism_freq_iso = f;
 
-    % Store results for plotting
-    psd_data.(strrep(label, ' ', '_')) = weighted_mean_PXX_iso;
-    frequencies = f; % Assuming the frequency bins are consistent
+    plot(prism_freq_iso,prism_psd_iso, Color= colors{stage_idx}, DisplayName = titles{stage_idx})
+
 end
-
-% Plotting the aggregated data
-figure; hold on; grid on;
-for i = 1:length(labels)
-    label = strrep(labels{i}, ' ', '_');
-    plotColor = colors{i};
-    if isfield(psd_data, label)
-        plot(frequencies, psd_data.(label), 'Color', plotColor, 'LineWidth', 1.5);
-    end
-end
-legend(labels, 'Location', 'Best');
-title('Power Spectrum Density plot for NE across sleep stages');
 xlabel('frequency (Hz)');
 ylabel('PSD');
+legend('show');
+title('NE power across sleep stages')
+grid on;
+hold off;
 
 %% PSD on RR trace
 
 %Please ensure that filtered_RR_smooth and filtered_RR_time has been defined!
 
-min_period_dur = 20; %     <<< Specify minimum bout duration for bout to be included in the analysis
 % Define the sampling frequency for R-R intervals
 RR_fs = 1 / median(diff(filtered_RR_time));
-% Define the new frequency range for the PSD calculation up to 3 Hz
-maxFreq = 3;
+signal_trace = filtered_RR_smooth'; %             <<< Specify which trace the analysis should be used for
+fs = RR_fs; %                           <<< Specify sampling frequency of your signal trace
+min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
+sec_signal = filtered_RR_time
+sampling_hz = 0.002
 
-% Define the sleep period variables and their respective labels and colors
-sleep_periods = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
-labels = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
-colors = {'blue', 'red', 'green', 'black'};
+% Define the sampling frequency for R-R intervals - THIS IS RESAMPLED!!!
+signal_trace = resampled_RR; %             <<< Specify which trace the analysis should be used for
+fs = new_fs; %                           <<< Specify sampling frequency of your signal trace
+min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
+sec_signal = new_time_vector
+sampling_hz = 0.0002
 
-% Initialize containers for storing weighted mean PSDs and frequencies
-psd_data = struct();
-frequencies = [];
+sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
+titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+min_period_dur = 180; % Specify minimum bout duration for bout to be included in the analysis
 
-fmin = 0.03; % Minimum frequency, slightly below VLF band
-fmax = 2.83; % Maximum frequency, slightly above HF band
-% nfft = 2^nextpow2(RR_fs); % Number of points in PSD (power of 2 for efficiency)
+figure;
+hold on;
 
-% Loop over each set of periods corresponding to different sleep stages
-for i = 1:length(sleep_periods)
-    analysis_periods = sleep_periods{i};
-    % Convert time in seconds to indices in the R-R interval data
-    tsamp1 = arrayfun(@(x) find(filtered_RR_time >= x, 1, 'first'), analysis_periods(:,1));
-    tsamp2 = arrayfun(@(x) find(filtered_RR_time <= x, 1, 'last'), analysis_periods(:,2));
-    label = labels{i};
-
-    % Initialize accumulators
-    weighted_sum_PXX = [];
-    total_period_duration = 0;
-
-    % Debug output to check if tsamp1 and tsamp2 are valid
-    fprintf('Processing %s: found %d periods\n', label, numel(tsamp1));
-
-for j = 1:numel(tsamp1)
-    % Ensure indices are within the valid range
-    tsamp1(j) = max(tsamp1(j), 1);
-    tsamp2(j) = min(tsamp2(j), length(filtered_RR_smooth));
-
-    if tsamp1(j) >= tsamp2(j)
-        % Skip if the period is invalid or too short
-        continue;
+for stage_idx = 1:length(sleep_variables)
+    analysis_periods = sleep_variables{stage_idx};
+    % power spectral densities
+    t1 = analysis_periods(:,1);
+    t2 = analysis_periods(:,2);
+    
+    tsamp1 = floor(t1*fs); %eeg start time 
+    tsamp2 = floor(t2*fs); %eeg end time
+    NREM_data = cell(1, numel(tsamp1));
+    
+    PXX = [];
+    PXXlog = [];
+    PXX_pk_f = [];
+    PXX_pk = [];
+    
+    NREM_data_collect = [];
+    period_duration = [];
+    for i=1:numel(tsamp1)
+        period_length_i = tsamp2(i)-tsamp1(i);
+        if period_length_i < min_period_dur*fs % periods shorter than 120 s are excluded from analysis
+            continue
+        end
+        if tsamp2(i) > length(signal_trace) % if last period ends after trace 
+           tsamp2(i) = length(signal_trace);
+        end
+            % Check if there are enough data points to fit a 5th-degree polynomial
+        if (tsamp2(i) - tsamp1(i) + 1) < 6
+            continue; % Skip to the next iteration if there are not enough data points
+        end
+        period_duration = [period_duration period_length_i/fs];
+    
+        NREM_data{i} = signal_trace(tsamp1(i):tsamp2(i));
+        timetrace_i = sec_signal(tsamp1(i):tsamp2(i));
+        
+        %detrend (and center around 0)
+        [p,s,mu] = polyfit((1:numel(NREM_data{i}))',NREM_data{i},5);
+        f_y = polyval(p,(1:numel(NREM_data{i}))',[],mu);
+        detrend_data = NREM_data{i} - f_y';        % Detrend data
+        
+        [pxx, f] = pwelch(detrend_data, [], [],[0:sampling_hz:3], fs); %
+        logpxx = 10*log10(pxx);
+        FX{i} = f;
+        [pxx_pk_psd, max_idx] = max(pxx);
+        PXX_pk = [PXX_pk pxx_pk_psd];
+        pxx_pk_f = f(max_idx);
+        PXX_pk_f = [PXX_pk_f pxx_pk_f];
+        %PXXlog = [PXXlog logpxx'];
+        PXX = [PXX pxx'];
+        
+        % figure
+        % set(gcf, 'Position',  [100, 300, 1500, 250])
+        % a = subplot(1,2,1);
+        %     %a.Position = [0.1300 0.1100 0.6200 0.8150];
+        %     plot(timetrace_i,NREM_data{i});
+        %     hold on
+        %     plot(timetrace_i,detrend_data);
+        %     legend({'raw','fitted'})
+        %     hold off
+        % b = subplot(1,2,2);
+        %     %b.Position = [0.8140 0.1100 0.1533 0.8150];
+        %     plot(f,pxx);
     end
+    
+    weighted_mean_PXX_iso = sum(period_duration.*PXX,2)/sum(period_duration); % weigthed mean trace (period durations are used as weights)
+    
+    [PXX_iso_pk_mean, PXX_iso_pk_idx] = max(weighted_mean_PXX_iso); % peak power from mean trace
+    PXX_iso_f_mean = f(PXX_iso_pk_idx);
+    
+    prism_psd_iso = weighted_mean_PXX_iso;
+    prism_freq_iso = f;
 
-    % Extract the R-R interval segment for this period
-    RR_segment = filtered_RR_smooth(tsamp1(j):tsamp2(j));
-    segment_length = length(RR_segment);
+    plot(prism_freq_iso,prism_psd_iso, Color= colors{stage_idx}, DisplayName = titles{stage_idx})
 
-    if segment_length < 8 % Segment is too short for pwelch to process
-        continue;
-    end
-
-    % Define the window size, overlap, and number of FFT points
-    window_size = min(segment_length, 256);  % Set maximum window size
-    noverlap = round(window_size / 4);  % 25% overlap
-    nfft = max(2^nextpow2(window_size), 256);  % Number of FFT points, at least 256 for better frequency resolution
-
-    % Calculate the PSD using the Welch method
-    [pxx, f] = pwelch(RR_segment, hamming(window_size), noverlap, nfft, RR_fs);
-
-    % Calculate the duration of the period in seconds
-    period_length_j = (filtered_RR_time(tsamp2(j)) - filtered_RR_time(tsamp1(j)));
-
-    % Accumulate the weighted PSDs
-    if isempty(weighted_sum_PXX)
-        weighted_sum_PXX = pxx * period_length_j;  % Initialize with the first valid pxx
-    else
-        weighted_sum_PXX = weighted_sum_PXX + (pxx * period_length_j);  % Accumulate
-    end
-
-    % Accumulate the total period duration
-    total_period_duration = total_period_duration + period_length_j;
 end
-
-% Calculate the weighted mean PSD across all periods
-if total_period_duration > 0
-    weighted_mean_PXX_iso = weighted_sum_PXX / total_period_duration;
-else
-    weighted_mean_PXX_iso = zeros(length(f), 1);  % Handle the case with no data
-end
-
-
-    % Store results for plotting
-    psd_data.(strrep(label, ' ', '_')) = weighted_mean_PXX_iso;
-    frequencies = f;
-end
-
-% Plotting the aggregated data for all sleep stages
-figure; hold on; grid on;
-for i = 1:length(labels)
-    label = strrep(labels{i}, ' ', '_');
-    plotColor = colors{i};
-    if isfield(psd_data, label)
-        plot(frequencies, psd_data.(label), 'Color', plotColor, 'LineWidth', 1.5);
-    end
-end
-legend(labels, 'Location', 'Best');
-title('Power Spectrum Density plot for RR intervals across sleep stages');
 xlabel('frequency (Hz)');
 ylabel('PSD');
+legend('show');
+title('RR power across sleep stages')
+grid on;
+hold off;
 
 
 %% DEBUGGING
@@ -2122,4 +2291,153 @@ for stage_idx = 1:length(NE_trough_variables)
     xlabel('Time (s)');
     xlim([-30, 60]);
 end
+%% Playground
 
+% Assuming filtered_RR_smooth and filtered_RR_time are already loaded in your workspace
+
+% Define the target sampling rate
+new_fs = 64; % 64 Hz
+
+% Create a new time vector with a fixed sampling rate of 64 Hz, starting from the first to the last observation in the original time vector
+new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
+
+% Use interpolation to resample RR intervals at these new time points
+% 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
+resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+
+% 2. Segmentation
+segment_length = 16 * new_fs; % 16 seconds * 64 Hz
+overlap = segment_length / 2; % 50% overlap
+num_segments = floor((length(resampled_RR) - overlap) / (segment_length - overlap));
+
+% Initialize variables for LF%, time for LF%, power spectrum, and frequencies
+LF_percent = zeros(1, num_segments);
+time_LF_percent = zeros(1, num_segments);
+power_spectrums = cell(1, num_segments); % For storing power spectrum of each window
+frequencies = cell(1, num_segments); % For storing frequencies of each window
+
+% Loop through segments
+for i = 1:num_segments
+    start_index = 1 + (i-1) * (segment_length - overlap);
+    end_index = start_index + segment_length - 1;
+    
+    % 3. Windowing
+    segment = resampled_RR(start_index:end_index);
+    windowed_segment = segment .* hamming(length(segment));
+    
+    % 4. FFT and Power Spectrum Calculation
+    NFFT = 2^nextpow2(length(windowed_segment));
+    fft_segment = fft(windowed_segment, NFFT) / length(windowed_segment);
+    f = new_fs/2 * linspace(0, 1, NFFT/2+1);
+    Pxx = (1/(new_fs*NFFT)) * abs(fft_segment(1:NFFT/2+1)).^2;
+    Pxx(2:end-1) = 2*Pxx(2:end-1); % Single-sided spectrum
+    
+    % Store power spectrum and frequencies
+    power_spectrums{i} = Pxx;
+    frequencies{i} = f;
+    
+    % 6. Band Power Calculation
+    TP = bandpower(Pxx, f, [0.4, 6], 'psd');
+    LF = bandpower(Pxx, f, [0.4, 1.5], 'psd');
+    HF = bandpower(Pxx, f, [1.5, 4.0], 'psd');
+
+    LF_percent(i) = (LF / TP) * 100;
+    HF_percent(i) = (HF/ TP) * 100;
+    LF(i) = LF;
+    
+    % Time vector for LF%
+    time_LF_percent(i) = mean(resampled_time(start_index:end_index));
+end
+
+all_powers = zeros(length(freqs), length(power_spectrums));
+% Loop through each power spectrum, adding it to the matrix
+for i = 1:length(power_spectrums)
+    all_powers(:, i) = power_spectrums{i};
+end
+
+% Plotting
+figure;
+plot(freqs, mean_power_spectrum);
+xlabel('Frequency (Hz)');
+ylabel('Power Spectrum (Mean across all windows)');
+title('Average Power Spectrum Across All Windows');
+
+% Calculate the mean power spectrum across all windows
+mean_power_spectrum = mean(all_powers, 2);
+% Convert time_LF_percent back to match original filtered_RR_time scale
+% Assuming linear mapping is sufficient due to uniform resampling
+original_time_indices = interp1(filtered_RR_time, 1:length(filtered_RR_time), time_LF_percent, 'nearest', 'extrap');
+
+
+%% 
+
+% 7. Plotting LF% Over Time
+figure;
+plot(filtered_RR_time(original_time_indices), LF_percent);
+xlabel('Time (s)');
+ylabel('LF%');
+title('LF% Over Time');
+
+figure;
+plot(filtered_RR_time(original_time_indices), HF_percent);
+xlabel('Time (s)');
+ylabel('HF%');
+title('HF% Over Time');
+
+%% Playground 2
+
+% Preliminary setup
+RR_fs = 1 / median(diff(filtered_RR_time)); % Your existing sample rate calculation
+new_fs = 64; % Target sampling rate
+
+% Resample RR intervals at 64 Hz
+[p, q] = rat(new_fs / RR_fs); % Determine resampling factors
+resampled_RR = resample(filtered_RR_smooth, p, q);
+
+% Time vector for resampled data
+resampled_time = linspace(filtered_RR_time(1), filtered_RR_time(end), length(resampled_RR));
+
+% Segmenting data with 50% overlap
+segment_duration = 16; % seconds
+segment_samples = segment_duration * new_fs; % 1024 samples
+overlap_samples = segment_samples / 2;
+num_segments = floor((length(resampled_RR) - overlap_samples) / (segment_samples - overlap_samples));
+
+% Initialize variables to store LF% and segment times
+LF_percent = zeros(1, num_segments);
+segment_times = zeros(1, num_segments);
+
+% Loop through segments
+for i = 1:num_segments
+    % Calculate segment indices
+    start_idx = (i-1) * (segment_samples - overlap_samples) + 1;
+    end_idx = start_idx + segment_samples - 1;
+    
+    % Extract segment
+    segment = resampled_RR(start_idx:end_idx);
+    
+    % Apply Hamming window
+    windowed_segment = segment .* hamming(segment_samples);
+    
+    % FFT and power spectrum
+    fft_segment = fft(windowed_segment);
+    power_spectrum = abs(fft_segment).^2 / segment_samples;
+    
+    % Frequency vector
+    freqs = new_fs / 2 * linspace(0, 1, segment_samples / 2 + 1);
+    
+    % Calculate power bands
+    TP = bandpower(power_spectrum, new_fs, [0.4, new_fs/2]);
+    LF = bandpower(power_spectrum, new_fs, [0.4, 1.5]);
+    HF = bandpower(power_spectrum, new_fs, [1.5, 4.0]);
+    LF_percent(i) = LF / TP * 100;
+    
+    % Calculate mid-segment time
+    segment_times(i) = mean(resampled_time(start_idx:end_idx));
+end
+figure;
+% Plot LF% over time
+plot(segment_times, LF_percent);
+xlabel('Time (seconds)');
+ylabel('LF%');
+title('LF% over Original Time');
