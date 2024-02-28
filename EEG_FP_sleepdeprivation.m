@@ -27,6 +27,7 @@
 
 %New
 control_307 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319\307_sleep\307_sleep_2020-10-27_12-00-20-260.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319\307_sleep\20201027_307_control.xlsx'};
+sd_307 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201028_EEGFP_1_307_2_319_SD' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201028_EEGFP_1_307_2_319_SD\307_sleep\307_sleep_2020-10-28_12-09-46-265.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319\307_sleep\307_SD_sleepscore.xlsx'};
 
 control_319 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319\319_sleep\319_sleep_2020-10-27_12-00-20-260.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\220201027_EEGFP_1_307_2_319\319_sleep\319_sleep_sleepscore.xlsx'};
 sd_319 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201028_EEGFP_1_307_2_319_SD' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201027_EEGFP_1_307_2_319\319_sleep\319_sleep_2020-10-28_12-09-46-265.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\220201027_EEGFP_1_307_2_319\319_sleep\319_SD_sleepscore.xlsx'};
@@ -34,21 +35,23 @@ sd_319 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sl
 control_323 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201029_EEGFP_1_323_2_331_sl' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\323_sleep\323_sleep_2020-10-29_11-59-00-080.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\323_sleep\323_sleep_sleepscore.xlsx'};
 sd_323 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\323_sleep\323_sleep_2020-10-30_12-06-33-205.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\323_sleep\323_SD_sleepscore.xlsx'};
 
-control_331 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201102_EEGFP_2_331_sleep' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\SD\20201030_1_323_2_331_SD\331_sleep\331_sleep_2020-11-02_12-12-10-254.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_sleep_sleepscore.xlsx'};
-sd_331 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\SD\20201030_1_323_2_331_SD\331_sleep\331_sleep_2020-10-30_12-06-33-205.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_SD_sleepscore.xlsx'};
+control_331 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201102_EEGFP_2_331_sleep' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_sleep_2020-11-02_12-12-10-254.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_sleep_sleepscore.xlsx'};
+sd_331 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_sleep_2020-10-30_12-06-33-205.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'PtC0' 'x' 'x' 'x' 'x' (1:10000) 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20201030_1_323_2_331_SD\331_sleep\331_SD_sleepscore.xlsx'};
 
-mouse_ct = control_323;
-mouse_sd = sd_323;
+mouse_ct = control_307;
+mouse_sd = sd_307;
 
-data_FPrig_ct = data_FPrig_ct_323;
-data_FPrig_sd = data_FPrig_sd_323;
+data_FPrig_ct = data_FPrig_ct_307;
+data_FPrig_sd = data_FPrig_sd_307;
 
 %% load data
 
-data_FPrig = TDTbin2mat(mouse{1}); % FP rig 
+data_FPrig = TDTbin2mat(mouse_sd{1}); % FP rig 
 
 %% Change to save data_FP rig
 %data_FPrig_ct_307 = data_FPrig
+data_FPrig_sd_307 = data_FPrig
+
 %data_FPrig_ct_319 = data_FPrig
 %data_FPrig_sd_319 = data_FPrig
 %data_FPrig_ct_323 = data_FPrig
@@ -207,21 +210,21 @@ REM_duration_ct = REM_offset_ct-REM_onset_ct;
 
 sleepscore_time = [TimeScaleHypno TimeScaleHypno(end)+1:1:TimeScaleHypno(end)+time_correction];
 
-fig = figure;
-a = subplot(2,1,1);
-    plot_sleep(EEG_time_ct, EMG_rawtrace_ct, sleepscore_time, wake_binary_vector_ct, sws_binary_vector_ct, REM_binary_vector_ct);
-    xlabel('time (s)');
-    ylabel('EMG (V)');
-b = subplot(2,1,2);
-    plot_sleep(EEG_time_ct, EEG_rawtrace_ct, sleepscore_time, wake_binary_vector_ct, sws_binary_vector_ct, REM_binary_vector_ct);
-    xlabel('time (s)');
-    ylabel('EEG (V)');
-linkaxes([a,b],'x');
-
-h = datacursormode(fig);
-    h.UpdateFcn = @DataCursor_custom;
-    h.SnapToDataVertex = 'on';
-    datacursormode on
+% fig = figure;
+% a = subplot(2,1,1);
+%     plot_sleep(EEG_time_ct, EMG_rawtrace_ct, sleepscore_time, wake_binary_vector_ct, sws_binary_vector_ct, REM_binary_vector_ct);
+%     xlabel('time (s)');
+%     ylabel('EMG (V)');
+% b = subplot(2,1,2);
+%     plot_sleep(EEG_time_ct, EEG_rawtrace_ct, sleepscore_time, wake_binary_vector_ct, sws_binary_vector_ct, REM_binary_vector_ct);
+%     xlabel('time (s)');
+%     ylabel('EEG (V)');
+% linkaxes([a,b],'x');
+% 
+% h = datacursormode(fig);
+%     h.UpdateFcn = @DataCursor_custom;
+%     h.SnapToDataVertex = 'on';
+%     datacursormode on
 
 % 2-column vectors with on- and offsets for each state
 wake_periods_ct = [wake_onset_ct wake_onset_ct+wake_duration_ct];
@@ -318,7 +321,7 @@ sleepscore_time_cut = 0:length(wake_binary_vector_ct_cut)-1; % should be same le
 
 % Remove first seconds of EEG score to align with FP trace
 MA_binary_vector_ct_cut = MA_binary_vector_ct(round(TTL_EEG_onset_ct+1):end);
-wake_woMA_binary_vector_ct_cut = wake_woMA_binary_vector_ct(round(TTL_EEG_onset_ct+1):end);
+wake_woMA_binary_vector_ct_cut = wake_woMA_binary_vector_ct(round(TTL_EEG_onset_ct):end);
 
 % Align onset, offset, and duration vectors based on TTL
 [MA_onset_ct_cut, MA_offset_ct_cut] = binary_to_OnOff(MA_binary_vector_ct_cut);
@@ -381,21 +384,25 @@ NREMinclMA_periods_ct_cut = [NREMinclMA_onset_ct_cut NREMinclMA_offset_ct_cut];
 sleepscore_time_cut = 0:length(wake_binary_vector_ct_cut)-1; % should be same length for wake/sws/REM
 
 fig = figure;
-a = subplot(3,1,1);
+a = subplot(4,1,1);
     plot_sleep(ds_sec_signal_1_ct, ds_delta465_filt_1_ct, sleepscore_time_cut, wake_woMA_binary_vector_ct_cut, sws_binary_vector_ct_cut, REM_binary_vector_ct_cut, MA_binary_vector_ct_cut);
-    title('dF/F');
-d = subplot(3,1,2);
+    title('NE thalamus');
+b = subplot(4,1,2);
+    plot_sleep(ds_sec_signal_2_ct, ds_delta465_filt_2_ct, sleepscore_time_cut, wake_woMA_binary_vector_ct_cut, sws_binary_vector_ct_cut, REM_binary_vector_ct_cut, MA_binary_vector_ct_cut);
+    title('Calcium LC');
+c = subplot(4,1,3);
+    ds_EEG_rawtrace_ct = downsample(EEG_rawtrace_ct_cut, 10);
+    plot_sleep(ds_EEG_time_ct, ds_EEG_rawtrace_ct, sleepscore_time_cut, wake_woMA_binary_vector_ct_cut, sws_binary_vector_ct_cut, REM_binary_vector_ct_cut, MA_binary_vector_ct_cut);
+    xlabel('time (s)');
+    ylabel('EEG (V)');
+d = subplot(4,1,4);
     ds_EEG_time_ct = downsample(EEG_time_ct_cut, 10);
     ds_EMG_rawtrace_ct = downsample(EMG_rawtrace_ct_cut, 10);
     plot_sleep(ds_EEG_time_ct, ds_EMG_rawtrace_ct, sleepscore_time_cut, wake_woMA_binary_vector_ct_cut, sws_binary_vector_ct_cut, REM_binary_vector_ct_cut, MA_binary_vector_ct_cut);
     xlabel('time (s)');
     ylabel('EMG (V)');
-c = subplot(3,1,3);
-    ds_EEG_rawtrace_ct = downsample(EEG_rawtrace_ct_cut, 10);
-    plot_sleep(ds_EEG_time_ct, ds_EEG_rawtrace_ct, sleepscore_time_cut, wake_woMA_binary_vector_ct_cut, sws_binary_vector_ct_cut, REM_binary_vector_ct_cut, MA_binary_vector_ct_cut);
-    xlabel('time (s)');
-    ylabel('EEG (V)');
-linkaxes([a,b,c],'x');
+
+linkaxes([a,b,c, d],'x');
 %% PROCESS SLEEP DEPRIVED DATA
 
 %% extract channels
@@ -529,15 +536,15 @@ EEG_time_sd = (0:length(EMG_rawtrace_sd)-1)/sampling_freq_sd;
 % manual alignment.
 
 % loads hypno, ViewpointData needs to be a struct - see above
-[FullHypno_sd,TimeScaleAbs,TimeScaleBin,TimeScaleHypno_sd]=ExtractFullHypno(ViewpointData,1);
+[FullHypno,TimeScaleAbs,TimeScaleBin,TimeScaleHypno]=ExtractFullHypno(ViewpointData,1);
 
-FullHypno_sd = FullHypno(find(FullHypno_sd~=0,1):end);
+FullHypno = FullHypno(find(FullHypno~=0,1):end);
 time_correction = round(TimeScaleBin(1));
 int_sig = zeros(1,time_correction);
 
-wake_binary_vector_sd = [int_sig FullHypno_sd==1];
-sws_binary_vector_sd = [int_sig FullHypno_sd==2];
-REM_binary_vector_sd = [int_sig FullHypno_sd==4];
+wake_binary_vector_sd = [int_sig FullHypno==1];
+sws_binary_vector_sd = [int_sig FullHypno==2];
+REM_binary_vector_sd = [int_sig FullHypno==4];
 
 [wake_onset_sd, wake_offset_sd] = binary_to_OnOff(wake_binary_vector_sd);
 [sws_onset_sd, sws_offset_sd] = binary_to_OnOff(sws_binary_vector_sd);
@@ -547,23 +554,23 @@ wake_duration_sd = wake_offset_sd-wake_onset_sd;
 duration_sd_sws = sws_offset_sd-sws_onset_sd;
 REM_duration_sd = REM_offset_sd-REM_onset_sd;
 
-sleepscore_time_sd = [TimeScaleHypno_sd TimeScaleHypno_sd(end)+1:1:TimeScaleHypno_sd(end)+time_correction];
+sleepscore_time_sd = [TimeScaleHypno TimeScaleHypno(end)+1:1:TimeScaleHypno(end)+time_correction];
 
-fig = figure;
-a = subplot(2,1,1);
-    plot_sleep(EEG_time_sd, EMG_rawtrace_sd, sleepscore_time_sd, wake_binary_vector_sd, sws_binary_vector_sd, REM_binary_vector_sd);
-    xlabel('time (s)');
-    ylabel('EMG (V)');
-b = subplot(2,1,2);
-    plot_sleep(EEG_time_sd, EEG_rawtrace_sd, sleepscore_time_sd, wake_binary_vector_sd, sws_binary_vector_sd, REM_binary_vector_sd);
-    xlabel('time (s)');
-    ylabel('EEG (V)');
-linkaxes([a,b],'x');
-
-h = datacursormode(fig);
-    h.UpdateFcn = @DataCursor_custom;
-    h.SnapToDataVertex = 'on';
-    datacursormode on
+% fig = figure;
+% a = subplot(2,1,1);
+%     plot_sleep(EEG_time_sd, EMG_rawtrace_sd, sleepscore_time_sd, wake_binary_vector_sd, sws_binary_vector_sd, REM_binary_vector_sd);
+%     xlabel('time (s)');
+%     ylabel('EMG (V)');
+% b = subplot(2,1,2);
+%     plot_sleep(EEG_time_sd, EEG_rawtrace_sd, sleepscore_time_sd, wake_binary_vector_sd, sws_binary_vector_sd, REM_binary_vector_sd);
+%     xlabel('time (s)');
+%     ylabel('EEG (V)');
+% linkaxes([a,b],'x');
+% 
+% h = datacursormode(fig);
+%     h.UpdateFcn = @DataCursor_custom;
+%     h.SnapToDataVertex = 'on';
+%     datacursormode on
 
 % 2-column vectors with on- and offsets for each state
 wake_periods_sd = [wake_onset_sd wake_onset_sd+wake_duration_sd];
@@ -724,19 +731,23 @@ NREMinclMA_periods_sd_cut = [NREMinclMA_onset_sd_cut NREMinclMA_offset_sd_cut];
 sleepscore_time_sd_cut = 0:length(wake_binary_vector_sd_cut)-1; % should be same length for wake/sws/REM
 
 fig = figure;
-a = subplot(3,1,1);
+a = subplot(4,1,1);
     plot_sleep(ds_sec_signal_1_sd, ds_delta465_filt_1_sd, sleepscore_time_sd_cut, wake_woMA_binary_vector_sd_cut, sws_binary_vector_sd_cut, REM_binary_vector_sd_cut, MA_binary_vector_sd_cut);
-    title('dF/F');
-d = subplot(3,1,2);
+    title('NE Thalamus');
+b = subplot(4,1,2);
+    plot_sleep(ds_sec_signal_2_sd, ds_delta465_filt_2_sd, sleepscore_time_sd_cut, wake_woMA_binary_vector_sd_cut, sws_binary_vector_sd_cut, REM_binary_vector_sd_cut, MA_binary_vector_sd_cut);
+    title('Calcium LC');
+c = subplot(4,1,3);
     ds_EEG_time_sd = downsample(EEG_time_sd_cut, 10);
-    ds_EMG_rawtrace_sd = downsample(EMG_rawtrace_sd_cut, 10);
-    plot_sleep(ds_EEG_time_sd, ds_EMG_rawtrace_sd, sleepscore_time_sd_cut, wake_woMA_binary_vector_sd_cut, sws_binary_vector_sd_cut, REM_binary_vector_sd_cut, MA_binary_vector_sd_cut);
-    xlabel('time (s)');
-    ylabel('EMG (V)');
-c = subplot(3,1,3);
     ds_EEG_rawtrace_sd = downsample(EEG_rawtrace_sd_cut, 10);
     plot_sleep(ds_EEG_time_sd, ds_EEG_rawtrace_sd, sleepscore_time_sd_cut, wake_woMA_binary_vector_sd_cut, sws_binary_vector_sd_cut, REM_binary_vector_sd_cut, MA_binary_vector_sd_cut);
     xlabel('time (s)');
     ylabel('EEG (V)');
 linkaxes([a,b,c],'x');
+d = subplot(4,1,4);
+    ds_EMG_rawtrace_sd = downsample(EMG_rawtrace_sd_cut, 10);
+    plot_sleep(ds_EEG_time_sd, ds_EMG_rawtrace_sd, sleepscore_time_sd_cut, wake_woMA_binary_vector_sd_cut, sws_binary_vector_sd_cut, REM_binary_vector_sd_cut, MA_binary_vector_sd_cut);
+    xlabel('time (s)');
+    ylabel('EMG (V)');
+
 

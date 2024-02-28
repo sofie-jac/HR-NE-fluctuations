@@ -194,7 +194,7 @@ threshold = mean_EMG + 3.5 * sd_EMG;
 movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
 
 % Define window length in seconds (1 second) and ensure window_length_samples is an integer
-window_length_sec = 1;
+window_length_sec = 2;
 window_length_samples = round(window_length_sec * EEG_fs);
 
 % Initialize a variable to keep track of the last movement to handle consecutive movements
@@ -290,7 +290,7 @@ threshold = mean_EMG + 3.5 * sd_EMG;
 movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
 
 % Define window length in seconds (1 second) and ensure window_length_samples is an integer
-window_length_sec = 1;
+window_length_sec = 2;
 window_length_samples = round(window_length_sec * EEG_fs);
 
 % Initialize a variable to keep track of the last movement to handle consecutive movements
@@ -331,7 +331,7 @@ for start_idx = 1:(window_length_samples - overlap_samples):length(filtered_EMG)
         sd_EMG_window = std(valid_data);
         
         % Calculate the dynamic threshold for peak detection
-        dynamic_threshold = mean_EMG_window + 2.5*sd_EMG_window;
+        dynamic_threshold = mean_EMG_window + 2*sd_EMG_window;
         
         % Check if any data point exceeds the dynamic threshold
     if any(valid_data > dynamic_threshold)
@@ -494,7 +494,7 @@ new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
 
 % Use interpolation to resample RR intervals at these new time points
 % 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
-resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'spline');
 
 %% HRB calculation
 
@@ -1701,6 +1701,7 @@ min_period_dur = 120; %                     <<< Specify minimum bout duration fo
 sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
 titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
 colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+
 max_freq = 0.1;
 sample_pr_sec = 0.0005;
 
@@ -1797,24 +1798,28 @@ hold off;
 %Please ensure that filtered_RR_smooth and filtered_RR_time has been defined!
 
 % Define the sampling frequency for R-R intervals
-RR_fs = 1 / median(diff(filtered_RR_time));
-signal_trace = filtered_RR_smooth'; %             <<< Specify which trace the analysis should be used for
-fs = RR_fs; %                           <<< Specify sampling frequency of your signal trace
-min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
-sec_signal = filtered_RR_time
-sampling_hz = 0.002
+% RR_fs = 1 / median(diff(filtered_RR_time));
+% signal_trace = filtered_RR_smooth'; %             <<< Specify which trace the analysis should be used for
+% fs = RR_fs; %                           <<< Specify sampling frequency of your signal trace
+% min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
+% sec_signal = filtered_RR_time
+% sampling_hz = 0.002
 
 % Define the sampling frequency for R-R intervals - THIS IS RESAMPLED!!!
 signal_trace = resampled_RR; %             <<< Specify which trace the analysis should be used for
 fs = new_fs; %                           <<< Specify sampling frequency of your signal trace
 min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
-sec_signal = new_time_vector
-sampling_hz = 0.0002
-
-sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
-titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
-colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+sec_signal = new_time_vector;
+sampling_hz = 0.0002;
 min_period_dur = 180; % Specify minimum bout duration for bout to be included in the analysis
+
+% sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
+% titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
+% colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+
+sleep_variables = {NREMinclMA_periods_cut};
+titles = {'NREM incl MA'};
+colors = {'blue'}; % Color for each sleep phase
 
 figure;
 hold on;
@@ -1891,12 +1896,29 @@ for stage_idx = 1:length(sleep_variables)
     prism_freq_iso = f;
 
     plot(prism_freq_iso,prism_psd_iso, Color= colors{stage_idx}, DisplayName = titles{stage_idx})
-
 end
 xlabel('frequency (Hz)');
 ylabel('PSD');
 legend('show');
 title('RR power across sleep stages')
+grid on;
+hold off;
+%% 
+[prism_freq_iso_NREMinclMA, prism_psd_iso_NREMinclMA] = RR_Power_SleepStage(NREMinclMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
+[prism_freq_iso_NREMexclMA, prism_psd_iso_NREMexclMA] = RR_Power_SleepStage(NREMexclMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
+[prism_freq_iso_REM, prism_psd_iso_REM] = RR_Power_SleepStage(REM_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
+[prism_freq_iso_Wake, prism_psd_iso_Wake] = RR_Power_SleepStage(wake_woMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
+%% 
+figure;
+hold on;
+plot(prism_freq_iso_NREMinclMA, prism_psd_iso_NREMinclMA, 'Color', 'blue', 'DisplayName', 'NREM incl MA');
+plot(prism_freq_iso_NREMexclMA, prism_psd_iso_NREMexclMA, 'Color', 'red', 'DisplayName', 'NREM excl MA');
+plot(prism_freq_iso_REM, prism_psd_iso_REM, 'Color', 'green', 'DisplayName', 'REM');
+plot(prism_freq_iso_Wake, prism_psd_iso_Wake, 'Color', 'black', 'DisplayName', 'Wake');
+xlabel('frequency (Hz)');
+ylabel('PSD');
+legend('show');
+title('RR power across sleep stages');
 grid on;
 hold off;
 
