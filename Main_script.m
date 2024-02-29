@@ -421,7 +421,7 @@ for i = 1:length(movement_sec)-1
     % Find the indices corresponding to RR_time between two movement peaks
     indices_between_movements_RR = find(RR_time > movement_sec(i) & RR_time < movement_sec(i+1));
 
-    % Check if there is less than 1 second between two movement peaks
+    % Check if there is less than minimum_time_between_movement between two movement peaks
     if movement_sec(i+1) - movement_sec(i) < minimum_time_between_movement
         % Remove the selected peaks and their corresponding locations between two movement peaks
         selected_peaks(indices_between_movements_selected) = [];
@@ -495,12 +495,16 @@ new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
 % Use interpolation to resample RR intervals at these new time points
 % 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
 resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'spline');
+resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
+resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'pchip');
+
 
 %% HRB calculation
 
 %Input which RR it should be based on
-time = new_time_vector;
-RR_data = resampled_RR;
+time = filtered_RR_time;
+RR_data = filtered_RR_smooth;
 
 % Assuming filtered_RR and filtered_RR_time are given (if these are your
 % standard variables)
@@ -586,16 +590,58 @@ HRB_time = filtered_HRB_time;
 %% plot HRB
 sleepscore_time_cut = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
 
+% figure;
+% plot_sleep(new_time_vector, resampled_RR, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+% hold on;
+% plot(HRB_time, HRB, 'ro', 'MarkerFaceColor', 'g', 'MarkerSize', 4);
+% xlabel('time (s)');
+% ylabel('RR-intervals');
+% title('HRV 64hz cubic spline');
+% grid on;
+
+% Plotting peaks
 figure;
-plot_sleep(time, RR_data, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+
+% Plot the original RR signal against resampled
+subplot(4,1,1);
+plot_sleep(new_time_vector, resampled_RR_nearest, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
 hold on;
-plot(HRB_time, HRB, 'ro', 'MarkerFaceColor', 'g', 'MarkerSize', 4);
-xlabel('time (s)');
-ylabel('RR-intervals');
-title('HRV');
+scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV 64hz Nearest neighbor');
 grid on;
 
-% Plot for determining RR look
+% Plot the filtered EMG signal with selected peaks
+subplot(4,1,2);
+plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+hold on;
+scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV 64hz Shape-preserving piecewise cubic interpolation (pchip)');
+grid on;
+
+% Plot the filtered EMG signal with selected peaks
+subplot(4,1,3);
+plot_sleep(new_time_vector, resampled_RR_linear, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+hold on;
+scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV 64 hz Linear');
+grid on;
+
+% Plot the filtered EMG signal with selected peaks
+subplot(4,1,4);
+plot_sleep(filtered_RR_time, filtered_RR_smooth, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+hold on;
+scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV (un-resampled)');
+grid on;
+linkaxes([subplot(4,1,1), subplot(4,1,2), subplot(4,1,3), subplot(4,1,4)], 'x');
 
 
 %% SLEEP: Load sleep score
@@ -1806,20 +1852,20 @@ hold off;
 % sampling_hz = 0.002
 
 % Define the sampling frequency for R-R intervals - THIS IS RESAMPLED!!!
-signal_trace = resampled_RR; %             <<< Specify which trace the analysis should be used for
+signal_trace = resampled_RR_linear; %             <<< Specify which trace the analysis should be used for
 fs = new_fs; %                           <<< Specify sampling frequency of your signal trace
 min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
 sec_signal = new_time_vector;
 sampling_hz = 0.0002;
 min_period_dur = 180; % Specify minimum bout duration for bout to be included in the analysis
 
-% sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
-% titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
-% colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
+titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
 
-sleep_variables = {NREMinclMA_periods_cut};
-titles = {'NREM incl MA'};
-colors = {'blue'}; % Color for each sleep phase
+% sleep_variables = {NREMinclMA_periods_cut};
+% titles = {'NREM incl MA'};
+% colors = {'blue'}; % Color for each sleep phase
 
 figure;
 hold on;
@@ -1900,28 +1946,9 @@ end
 xlabel('frequency (Hz)');
 ylabel('PSD');
 legend('show');
-title('RR power across sleep stages')
+title('RR power across sleep stages (linear interpolation)')
 grid on;
 hold off;
-%% 
-[prism_freq_iso_NREMinclMA, prism_psd_iso_NREMinclMA] = RR_Power_SleepStage(NREMinclMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
-[prism_freq_iso_NREMexclMA, prism_psd_iso_NREMexclMA] = RR_Power_SleepStage(NREMexclMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
-[prism_freq_iso_REM, prism_psd_iso_REM] = RR_Power_SleepStage(REM_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
-[prism_freq_iso_Wake, prism_psd_iso_Wake] = RR_Power_SleepStage(wake_woMA_periods_cut, resampled_RR, new_time_vector, fs, 0.002, 180);
-%% 
-figure;
-hold on;
-plot(prism_freq_iso_NREMinclMA, prism_psd_iso_NREMinclMA, 'Color', 'blue', 'DisplayName', 'NREM incl MA');
-plot(prism_freq_iso_NREMexclMA, prism_psd_iso_NREMexclMA, 'Color', 'red', 'DisplayName', 'NREM excl MA');
-plot(prism_freq_iso_REM, prism_psd_iso_REM, 'Color', 'green', 'DisplayName', 'REM');
-plot(prism_freq_iso_Wake, prism_psd_iso_Wake, 'Color', 'black', 'DisplayName', 'Wake');
-xlabel('frequency (Hz)');
-ylabel('PSD');
-legend('show');
-title('RR power across sleep stages');
-grid on;
-hold off;
-
 
 %% DEBUGGING
 NREMexclMA_periods_cut_HRB_time_short = NREMexclMA_periods_cut_HRB_time(1:5);
@@ -1987,6 +2014,71 @@ for i = 1:length(NE_trough_variables)
         ylim([minYAxisLimit, maxYAxisLimit]);
     end
 end
+%% Plots power for each band as a line around each event (NE troughs or HRB)
+
+% Define the frequency bands of interest for EEG
+power_bands = { {0.5, 1, 'SO'}, {1, 4, 'Delta'}, {4, 8, 'Theta'}, {8, 15, 'Sigma'}, {15, 30, 'Beta'} };
+
+% Assuming NE_trough_variables and titles are defined as before
+% Define events and their timestamps
+NE_trough_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
+titles = {'NE troughs NREM excl MA', 'NE troughs NREM incl MA', 'NE troughs Wake', 'NE troughs REM'};
+
+pre_event_time = 30; % seconds before event
+post_event_time = 60; % seconds after event
+
+% Adjusted code begins here
+for i = 1:length(NE_trough_variables)
+    events = NE_trough_variables{i};
+    
+    figure;
+    sgtitle(titles{i}); % Title for each sleep stage
+    
+    for band_idx = 1:length(power_bands)
+        band = power_bands{band_idx};
+        %F is defined in the power analysis section
+        band_freq_indices = F >= band{1} & F <= band{2}; % Find indices of frequencies within the band
+        
+        % Preallocate arrays for mean power and SEM
+        mean_power = [];
+        sem_power = [];
+        time_points = -pre_event_time:post_event_time; % Vector of time points relative to each event
+        
+        for t = 1:length(time_points)
+            time_point = time_points(t);
+            %time_spectrogram_zero is defined in the power analysis section
+            relevant_times = find(time_spectrogram_zero >= time_point-pre_event_time & time_spectrogram_zero <= time_point+post_event_time); % Find indices of times within the window
+            
+            if ~isempty(relevant_times)
+            %filtered_mean_spectrogram is defined in the power analysis section
+                power_values = filtered_mean_spectrogram(band_freq_indices, relevant_times); % Extract power values for the band and time
+                mean_power(t) = mean(power_values(:)); % Compute mean power
+                sem_power(t) = std(power_values(:)) / sqrt(numel(power_values)); % Compute SEM
+            else
+                mean_power(t) = NaN; % Assign NaN if no relevant times found
+                sem_power(t) = NaN;
+            end
+        end
+        
+        subplot(length(power_bands), 1, band_idx);
+        
+        % Plotting mean power as a line
+        plot(time_points, mean_power, 'LineWidth', 1.5); % Plot mean power
+        hold on;
+        % Adding shading for SEM
+        fill([time_points, fliplr(time_points)], [mean_power+sem_power, fliplr(mean_power-sem_power)], ...
+             [0.9 0.9 0.9], 'linestyle', 'none'); % Add shading for SEM
+        alpha(0.5); % Make shading semi-transparent
+        hold off;
+        
+        title([band{3} ' Band']);
+        xlabel('Time relative to event (s)');
+        ylabel('Mean Power (log unit)');
+        xlim([-pre_event_time, post_event_time]);
+        grid on; % Add grid
+    end
+end
+
 
 %% Get just RR for each HRB event
 % Calculate RR intervals from the filtered_RR_time data
@@ -2309,6 +2401,209 @@ for stage_idx = 1:length(NE_trough_variables)
     
     hold off;
     title([event_name ' NE (' num2str(num_events) ' Events)']);
+    ylabel('NE Activity');
+    xlabel('Time (s)');
+    xlim([-30, 60]);
+end
+%% Same as above but with EEG as a line
+% Define power bands and their corresponding titles
+power_bands = { {0.5, 1, 'SO'}, {1, 4, 'Delta'}, {4, 8, 'Theta'}, {8, 15, 'Sigma'}, {15, 30, 'Beta'} };
+
+NE_fs = signal_fs; % for fiber photometry
+EMG_fs = EEG_fs; % for EMG and EEG
+EEG_bands_fs = length(T)/T(end); % for EEG bands
+RR = resampled_RR_linear;
+RR_fs = new_fs;
+RR_time = new_time_vector;
+
+% Define epoch start and end times for both RR intervals and EEG bands
+epoc_start = 30; % seconds before event
+epoc_end = 60; % seconds after event
+
+% Calculate the expected length of each epoch
+epoch_length = round((epoc_end + epoc_start) * NE_fs);
+
+% Calculate lengths and time vectors for epochs
+max_epoch_length = ceil((epoc_start + epoc_end) * (1 / median(diff(RR_time)))); %last part is RR_fs
+epoc_FPtime_RR = linspace(-epoc_start, epoc_end, max_epoch_length);
+epoch_times_EEG = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * EEG_bands_fs));
+mid_point = ceil(epoc_start * RR_fs);  % This should be the index of the event time
+total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+
+
+% Sleep stage variables and titles
+% NE_trough_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
+% titles = {'NE troughs NREM excl MA', 'NE troughs NREM incl MA', 'NE troughs Wake', 'NE troughs REM'};
+
+%HRB_variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time};
+%titles = {'HRB NREM excl MA', 'HRB NREM incl MA', 'HRB Wake', 'HRB REM'};
+
+pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
+titles = {'NE troughs NREM', 'NE troughs NREM to MA Transition', 'NE troughs NREM to Wake Transition', 'NE troughs REM to Wake Transition'};
+
+% Assuming all necessary variables are defined and calculate_power_bands_PSD is correctly implemented
+for stage_idx = 1:length(pklocs_variables)
+    figure; % One figure per sleep stage
+    sgtitle([titles{stage_idx} ' - EEG Power Bands']);
+    
+    event_type = pklocs_variables{stage_idx};
+    event_name = titles{stage_idx};  % Current event name for titles
+    num_events = length(event_type); % Assuming this is correctly calculated elsewhere
+    
+    for band_idx = 1:length(power_bands)
+        band = power_bands{band_idx};
+        %F is defined in the power analysis section
+        band_freq_indices = F >= band{1} & F <= band{2}; % Find indices of frequencies within the band
+        
+        % Preallocate arrays for mean power and SEM
+        mean_power = [];
+        sem_power = [];
+        time_points = -epoc_start:epoc_end; % Vector of time points relative to each event
+        
+        for t = 1:length(time_points)
+            time_point = time_points(t);
+            %time_spectrogram_zero is defined in the power analysis section
+            relevant_times = find(time_spectrogram_zero >= time_point-epoc_start & time_spectrogram_zero <= time_point+epoc_end); % Find indices of times within the window
+            
+            if ~isempty(relevant_times)
+            %filtered_mean_spectrogram is defined in the power analysis section
+                power_values = filtered_mean_spectrogram(band_freq_indices, relevant_times); % Extract power values for the band and time
+                mean_power(t) = mean(power_values(:)); % Compute mean power
+                sem_power(t) = std(power_values(:)) / sqrt(numel(power_values)); % Compute SEM
+            else
+                mean_power(t) = NaN; % Assign NaN if no relevant times found
+                sem_power(t) = NaN;
+            end
+        end
+        
+        subplot(length(power_bands) + 2, 1, band_idx + 2);
+        
+        % Plotting mean power as a line
+        plot(time_points, mean_power, 'LineWidth', 1.5); % Plot mean power
+        hold on;
+        % Adding shading for SEM
+        fill([time_points, fliplr(time_points)], [mean_power+sem_power, fliplr(mean_power-sem_power)], ...
+             [0 1 0], 'linestyle', 'none', 'FaceAlpha', 0.3); % Add shading for SEM
+        hold off;
+        
+        title([band{3} ' Band']);
+        xlabel('Time relative to event (s)');
+        ylabel('Mean Power (log)');
+        xlim([-epoc_start, epoc_end]);
+        grid on; % Add grid
+    end
+
+    % Since num_events is used before the loop, initialize RR_collector based on event_type length
+    RR_collector = NaN(max_epoch_length, length(event_type));
+
+    for i = 1:length(event_type)
+        HRB_i = event_type(i);
+
+        if HRB_i < RR_time(1) + epoc_start || HRB_i > RR_time(end) - epoc_end
+            disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
+            continue;  % Skip this event
+        end
+
+        [~, event_idx] = min(abs(RR_time - HRB_i));  % Find the event index in RR_time
+
+        epoch_start_idx = max(event_idx - mid_point + 1, 1);
+        epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
+
+        if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
+            RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
+        end
+
+    end
+    mean_filtered_RR_epocs = nanmean(RR_collector, 2);
+    
+    % Add shading for SE
+    % Calculate the standard deviation while ignoring NaNs
+    RR_std = nanstd(RR_collector, 0, 2);
+    
+    % Calculate the number of non-NaN observations for each time point to use in the SEM calculation
+    nonNaN_counts_RR = sum(~isnan(RR_collector), 2);
+    
+    % Calculate SEM, protecting against division by zero for time points with no valid data
+    RR_sem = RR_std ./ sqrt(nonNaN_counts_RR);
+
+    % Plot RR intervals as the first subplot
+    subplot(length(power_bands) + 2, 1, 1); % Allocate space for RR interval plot at the top
+    % Create a new figure for each plot
+    plot(epoc_FPtime_RR, mean_filtered_RR_epocs, 'LineWidth', 1);
+    hold on;
+    fill([epoc_FPtime_RR, fliplr(epoc_FPtime_RR)], [mean_filtered_RR_epocs + RR_sem', fliplr(mean_filtered_RR_epocs - RR_sem')], 'r', 'FaceAlpha', 0.3); % Fill between upper and lower bounds
+    plot([0 0], ylim, 'r--');  % Red dotted line at timepoint 0
+    hold off;
+    title([' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
+    ylabel('RR interval');
+    xlabel('Time (s)');
+    xlim([-30, 60]);
+    % Note: This section will use epoc_FPtime_RR, RR_time, and RR with modifications to fit into the subplot.
+     
+    % Pre-allocate NE_peak_epoc_collector with NaNs
+        % Assuming `length(HRB_variables{stage_idx})` gives the number of events for the current sleep stage
+        NE_peak_epoc_collector = NaN(length(event_type), epoch_length);
+        
+        for i = 1:length(event_type)
+            NEpk_i = event_type(i);
+            if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
+                continue;
+            end
+            
+            % Calculate rounded indices for start and end of the epoch
+            start_idx = round((NEpk_i - epoc_start) * NE_fs);
+            end_idx = round((NEpk_i + epoc_end) * NE_fs);
+            
+            % Ensure indices are within the bounds of the delta465_filt_2 array
+            start_idx = max(start_idx, 1);
+            end_idx = min(end_idx, length(delta465_filt_2));
+            
+            % Extract the epoch, adjusting for possible index out-of-bounds
+            epoch_length_actual = end_idx - start_idx + 1;
+            NEpk_epoc_i = delta465_filt_2(start_idx:end_idx);
+            
+            % Fill the current row of NE_peak_epoc_collector, adjusting for potential length differences
+            NE_peak_epoc_collector(i, 1:epoch_length_actual) = NEpk_epoc_i;
+        end
+    
+    % Calculate the expected length of each epoch based on the adjusted sampling frequency
+    epoch_length = round((epoc_end + epoc_start) * NE_fs);
+    
+    % Adjust epoc_FPtime_NE to match this epoch length
+    epoc_FPtime_NE = linspace(-epoc_start, epoc_end, epoch_length);
+    
+    % Assuming NE_peak_epoc_collector has been correctly filled as per the previous steps
+    mean_NEpk_epocs = nanmean(NE_peak_epoc_collector, 1);
+    
+    % Correctly adjust epoc_FPtime_NE to match the epoch length
+    epoc_FPtime_NE = linspace(-epoc_start, epoc_end, length(mean_NEpk_epocs));
+    
+    % Calculate standard error of the mean (SEM) for shading
+    % Calculate the standard deviation while ignoring NaNs for NE activity
+    NE_std = nanstd(NE_peak_epoc_collector, 0, 1);
+    
+    % Calculate the number of non-NaN observations for each time point
+    nonNaN_counts_NE = sum(~isnan(NE_peak_epoc_collector), 1);
+    
+    % Calculate SEM for NE activity, with protection against division by zero
+    NE_sem = NE_std ./ sqrt(nonNaN_counts_NE);
+
+    % Plot for NE activity
+    subplot(length(power_bands) + 2, 1, 2);
+    hold on;
+    
+    % Plotting the mean NEpk epochs
+    plot(epoc_FPtime_NE, mean_NEpk_epocs, 'LineWidth', 1); 
+    
+    % Add shading for SEM
+    fill([epoc_FPtime_NE, fliplr(epoc_FPtime_NE)], [mean_NEpk_epocs + NE_sem, fliplr(mean_NEpk_epocs - NE_sem)], 'b', 'linestyle', 'none', 'FaceAlpha', 0.3);
+    
+    % Ensure the line at x=0 is correctly drawn
+    current_ylim = ylim; % Get current y-axis limits
+    plot([0 0], ylim, 'r--');  % Red dotted line at timepoint 0
+    
+    hold off;
+    title([' NE (' num2str(num_events) ' Events)']);
     ylabel('NE Activity');
     xlabel('Time (s)');
     xlim([-30, 60]);
