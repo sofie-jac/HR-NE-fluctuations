@@ -1464,29 +1464,43 @@ for idx = 1:length(pklocs_variables)
     
     linkaxes([subplot(4, 1, 1), subplot(4, 1, 2), subplot(4, 1, 3), subplot(4, 1, 4)], 'x');
 end
-%% Get time averaged plot NE and EEG 60 sec after
+%% MAIN PLOT- Get time averaged plot NE and EEG 60 sec after
 
 % Sampling frequencies and epoch definitions
 NE_fs = signal_fs; % for fiber photometry
 EEG_bands_fs = length(T)/T(end); % for EEG bands
+RR_fs = new_fs;
+RR = resampled_RR_pchip;
+RR_time = new_time_vector;
 epoc_start = 30; % seconds before event
 epoc_end = 60; % seconds after event
+max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+
+power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
 
 % Sleep stage variables and titles
 NE_trough_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
 %titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
+%main_title = 'Averaged Activity During NE Troughs';
 
-pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
-titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
+% pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
+% titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
 
+HRB_variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time};
+titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
+main_title = 'Averaged Activity During HRB';
+
+%Add in the time variable for plotting
 epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
+epoc_FPtime_EEG_bands = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * EEG_bands_fs));
+epoc_FPtime_RR = linspace(-epoc_start, epoc_end, max_epoch_length);
 
 % Initialize the figure
 figure;
 
 % Iterate over each sleep stage and its NE trough variables
-for stage_idx = 1:length(pklocs_variables)
-    event_type = pklocs_variables{stage_idx}; % Select the current event type
+for stage_idx = 1:length(HRB_variables)
+    event_type = HRB_variables{stage_idx}; % Select the current event type
     event_name = titles{stage_idx}; % Current event name for titles
     num_events = length(event_type); % Number of events for the current sleep stage
     
@@ -1498,6 +1512,13 @@ for stage_idx = 1:length(pklocs_variables)
     Sigma_collector = [];
     Beta_collector = [];
 
+        % Extract power for specified bands
+    band_powers = cell(1, length(power_bands));
+    for b = 1:length(power_bands)
+        freq_range = power_bands{b};
+        band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
+    end
+
     % Extract NE and EEG band epochs for the current sleep stage
     for i = 1:length(event_type)
         NEpk_i = event_type(i);
@@ -1508,6 +1529,22 @@ for stage_idx = 1:length(pklocs_variables)
         % Extract NE epochs
         NEpk_epoc_i = delta465_filt_2((NEpk_i - epoc_start) * NE_fs : (NEpk_i + epoc_end) * NE_fs);
         NE_peak_epoc_collector = [NE_peak_epoc_collector; NEpk_epoc_i];
+
+        HRB_i = event_type(i);
+        if HRB_i < RR_time(1) + epoc_start || HRB_i > RR_time(end) - epoc_end
+            disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
+            continue;  % Skip this event
+        end
+
+        [~, event_idx] = min(abs(RR_time - HRB_i));  % Find the event index in filtered_RR_time
+
+        epoch_start_idx = max(event_idx - mid_point + 1, 1);
+        epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
+
+        if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
+            RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
+        end
+
         
         % Extract epochs for EEG bands
         for b = 1:length(band_powers)
@@ -1527,8 +1564,10 @@ for stage_idx = 1:length(pklocs_variables)
         end
     end
     
+
     % Calculate mean of epochs for NE and EEG bands
     mean_NEpk_epocs = nanmean(NE_peak_epoc_collector, 1);
+    mean_filtered_RR_epocs = nanmean(RR_collector, 2);
     mean_SO_pk_epocs = nanmean(SO_collector, 1);
     mean_Delta_pk_epocs = nanmean(Delta_collector, 1);
     mean_Theta_pk_epocs = nanmean(Theta_collector, 1);
@@ -1536,19 +1575,29 @@ for stage_idx = 1:length(pklocs_variables)
     mean_Beta_pk_epocs = nanmean(Beta_collector, 1);
     
     % Plotting NE data
-    subplot_position_ne = (stage_idx-1)*2 + 1;
-    subplot(4, 2, subplot_position_ne);
-    plot(epoc_FPtime_NE, mean_NEpk_epocs);
+    subplot_position_ne = (stage_idx-1)*3 + 1;
+    subplot(4, 3, subplot_position_ne);
     hold on;
+    plot(epoc_FPtime_NE, mean_NEpk_epocs);
     plot([0 0], ylim, 'r--'); % Red dotted line at timepoint 0
     hold off;
     title([event_name ' NE (' num2str(num_events) ' Events)']); % Including number of events in the title
     ylabel('NE Activity');
     xlim([-30, 60]);
 
+    subplot_idx_RR = subplot_position_ne + 1;  % Odd positions for RR
+    subplot(4, 3, subplot_idx_RR);
+    plot(epoc_FPtime_RR, mean_filtered_RR_epocs, 'Color', [0.8500 0.3250 0.0980]);
+    hold on;
+    plot([0 0], ylim, 'r--');  % Red dotted line at timepoint 0
+    hold off;
+    title([event_name ' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
+    ylabel('RR interval');
+    xlim([-30, 60]);
+
     % Plotting EEG bands data
-    subplot_position_eeg = subplot_position_ne + 1;
-    subplot(4, 2, subplot_position_eeg);
+    subplot_position_eeg = subplot_position_ne + 2;
+    subplot(4, 3, subplot_position_eeg);
     hold on;
     plot(epoc_FPtime_EEG_bands, mean_SO_pk_epocs, 'DisplayName', 'SO');
     plot(epoc_FPtime_EEG_bands, mean_Delta_pk_epocs, 'DisplayName', 'Delta');
@@ -1557,11 +1606,12 @@ for stage_idx = 1:length(pklocs_variables)
     plot(epoc_FPtime_EEG_bands, mean_Beta_pk_epocs, 'DisplayName', 'Beta');
     plot([0 0], ylim, 'r--'); % Red dotted line at timepoint 0
     hold off;
-    title([event_name ' EEG Bands']);
+    title([event_name ' EEG Bands (' num2str(length(event_type)) ' Events)']);
     legend({'SO', 'delta', 'theta', 'sigma', 'beta'});
     ylabel('Power');
     xlim([-30, 60]);
     legend;
+    set(gcf,'color','white')
     
     % Adjusting the subplot index for column placement
     if stage_idx == 2 % After plotting the second sleep stage, switch to second column
@@ -1572,7 +1622,7 @@ for stage_idx = 1:length(pklocs_variables)
 end
 
 % Adjust overall plot settings
-sgtitle('Averaged NE Activity and EEG Bands');
+sgtitle(main_title);
 
 %% Get HRB_time for each sleep stage
 % Define sleep stages and their periods
@@ -2036,39 +2086,38 @@ for i = 1:length(NE_trough_variables)
     
     for band_idx = 1:length(power_bands)
         band = power_bands{band_idx};
-        %F is defined in the power analysis section
         band_freq_indices = F >= band{1} & F <= band{2}; % Find indices of frequencies within the band
         
-        % Preallocate arrays for mean power and SEM
-        mean_power = [];
-        sem_power = [];
-        time_points = -pre_event_time:post_event_time; % Vector of time points relative to each event
-        
-        for t = 1:length(time_points)
-            time_point = time_points(t);
-            %time_spectrogram_zero is defined in the power analysis section
-            relevant_times = find(time_spectrogram_zero >= time_point-pre_event_time & time_spectrogram_zero <= time_point+post_event_time); % Find indices of times within the window
+        % Initialize arrays for mean power and SEM
+        all_event_power_values = []; % This will store the power values for all events
+
+        for event_idx = 1:length(events)
+            event_time = events(event_idx);
+            % Find indices of times within the window around the current event
+            event_time_indices = find(time_spectrogram_zero >= (event_time - pre_event_time) & time_spectrogram_zero <= (event_time + post_event_time));
             
-            if ~isempty(relevant_times)
-            %filtered_mean_spectrogram is defined in the power analysis section
-                power_values = filtered_mean_spectrogram(band_freq_indices, relevant_times); % Extract power values for the band and time
-                mean_power(t) = mean(power_values(:)); % Compute mean power
-                sem_power(t) = std(power_values(:)) / sqrt(numel(power_values)); % Compute SEM
-            else
-                mean_power(t) = NaN; % Assign NaN if no relevant times found
-                sem_power(t) = NaN;
+            if ~isempty(event_time_indices)
+                % Extract power values for the band and time around the current event
+                event_power_values = filtered_mean_spectrogram(band_freq_indices, event_time_indices);
+                all_event_power_values = [all_event_power_values, event_power_values]; % Concatenate power values from each event
             end
         end
+
+        % Now calculate mean and SEM across all events
+        mean_power = mean(all_event_power_values, 2).'; % Compute mean power across all events and transpose
+        sem_power = std(all_event_power_values, 0, 2).' / sqrt(size(all_event_power_values, 2)); % Compute SEM across all events and transpose
+        
+        % Ensure time_points has the same length as mean_power and sem_power
+        time_points = linspace(-pre_event_time, post_event_time, length(mean_power)); % time_points is now a row vector
         
         subplot(length(power_bands), 1, band_idx);
         
         % Plotting mean power as a line
-        plot(time_points, mean_power, 'LineWidth', 1.5); % Plot mean power
+        plot(time_points, mean_power, 'LineWidth', 1.5, 'Color', [0.4660 0.6740 0.1880]); % Plot mean power
         hold on;
         % Adding shading for SEM
         fill([time_points, fliplr(time_points)], [mean_power+sem_power, fliplr(mean_power-sem_power)], ...
-             [0.9 0.9 0.9], 'linestyle', 'none'); % Add shading for SEM
-        alpha(0.5); % Make shading semi-transparent
+             'g', 'linestyle', 'none', 'FaceAlpha', 0.3); % Add shading for SEM with semi-transparent green
         hold off;
         
         title([band{3} ' Band']);
@@ -2452,34 +2501,34 @@ for stage_idx = 1:length(pklocs_variables)
     
     for band_idx = 1:length(power_bands)
         band = power_bands{band_idx};
-        %F is defined in the power analysis section
         band_freq_indices = F >= band{1} & F <= band{2}; % Find indices of frequencies within the band
         
-        % Preallocate arrays for mean power and SEM
-        mean_power = [];
-        sem_power = [];
-        time_points = -epoc_start:epoc_end; % Vector of time points relative to each event
-        
-        for t = 1:length(time_points)
-            time_point = time_points(t);
-            %time_spectrogram_zero is defined in the power analysis section
-            relevant_times = find(time_spectrogram_zero >= time_point-epoc_start & time_spectrogram_zero <= time_point+epoc_end); % Find indices of times within the window
+        % Initialize arrays for mean power and SEM
+        all_event_power_values = []; % This will store the power values for all events
+
+        for event_idx = 1:length(event_type)  % <-- Here is where the typo was fixed
+            event_time = event_type(event_idx);  % <-- Correct variable name
+            % Find indices of times within the window around the current event
+            event_time_indices = find(time_spectrogram_zero >= (event_time - pre_event_time) & time_spectrogram_zero <= (event_time + post_event_time));
             
-            if ~isempty(relevant_times)
-            %filtered_mean_spectrogram is defined in the power analysis section
-                power_values = filtered_mean_spectrogram(band_freq_indices, relevant_times); % Extract power values for the band and time
-                mean_power(t) = mean(power_values(:)); % Compute mean power
-                sem_power(t) = std(power_values(:)) / sqrt(numel(power_values)); % Compute SEM
-            else
-                mean_power(t) = NaN; % Assign NaN if no relevant times found
-                sem_power(t) = NaN;
+            if ~isempty(event_time_indices)
+                % Extract power values for the band and time around the current event
+                event_power_values = filtered_mean_spectrogram(band_freq_indices, event_time_indices);
+                all_event_power_values = [all_event_power_values, event_power_values]; % Concatenate power values from each event
             end
         end
+
+        % Now calculate mean and SEM across all events
+        mean_power = mean(all_event_power_values, 2).'; % Compute mean power across all events and transpose
+        sem_power = std(all_event_power_values, 0, 2).' / sqrt(size(all_event_power_values, 2)); % Compute SEM across all events and transpose
         
+        % Ensure time_points has the same length as mean_power and sem_power
+        time_points = linspace(-pre_event_time, post_event_time, length(mean_power)); % time_points is now a row vector
+
         subplot(length(power_bands) + 2, 1, band_idx + 2);
         
         % Plotting mean power as a line
-        plot(time_points, mean_power, 'LineWidth', 1.5); % Plot mean power
+        plot(time_points, mean_power, 'LineWidth', 1.5, 'Color', [0.4660 0.6740 0.1880]); % Plot mean power
         hold on;
         % Adding shading for SEM
         fill([time_points, fliplr(time_points)], [mean_power+sem_power, fliplr(mean_power-sem_power)], ...
@@ -2519,27 +2568,38 @@ for stage_idx = 1:length(pklocs_variables)
     % Add shading for SE
     % Calculate the standard deviation while ignoring NaNs
     RR_std = nanstd(RR_collector, 0, 2);
-    
+        
     % Calculate the number of non-NaN observations for each time point to use in the SEM calculation
     nonNaN_counts_RR = sum(~isnan(RR_collector), 2);
-    
+        
     % Calculate SEM, protecting against division by zero for time points with no valid data
     RR_sem = RR_std ./ sqrt(nonNaN_counts_RR);
-
-    upper_SEM_bound = mean_filtered_RR_epocs + RR_sem';
-    lower_SEM_bound = mean_filtered_RR_epocs - RR_sem';
+    
+    % Calculate upper and lower SEM bounds
+    upper_SEM_bound = mean_filtered_RR_epocs + RR_sem;
+    lower_SEM_bound = mean_filtered_RR_epocs - RR_sem;
+    
+    % Transpose upper and lower SEM bounds to match the orientation of epoc_FPtime_RR
+    upper_SEM_bound = upper_SEM_bound';
+    lower_SEM_bound = lower_SEM_bound';
+    
+    % Prepare the fill area coordinates
     fill_area_x = [epoc_FPtime_RR, fliplr(epoc_FPtime_RR)];
     fill_area_y = [upper_SEM_bound, fliplr(lower_SEM_bound)];
-
+    
+    % Ensure the fill area has the correct dimensions
+    if numel(epoc_FPtime_RR) ~= numel(upper_SEM_bound)
+        error('SEM bounds and time vector do not match in length.');
+    end
+    
     % Plot RR intervals as the first subplot
     subplot(length(power_bands) + 2, 1, 1); % Allocate space for RR interval plot at the top
-    % Create a new figure for each plot
     plot(epoc_FPtime_RR, mean_filtered_RR_epocs, 'LineWidth', 1);
     hold on;
-    fill(fill_area_x, fill_area_y, 'r', 'FaceAlpha', 0.3);
-    plot([0 0], ylim, 'r--');  % Red dotted line at timepoint 0
+    fill(fill_area_x, fill_area_y, 'r', 'FaceAlpha', 0.3); % Fill between upper and lower bounds
+    plot([0 0], ylim, 'r--'); % Red dotted line at timepoint 0
     hold off;
-    title([' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
+    title([' RR interval (' num2str(length(event_type)) ' Events)']);
     ylabel('RR interval');
     xlabel('Time (s)');
     xlim([-30, 60]);
@@ -2677,12 +2737,12 @@ for i = 1:length(power_spectrums)
     all_powers(:, i) = power_spectrums{i};
 end
 
-% Plotting
-figure;
-plot(freqs, mean_power_spectrum);
-xlabel('Frequency (Hz)');
-ylabel('Power Spectrum (Mean across all windows)');
-title('Average Power Spectrum Across All Windows');
+% % Plotting
+% figure;
+% plot(freqs, mean_power_spectrum);
+% xlabel('Frequency (Hz)');
+% ylabel('Power Spectrum (Mean across all windows)');
+% title('Average Power Spectrum Across All Windows');
 
 % Calculate the mean power spectrum across all windows
 mean_power_spectrum = mean(all_powers, 2);
