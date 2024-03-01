@@ -2526,12 +2526,17 @@ for stage_idx = 1:length(pklocs_variables)
     % Calculate SEM, protecting against division by zero for time points with no valid data
     RR_sem = RR_std ./ sqrt(nonNaN_counts_RR);
 
+    upper_SEM_bound = mean_filtered_RR_epocs + RR_sem';
+    lower_SEM_bound = mean_filtered_RR_epocs - RR_sem';
+    fill_area_x = [epoc_FPtime_RR, fliplr(epoc_FPtime_RR)];
+    fill_area_y = [upper_SEM_bound, fliplr(lower_SEM_bound)];
+
     % Plot RR intervals as the first subplot
     subplot(length(power_bands) + 2, 1, 1); % Allocate space for RR interval plot at the top
     % Create a new figure for each plot
     plot(epoc_FPtime_RR, mean_filtered_RR_epocs, 'LineWidth', 1);
     hold on;
-    fill([epoc_FPtime_RR, fliplr(epoc_FPtime_RR)], [mean_filtered_RR_epocs + RR_sem', fliplr(mean_filtered_RR_epocs - RR_sem')], 'r', 'FaceAlpha', 0.3); % Fill between upper and lower bounds
+    fill(fill_area_x, fill_area_y, 'r', 'FaceAlpha', 0.3);
     plot([0 0], ylim, 'r--');  % Red dotted line at timepoint 0
     hold off;
     title([' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
