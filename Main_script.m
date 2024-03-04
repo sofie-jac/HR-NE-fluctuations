@@ -147,6 +147,49 @@ ds_sec_signal_2 = downsample(sec_signal_2, ds_factor_FP); % for plotting
 % Z-score
 delta465_Zscore_1 = (delta465_filt_1-mean(delta465_filt_1))/std(delta465_filt_1);
 delta465_Zscore_2 = (delta465_filt_2-mean(delta465_filt_2))/std(delta465_filt_2);
+%% Segment NE into hourly signals
+
+% Parse start and end time from your data
+startTimeStr = data_FPrig.info.utcStartTime;
+endTimeStr = data_FPrig.info.utcStopTime;
+
+% Convert time strings to datetime format
+startTime = datetime(startTimeStr, 'InputFormat', 'HH:mm:ss');
+endTime = datetime(endTimeStr, 'InputFormat', 'HH:mm:ss');
+
+% Round start time to the next full hour and end time to the previous full hour
+startTimeNextHour = dateshift(startTime, 'start', 'hour', 'next');
+endTimePreviousHour = dateshift(endTime, 'end', 'hour', 'previous');
+
+% Calculate total number of full hours in the recording
+totalFullHours = hours(endTimePreviousHour - startTimeNextHour);
+
+% Initialize the start time for the first segment
+currentSegmentStart = startTimeNextHour;
+
+% Loop through each full hour and create segments
+for i = 1:totalFullHours
+    % Calculate the end time for the current segment
+    currentSegmentEnd = currentSegmentStart + hours(1);
+    
+    % Convert segment start and end time to seconds from start of recording
+    segmentStartSec = seconds(currentSegmentStart - startTime);
+    segmentEndSec = seconds(currentSegmentEnd - startTime);
+    
+    % Convert segment start and end times to indices
+    segmentStartIndex = round(segmentStartSec * signal_fs) + 1;
+    segmentEndIndex = round(segmentEndSec * signal_fs);
+    
+    % Extract the segment for delta465_filt_2 and sec_signal_2
+    segmentName = sprintf('delta465_filt_2_%02d', hour(currentSegmentStart));
+    eval([segmentName ' = delta465_filt_2(segmentStartIndex:segmentEndIndex);']);
+    
+    segmentTimeName = sprintf('sec_signal_2_%02d', hour(currentSegmentStart));
+    eval([segmentTimeName ' = sec_signal_2(segmentStartIndex:segmentEndIndex);']);
+    
+    % Update the start time for the next segment
+    currentSegmentStart = currentSegmentEnd;
+end
 
 %% Determine movement peak threshold through plotting
 
@@ -818,6 +861,17 @@ NREMinclMA_binary_vector_cut = NREMinclMA_binary_vector(round(TTL_EEG_onset+1):e
 [NREMinclMA_onset_cut, NREMinclMA_offset_cut] = binary_to_OnOff(NREMinclMA_binary_vector_cut);
 NREMinclMA_duration_cut = NREMinclMA_offset_cut-NREMinclMA_onset_cut;
 NREMinclMA_periods_cut = [NREMinclMA_onset_cut NREMinclMA_offset_cut];
+%% Devide the 4 sleep phase variables into the hours in which they occured
+
+% Assuming startTimeNextHour and endTimePreviousHour are defined as before
+hoursList = startTimeNextHour:hours(1):endTimePreviousHour;
+secSignalHours = hours(hoursList - startTimeNextHour) * 3600; % Convert hours to seconds
+
+% Example call for the REM_periods_cut variable
+NREMinclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMinclMA_periods_cut, secSignalHours, startTimeNextHour);
+NREMexclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMexclMA_periods_cut, secSignalHours, startTimeNextHour);
+REM_hourlySegments = segmentSleepDataIntoHours(REM_periods_cut, secSignalHours, startTimeNextHour);
+wake_hourlySegments = segmentSleepDataIntoHours(wake_periods_cut, secSignalHours, startTimeNextHour);
 
 %% Plot NE, EMG, EEG and HRV for exloration
 
@@ -1790,16 +1844,22 @@ sgtitle('Averaged RR Interval Activity and EEG Bands for Different Sleep Stages'
 %% PSD on NE trace
 
 signal_trace = delta465_filt_2; %             <<< Specify which trace the analysis should be used for
-sec_signal = sec_signal_2
+sec_signal = sec_signal_2;
 fs = signal_fs; %                           <<< Specify sampling frequency of your signal trace
 min_period_dur = 120; %                     <<< Specify minimum bout duration for bout to be included in the analysis
 
 sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
 titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
 colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+titles_table = {'NREM_incl_MA', 'NREM_excl_MA', 'REM', 'Wake'};
 
 max_freq = 0.1;
 sample_pr_sec = 0.0005;
+
+results = struct('sleep_type', {}, 'Name', {}, 'PeakPowerValue', {}, 'PeakFrequency', {}, ...
+                 'MinFrequency', {}, 'Freq25Quartile', {}, 'MedianFrequency', {}, ...
+                 'Freq75Quartile', {}, 'Freq95Quartile', {}, 'MaxFrequency', {}, ...
+                 'AUC', {}, 'TotalPower', {});
 
 figure;
 hold on;
@@ -1881,6 +1941,42 @@ for stage_idx = 1:length(sleep_variables)
 
     plot(prism_freq_iso,prism_psd_iso, Color= colors{stage_idx}, DisplayName = titles{stage_idx})
 
+    % Calculate additional metrics based on 'weighted_mean_PXX_iso' and 'f'
+    peak_power_value = PXX_iso_pk_mean;
+    peak_frequency = PXX_iso_f_mean;
+    min_frequency = f(find(weighted_mean_PXX_iso > 0, 1, 'first'));
+    max_frequency = f(find(weighted_mean_PXX_iso > 0, 1, 'last'));
+    auc = trapz(f, weighted_mean_PXX_iso);
+    total_power = sum(weighted_mean_PXX_iso); % Sum of all powers
+    
+    % Calculate quartiles based on cumulative distribution of power
+    cum_dist = cumtrapz(f, weighted_mean_PXX_iso) / auc; % Normalize to get CDF
+    freq25Quartile = interp1(cum_dist, f, 0.25, 'linear', 'extrap');
+    median_frequency = interp1(cum_dist, f, 0.5, 'linear', 'extrap');
+    freq75Quartile = interp1(cum_dist, f, 0.75, 'linear', 'extrap');
+    freq95Quartile = interp1(cum_dist, f, 0.95, 'linear', 'extrap');
+    
+    % Determine sleep_type from titles_table
+    current_title = titles_table{stage_idx};
+    if startsWith(current_title, 'NREM_incl')
+        sleep_type = 'NREM_incl_MA';
+    elseif startsWith(current_title, 'NREM_excl')
+        sleep_type = 'NREM_excl_MA';
+    elseif startsWith(current_title, 'REM')
+        sleep_type = 'REM';
+    elseif startsWith(current_title, 'Wake')
+        sleep_type = 'Wake';
+    else
+        sleep_type = 'Unknown';
+    end
+    
+    % Store the calculated values in the results structure
+    results(stage_idx) = struct('sleep_type', sleep_type, 'Name', titles_table{stage_idx}, ...
+                                'PeakPowerValue', peak_power_value, 'PeakFrequency', peak_frequency, ...
+                                'MinFrequency', min_frequency, 'Freq25Quartile', freq25Quartile, ...
+                                'MedianFrequency', median_frequency, 'Freq75Quartile', freq75Quartile, 'Freq95Quartile', freq95Quartile, ...
+                                'MaxFrequency', max_frequency, 'AUC', auc, 'TotalPower', total_power);
+
 end
 xlabel('frequency (Hz)');
 ylabel('PSD');
@@ -1889,6 +1985,7 @@ title('NE power across sleep stages')
 grid on;
 hold off;
 
+PSD_NE_table = struct2table(results);
 %% PSD on RR trace
 
 %Please ensure that filtered_RR_smooth and filtered_RR_time has been defined!
@@ -1902,7 +1999,7 @@ hold off;
 % sampling_hz = 0.002
 
 % Define the sampling frequency for R-R intervals - THIS IS RESAMPLED!!!
-signal_trace = resampled_RR_linear; %             <<< Specify which trace the analysis should be used for
+signal_trace = resampled_RR_pchip; %             <<< Specify which trace the analysis should be used for
 fs = new_fs; %                           <<< Specify sampling frequency of your signal trace
 min_period_dur = 180; %                     <<< Specify minimum bout duration for bout to be included in the analysis
 sec_signal = new_time_vector;
@@ -1912,6 +2009,8 @@ min_period_dur = 180; % Specify minimum bout duration for bout to be included in
 sleep_variables = {NREMinclMA_periods_cut, NREMexclMA_periods_cut, REM_periods_cut, wake_woMA_periods_cut};
 titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
 colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+titles_table = {'NREM_incl_MA', 'NREM_excl_MA', 'REM', 'Wake'};
+
 
 % sleep_variables = {NREMinclMA_periods_cut};
 % titles = {'NREM incl MA'};
@@ -1992,13 +2091,261 @@ for stage_idx = 1:length(sleep_variables)
     prism_freq_iso = f;
 
     plot(prism_freq_iso,prism_psd_iso, Color= colors{stage_idx}, DisplayName = titles{stage_idx})
+
+    % Total Power
+    total_power = sum(weighted_mean_PXX_iso);
+    
+    % Power in VLF, LF, HF bands and their percentages
+    vlf_range = f >= 0 & f < 0.15;
+    lf_range = f >= 0.15 & f < 1.5;
+    hf_range = f >= 1.5 & f <= 5;
+    
+    power_vlf = sum(weighted_mean_PXX_iso(vlf_range));
+    percent_vlf = (power_vlf / total_power) * 100;
+    
+    power_lf = sum(weighted_mean_PXX_iso(lf_range));
+    percent_lf = (power_lf / total_power) * 100;
+    
+    power_hf = sum(weighted_mean_PXX_iso(hf_range));
+    percent_hf = (power_hf / total_power) * 100;
+    
+    % AUC for total, VLF, LF, HF
+    auc_total = trapz(f, weighted_mean_PXX_iso);
+    auc_vlf = trapz(f(vlf_range), weighted_mean_PXX_iso(vlf_range));
+    auc_lf = trapz(f(lf_range), weighted_mean_PXX_iso(lf_range));
+    auc_hf = trapz(f(hf_range), weighted_mean_PXX_iso(hf_range));
+    
+    % Peak frequency calculation using 'findpeaks' for VLF, LF, HF ranges
+    [peaks_vlf, locs_vlf] = findpeaks(weighted_mean_PXX_iso(vlf_range));
+    [peaks_lf, locs_lf] = findpeaks(weighted_mean_PXX_iso(lf_range));
+    [peaks_hf, locs_hf] = findpeaks(weighted_mean_PXX_iso(hf_range));
+    
+    % VLF peak with the highest power
+    if ~isempty(peaks_vlf)
+        [~, max_peak_idx_vlf] = max(peaks_vlf); % Find index of the highest peak
+        peak_freq_vlf = f(vlf_range);
+        peak_freq_vlf = peak_freq_vlf(locs_vlf(max_peak_idx_vlf)); 
+    else
+        peak_freq_vlf = NaN; % In case no peak is found
+    end
+    
+    % LF peak with the highest power
+    if ~isempty(peaks_lf)
+        [~, max_peak_idx_lf] = max(peaks_lf); % Find index of the highest peak
+        peak_freq_lf = f(lf_range);
+        peak_freq_lf = peak_freq_lf(locs_lf(max_peak_idx_lf));
+    else
+        peak_freq_lf = NaN; % In case no peak is found
+    end
+    
+    % HF peak with the highest power
+    if ~isempty(peaks_hf)
+        [~, max_peak_idx_hf] = max(peaks_hf); % Find index of the highest peak
+        peak_freq_hf = f(hf_range);
+        peak_freq_hf = peak_freq_hf(locs_hf(max_peak_idx_hf));
+    else
+        peak_freq_hf = NaN; % In case no peak is found
+    end
+
+    % Set sleep_type based on titles_table
+    current_title = titles_table{stage_idx}; % Assuming stage_idx is your loop variable
+    if startsWith(current_title, 'NREM_incl')
+        sleep_type = 'NREM_incl_MA';
+    elseif startsWith(current_title, 'NREM_excl')
+        sleep_type = 'NREM_excl_MA';
+    elseif startsWith(current_title, 'REM')
+        sleep_type = 'REM';
+    elseif startsWith(current_title, 'Wake')
+        sleep_type = 'Wake';
+    else
+        sleep_type = 'Unknown'; % Fallback in case of an unexpected title
+        disp(['Unknown sleep type detected: ' current_title])
+    end
+
+    % Store the calculated values in the results structure
+    results(stage_idx) = struct('sleep_type', sleep_type, 'Name', titles_table{stage_idx}, 'TotalPower', total_power, ...
+                                'PowerVLF', power_vlf, 'PercentVLF', percent_vlf, ...
+                                'PowerLF', power_lf, 'PercentLF', percent_lf, ...
+                                'PowerHF', power_hf, 'PercentHF', percent_hf, ...
+                                'AUCTotal', auc_total, 'AUCVLF', auc_vlf, ...
+                                'AUCLF', auc_lf, 'AUCHF', auc_hf, ...
+                                'PeakFreqVLF', peak_freq_vlf, 'PeakFreqLF', peak_freq_lf, 'PeakFreqHF', peak_freq_hf);
 end
+
 xlabel('frequency (Hz)');
 ylabel('PSD');
 legend('show');
-title('RR power across sleep stages (linear interpolation)')
+title('RR power across sleep stages (pchip interpolation)')
 grid on;
 hold off;
+
+% Convert the structure to a table for easier viewing and manipulation
+PSD_RR_table = struct2table(results);
+%% PSD NE - hourerly
+
+% Assuming you have hourlySegments structures for each sleep variable as before
+hourlySegmentsVariables = {NREMinclMA_periods_cut_hourlySegments, NREMexclMA_periods_cut_hourlySegments, REM_hourlySegments, wake_hourlySegments};
+titles = {'NREM incl MA', 'NREM excl MA', 'REM', 'Wake'};
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+titles_table = {'NREM_incl_MA', 'NREM_excl_MA', 'REM', 'Wake'};
+
+max_freq = 0.1; % Maximum frequency for PSD
+sample_pr_sec = 0.0005; % Sampling resolution
+fs = signal_fs; % Sampling frequency
+min_period_dur = 120; % Minimum bout duration
+
+% Initialize the results array
+results = [];
+
+% Define variables for plotting outside the sleep stage loop
+allHours = unique(cellfun(@(x) str2double(extractAfter(x, 'h')), segmentFields));
+allSleepStages = titles;
+
+% Loop through each hour
+for hourIdx = 1:length(allHours)
+    currentHour = allHours(hourIdx);
+    
+    % Prepare for a new PSD plot for the current hour
+    figure;
+    hold on;
+    
+    % Loop through each sleep variable (stage)
+    for segIdx = 1:length(hourlySegmentsVariables)
+        hourlySegments = hourlySegmentsVariables{segIdx}; % Access sleep variable's hourly segments
+        segmentFields = fieldnames(hourlySegments); % Get names of the fields (hours)
+        currentHourField = sprintf('h%02d', currentHour); % Format current hour field name
+        
+        if isfield(hourlySegments, currentHourField)
+            currentHourData = hourlySegments.(currentHourField); % Data for the current hour
+
+        % Initialize variables for storing combined results of this hour
+        hourResults = [];
+        
+        % Initialize variables for each period's data analysis
+        PXX = [];
+        period_duration = [];
+        
+        % Loop through each period in the current hour's data
+        for i = 1:size(currentHourData, 1)
+            t1 = currentHourData(i, 1);
+            t2 = currentHourData(i, 2);
+            
+            tsamp1 = floor(t1*fs);
+            tsamp2 = floor(t2*fs);
+            
+            if tsamp2 > length(signal_trace)
+                tsamp2 = length(signal_trace);
+            end
+            
+            if (tsamp2 - tsamp1 + 1) < 6 || (tsamp2 - tsamp1) < min_period_dur*fs
+                continue; % Skip if too short for analysis
+            end
+            
+            period_signal = signal_trace(tsamp1:tsamp2);
+            period_length = (tsamp2 - tsamp1 + 1) / fs;
+            period_duration = [period_duration; period_length];
+            
+            detrended_signal = detrend(period_signal, 5); % Detrend and center
+            [pxx, f] = pwelch(detrended_signal, [], [], [0:sample_pr_sec:max_freq], fs);
+            
+            PXX = [PXX, pxx * period_length]; % Weight by period length
+        end
+        
+        % Skip to next if no valid data found
+        if isempty(PXX)
+            title(sprintf('No valid data for %s - Hour %02d', titles{segIdx}, currentHour));
+            hold off;
+            continue;
+        end
+        
+        % Aggregate and normalize PXX by total duration
+        weighted_mean_PXX = sum(PXX, 2) / sum(period_duration);
+        
+        % Plot the PSD
+        plot(f, 10*log10(weighted_mean_PXX), 'Color', colors{segIdx}, 'DisplayName', titles{segIdx});
+        xlabel('Frequency (Hz)');
+        ylabel('Power/Frequency (dB/Hz)');
+        title(sprintf('%s power across sleep stages - Hour %02d', titles{segIdx}, currentHour));
+        legend('show');
+        grid on;
+        hold off;
+        
+        % Collect results
+        % After computing weighted_mean_PXX and having the frequency vector 'f'
+        
+        % Peak power value and the frequency at the peak
+        % Use findpeaks to identify all peaks in the power spectrum
+       % Check if there are enough samples for findpeaks
+        if length(weighted_mean_PXX) >= 3
+            % Use findpeaks to identify all peaks in the power spectrum
+            [peaks, locs] = findpeaks(weighted_mean_PXX, f);
+            
+            % Check if any peaks were found
+            if ~isempty(peaks)
+                % If multiple peaks are found, take the one with the highest power value
+                [peakPower, highestPeakIdx] = max(peaks);
+                peakFrequency = locs(highestPeakIdx);
+            else
+                % If no peaks are found, use max to find the peak power and frequency
+                [peakPower, peakIdx] = max(weighted_mean_PXX);
+                peakFrequency = f(peakIdx);
+            end
+        else
+            % Not enough data for findpeaks, use max to find the peak power and frequency
+            [peakPower, peakIdx] = max(weighted_mean_PXX);
+            peakFrequency = f(peakIdx);
+        end
+        
+        % Minimal and maximal frequency with any power detected
+        minFrequency = f(find(weighted_mean_PXX > 0, 1, 'first'));
+        maxFrequency = f(find(weighted_mean_PXX > 0, 1, 'last'));
+        
+        % AUC of the power distribution
+        auc = trapz(f, weighted_mean_PXX);
+        
+        % Total Power (Sum of all PSD values)
+        totalPower = sum(weighted_mean_PXX);
+        
+        % Calculate quartiles and median of the frequency distribution
+        % Normalize weighted_mean_PXX to get a probability distribution
+        % Calculate quartiles and other statistics from weighted_mean_PXX and f
+        % Normalize weighted_mean_PXX to get a probability distribution for the quartile calculation
+        normalizedPXX = weighted_mean_PXX / sum(weighted_mean_PXX);
+        cumulativeDist = cumtrapz(f, normalizedPXX);
+        
+        freq25Quartile = interp1(cumulativeDist, f, 0.25, 'linear', 'extrap');
+        medianFrequency = interp1(cumulativeDist, f, 0.5, 'linear', 'extrap');
+        freq75Quartile = interp1(cumulativeDist, f, 0.75, 'linear', 'extrap');
+        freq95Quartile = interp1(cumulativeDist, f, 0.95, 'linear', 'extrap');
+        meanFrequency = sum(f .* normalizedPXX);
+        
+        % Append calculated metrics to the hourResults for the current sleep stage
+        hourResults(end+1) = struct(...
+            'Hour', currentHour, ...
+            'SleepStage', titles{segIdx}, ...
+            'PeakPowerValue', peakPower, ...
+            'PeakFrequency', peakFrequency, ...
+            'MinFrequency', minFrequency, ...
+            'MaxFrequency', maxFrequency, ...
+            'Freq25Quartile', freq25Quartile, ...
+            'MedianFrequency', medianFrequency, ...
+            'Freq75Quartile', freq75Quartile, ...
+            'Freq95Quartile', freq95Quartile, ...
+            'MeanFrequency', meanFrequency, ...
+            'AUC', auc, ...
+            'TotalPower', totalPower);
+    end
+end
+    % Finalize the plot for the current hour
+    title(sprintf('Power across sleep stages - Hour %02d', currentHour));
+    xlabel('Frequency (Hz)');
+    ylabel('Power/Frequency (dB/Hz)');
+    legend(allSleepStages);
+    hold off;
+end
+
+% Convert results to a table after finishing all hours and sleep stages
+PSD_NE_table_hourly = struct2table(hourResults);
 
 %% DEBUGGING
 NREMexclMA_periods_cut_HRB_time_short = NREMexclMA_periods_cut_HRB_time(1:5);
