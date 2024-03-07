@@ -35,6 +35,7 @@ Mouse_124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practic
 %test
 Mouse_3129_ctrl = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep\319_NE_As_sleep\319_NE_As_sleep_2020-07-21_12-07-19-593.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 
+%Mouse_168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep\168_sleep_data'};
 mouse = Mouse_124 ;
 %% load data
 
@@ -42,10 +43,8 @@ data_FPrig = TDTbin2mat(mouse{1}); % FP rig
 data_EEGrig= TDTbin2mat(mouse{2}); %EEG rig - might be the same as above
 %% extract channels
 
-signal_fs = data_FPrig.streams.(mouse{3}).fs; % sampling frequency for fiber photometry signal
-signal_465_1 = data_FPrig.streams.(mouse{3}).data; %signal
-signal_405_1 = data_FPrig.streams.(mouse{4}).data; %isosbetstic control
-%signal_560_FPrig = data_FPrig.streams.(mouse{5}).data; %red signal
+signal_fs = data_FPrig.streams.(mouse{6}).fs; % sampling frequency for fiber photometry signal
+% %signal_560_FPrig = data_FPrig.streams.(mouse{5}).data; %red signal
 
 signal_465_2 = data_FPrig.streams.(mouse{6}).data; %signal
 signal_405_2 = data_FPrig.streams.(mouse{7}).data; %isosbetstic control
@@ -75,9 +74,6 @@ if first_TTL_EEG<1
     onset_FP_EEG = 1;
 end
 
-signal_465_1 = signal_465_1(onset_FP:end);
-signal_405_1 = signal_405_1(onset_FP:end);
-
 signal_465_2 = signal_465_2(onset_FP:end);
 signal_405_2 = signal_405_2(onset_FP:end);
 
@@ -86,9 +82,6 @@ EMG = EMG(onset_FP_EEG:end);
 
 
 %% time signal
-
-fs_signal_1 = 1:1:length(signal_465_1);
-sec_signal_1 = fs_signal_1/signal_fs; % time vector for fiber photometry signal
 
 fs_signal_2 = 1:1:length(signal_465_2);
 sec_signal_2 = fs_signal_2/signal_fs; % time vector for fiber photometry signal
@@ -111,23 +104,6 @@ MeanFilter = ones(MeanFilterOrder,1)/MeanFilterOrder;
 MeanFilterOrder1 = 5000; % for smoothing
 MeanFilter1 = ones(MeanFilterOrder1,1)/MeanFilterOrder1;
 
-reg = polyfit_R2020a(signal_405_1(round(mouse{14}*signal_fs)), signal_465_1(round(mouse{14}*signal_fs)), 1);
-a = reg(1);
-b = reg(2);
-controlFit_465 = a.*signal_405_1 + b;
-controlFit_465 =  filtfilt(MeanFilter,1,double(controlFit_465));
-normDat = (signal_465_1 - controlFit_465)./controlFit_465;
-delta_465_1 = normDat * 100;
-
-% smoothing traces
-delta465_filt_1 = filtfilt(MeanFilter1,1,double(delta_465_1));
-delta465_filt_1 = detrend(delta465_filt_1);
-ds_factor_FP = 100; % also used for plotting later (section 9b)
-
-% downsampling traces for plotting
-ds_delta465_filt_1 = downsample(delta465_filt_1, ds_factor_FP);
-ds_sec_signal_1 = downsample(sec_signal_1, ds_factor_FP); % for plotting
-
 reg2 = polyfit_R2020a(signal_405_2(round(mouse{14}*signal_fs)), signal_465_2(round(mouse{14}*signal_fs)), 1);
 a2 = reg2(1);
 b2 = reg2(2);
@@ -140,13 +116,34 @@ delta_465_2 = normDat_2 * 100;
 delta465_filt_2 = filtfilt(MeanFilter,1,double(delta_465_2));
 ds_factor_FP = 100; % also used for plotting later (section 9b)
 
+
+
+%% 
+
 % downsampling traces for plotting
 ds_delta465_filt_2 = downsample(delta465_filt_2, ds_factor_FP);
 ds_sec_signal_2 = downsample(sec_signal_2, ds_factor_FP); % for plotting
 
-% Z-score
-delta465_Zscore_1 = (delta465_filt_1-mean(delta465_filt_1))/std(delta465_filt_1);
-delta465_Zscore_2 = (delta465_filt_2-mean(delta465_filt_2))/std(delta465_filt_2);
+% Design a bandpass filter
+bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+    'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
+    'SampleRate', EEG_fs);
+
+% Apply the bandpass filter to your EMG data
+filtered_EMG = filtfilt(bpFilt, EMG);
+%% Export EMG
+% Ensure both signals are column vectors and convert filtered_EMG to double
+sec_signal_EMG_col = sec_signal_EMG(:); % Convert to column vector if not already
+filtered_EMG_col = double(filtered_EMG(:)); % Convert to double and column vector
+
+% Combine into one variable with two columns
+combined_EMG = [sec_signal_EMG_col, filtered_EMG_col];
+% Define the filename
+filename = 'combined_EMG.txt';
+
+% Export the combined_signals matrix to a TXT file
+writematrix(combined_EMG, filename);
+
 %% Segment NE into hourly signals
 
 % Parse start and end time from your data
@@ -193,7 +190,7 @@ end
 
 %% Determine movement peak threshold through plotting
 
-plot(sec_signal_EMG, EMG, 'o-');  % 'o-' specifies markers and lines
+plot(sec_signal_EMG, EMG);  % 'o-' specifies markers and lines
 
 % Adding a horizontal line at mean + 3.5*SD
 mean_EMG = mean(EMG);
@@ -213,6 +210,109 @@ grid on;
 
 %% Determine HR and movement peaks
 
+% Initialize selected peaks storage
+selected_peaks = [];
+selected_peak_locs = [];
+
+% Calculate mean and standard deviation of the filtered EMG signal
+mean_EMG = mean(EMG);
+sd_EMG = std(EMG);
+
+% Set threshold as mean + 3.5 * SD for movement detection
+threshold = mean_EMG + 3.5 * sd_EMG;
+
+% Find movement peaks in the filtered EMG signal using the predefined threshold
+[movement, movement_locs] = findpeaks(EMG, 'MinPeakHeight', threshold);
+movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
+
+% Define window length in seconds (1 second) and ensure window_length_samples is an integer
+window_length_sec = 2;
+window_length_samples = round(window_length_sec * EEG_fs);
+
+% Initialize a variable to keep track of the last movement to handle consecutive movements
+last_movement_end = -Inf;
+
+% Convert 100 ms before and 250 ms after to samples
+exclude_before_movement = ceil(EEG_fs * 0.1); % 100 ms before
+exclude_after_movement = ceil(EEG_fs * 0.25); % 250 ms after
+
+for start_idx = 1:window_length_samples:length(EMG) - window_length_samples + 1
+    end_idx = start_idx + window_length_samples - 1;
+    valid_indices = true(window_length_samples, 1); % Initialize all indices as valid
+
+    % Check for movement within the current window
+    movement_in_window = movement_sec(movement_sec >= sec_signal_EMG(start_idx) & movement_sec <= sec_signal_EMG(end_idx));
+    
+    for i = 1:length(movement_in_window)
+        movement_time = movement_in_window(i);
+        movement_idx = find(sec_signal_EMG == movement_time, 1, 'first');
+        if ~isempty(movement_idx) && movement_idx <= end_idx
+            start_exclude_idx = max(start_idx, movement_idx - exclude_before_movement); % Ensure not before start of window
+            end_exclude_idx = min(end_idx, movement_idx + exclude_after_movement); % Ensure not beyond end of window
+            
+            % Update valid_indices to exclude the specified range
+            valid_indices(start_exclude_idx - start_idx + 1:end_exclude_idx - start_idx + 1) = false;
+        end
+    end
+
+% Apply exclusion and perform further analysis as needed
+valid_data = EMG(start_idx:end_idx);
+valid_data = valid_data(valid_indices);
+
+if ~isempty(valid_data) && length(valid_data) >= 3
+    mean_EMG_window = mean(valid_data);
+    sd_EMG_window = std(valid_data);
+    
+    % Calculate the dynamic threshold for peak detection
+    dynamic_threshold = mean_EMG_window + 2.5*sd_EMG_window;
+    
+    % Check if any data point exceeds the dynamic threshold
+    if any(valid_data > dynamic_threshold)
+        [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
+        
+        % Correct calculation of actual_locs_window
+        valid_indices_cumsum = cumsum(valid_indices); % Get the cumulative sum of valid indices
+        actual_locs_window = start_idx - 1 + valid_indices_cumsum(locs_window); % Map locs_window back to the global indices correctly
+
+        % Ensure peaks_window and actual_locs_window are column vectors before concatenation
+        peaks_window = peaks_window(:);
+        actual_locs_window = actual_locs_window(:);
+
+        % Concatenate peaks and locations
+        selected_peaks = [selected_peaks; peaks_window];
+        selected_peak_locs = [selected_peak_locs; actual_locs_window];
+    end
+end
+    
+    % If there is movement in the current window and the previous one, consider removing peaks between those movements
+    % Specific logic will depend on your requirements
+    
+    % Update the last movement end index
+    if ~isempty(movement_in_window)
+        last_movement_end = end_idx;
+    end
+end
+%% Remove selected peaks that are to quick
+% Calculate the minimum time interval between peaks based on physiological bounds
+min_interval_sec = 60 / 700; % Minimum time interval in seconds for 700 bpm
+
+% Sort the peaks by their timestamps
+selected_peak_times = sec_signal_EMG(selected_peak_locs);
+[sorted_peak_locs, sort_index] = sort(selected_peak_times);
+sorted_peaks = selected_peaks(sort_index);
+
+% Calculate the time differences between consecutive peaks
+time_diffs = diff(sorted_peak_locs);
+
+% Initialize an array of the same size as time_diffs and set the first element to true
+valid_peaks_indices = [time_diffs >= min_interval_sec];
+
+% Select only the peaks that are valid based on their time difference
+quality_selected_peaks = sorted_peaks(valid_peaks_indices);
+quality_selected_peak_locs = sorted_peak_locs(valid_peaks_indices);
+
+
+%% Reliable/old HR detection
 % Design a bandpass filter
 bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
     'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
@@ -307,117 +407,6 @@ for start_idx = 1:window_length_samples:length(filtered_EMG) - window_length_sam
         last_movement_end = end_idx;
     end
 end
-%% Teesting new HR detection with overlapping windows
-
-% Design a bandpass filter
-bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
-    'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
-    'SampleRate', EEG_fs);
-
-% Apply the bandpass filter to your EMG data
-filtered_EMG = filtfilt(bpFilt, EMG);
-
-% Initialize selected peaks storage
-selected_peaks = [];
-selected_peak_locs = [];
-
-% Calculate mean and standard deviation of the filtered EMG signal
-mean_EMG = mean(filtered_EMG);
-sd_EMG = std(filtered_EMG);
-
-% Set threshold as mean + 3.5 * SD for movement detection
-threshold = mean_EMG + 3.5 * sd_EMG;
-
-% Find movement peaks in the filtered EMG signal using the predefined threshold
-[movement, movement_locs] = findpeaks(filtered_EMG, 'MinPeakHeight', threshold);
-movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
-
-% Define window length in seconds (1 second) and ensure window_length_samples is an integer
-window_length_sec = 2;
-window_length_samples = round(window_length_sec * EEG_fs);
-
-% Initialize a variable to keep track of the last movement to handle consecutive movements
-last_movement_end = -Inf;
-
-% Calculate overlap
-overlap = 0.1; % 10% overlap
-overlap_samples = round(window_length_samples * overlap);
-
-for start_idx = 1:(window_length_samples - overlap_samples):length(filtered_EMG) - window_length_samples + 1
-    end_idx = start_idx + window_length_samples - 1;
-    
-    % Check for movement within the current window
-    movement_in_window = movement_sec(movement_sec >= sec_signal_EMG(start_idx) & movement_sec <= sec_signal_EMG(end_idx));
-    
-    exclude_after_movement = ceil(EEG_fs * 0.25); % Convert 0.25 seconds to samples
-    valid_indices = true(window_length_samples, 1); % Initialize all indices as valid
-    
-    % Exclude data after movements within the window
-    for i = 1:length(movement_in_window)
-    movement_time = movement_in_window(i);
-    movement_idx = find(sec_signal_EMG == movement_time, 1, 'first');
-        if ~isempty(movement_idx) && movement_idx <= end_idx
-        end_exclude_idx = min(movement_idx + exclude_after_movement, end_idx);
-        valid_range_start = max(1, movement_idx - start_idx + 1);
-        valid_range_end = min(window_length_samples, end_exclude_idx - start_idx + 1);
-        if valid_range_end >= valid_range_start % Ensure the range is valid
-            valid_indices(valid_range_start:valid_range_end) = false;
-        end
-        end
-    end
-
-    valid_data = filtered_EMG(start_idx:end_idx);
-    valid_data = valid_data(valid_indices);
-    
-    if ~isempty(valid_data) && length(valid_data) >= 3
-        mean_EMG_window = mean(valid_data);
-        sd_EMG_window = std(valid_data);
-        
-        % Calculate the dynamic threshold for peak detection
-        dynamic_threshold = mean_EMG_window + 2*sd_EMG_window;
-        
-        % Check if any data point exceeds the dynamic threshold
-    if any(valid_data > dynamic_threshold)
-        [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
-        
-        % Ensure actual_locs_window is adjusted based on the indices of valid_data
-        actual_locs_window = start_idx - 1 + find(valid_indices); % This line seems incorrect
-        actual_locs_window = actual_locs_window(locs_window); % This might need adjustment
-        
-        % Correct the way actual_locs_window is calculated
-        % If valid_indices directly correlates to locs_window, you need to map locs_window back to the original time
-        actual_locs_window = start_idx - 1 + locs_window; % This directly maps locs_window to global indices
-
-        % Ensure peaks_window and actual_locs_window are column vectors before concatenation
-        peaks_window = peaks_window(:);
-        actual_locs_window = actual_locs_window(:);
-
-        % Concatenate peaks and locations
-        selected_peaks = [selected_peaks; peaks_window];
-        selected_peak_locs = [selected_peak_locs; actual_locs_window];
-    end
-        end
-   
-    % If there is movement in the current window and the previous one, consider removing peaks between those movements
-    % Specific logic will depend on your requirements
-    
-    % Update the last movement end index
-    if ~isempty(movement_in_window)
-        last_movement_end = end_idx;
-    end
-    % Remove duplicate peaks in the overlapping regions
-
-% Assuming selected_peak_locs is sorted, which it should be if the data is processed in sequential order
-if ~isempty(selected_peak_locs)
-    % Find differences between consecutive peak locations
-    diff_locs = diff(selected_peak_locs);
-    % Find indices where the difference is less than or equal to overlap_samples (duplicates within overlap)
-    duplicate_indices = find(diff_locs <= overlap_samples);
-    % Remove duplicates - keep the first occurrence of the peak
-    selected_peaks(duplicate_indices) = [];
-    selected_peak_locs(duplicate_indices) = [];
-end
-end
 
 %% Plot movement and selected peaks
 
@@ -425,27 +414,42 @@ end
 figure;
 
 % Plot the original EMG signal
-subplot(2,1,1);
-plot(sec_signal_EMG, EMG);
-xlabel('sec\_signal\_EMG');
-ylabel('EMG');
-title('Original EMG Data');
-grid on;
-
-% Plot the filtered EMG signal with selected peaks
-subplot(2,1,2);
-plot(sec_signal_EMG, filtered_EMG, 'b-', sec_signal_EMG(selected_peak_locs), selected_peaks, 'ro');
+subplot(3,1,1);
+plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs, quality_selected_peaks, 'ro');
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
 xlabel('sec\_signal\_EMG');
 ylabel('Filtered EMG');
-title('Filtered EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+title('Original EMG Data w. peaks corrected');
+grid on;
+
+% Plot the filtered EMG signal with selected peaks
+subplot(3,1,2);
+plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs_v2, quality_selected_peaks_v2, 'ro');
+hold on;
+scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+xlabel('sec\_signal\_EMG');
+ylabel('Filtered EMG');
+title('Original EMG Data w. peaks corrected v2');
+grid on;
+
+
+% Plot the filtered EMG signal with selected peaks
+subplot(3,1,3);
+plot(sec_signal_EMG, EMG, 'b-', sec_signal_EMG(selected_peak_locs), selected_peaks, 'ro');
+hold on;
+scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+xlabel('sec\_signal\_EMG');
+ylabel('Filtered EMG');
+title('Filtered EMG with Selected Peaks (dynamic window mean+3.5SD) and Movement Peaks');
 grid on;
 
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
-linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
+linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
 
 %% Make RR intervals & Remove selected peaks + RR's within movement chunks
 
@@ -542,12 +546,11 @@ resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vec
 resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
 resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'pchip');
 
-
 %% HRB calculation
 
 %Input which RR it should be based on
-time = filtered_RR_time;
-RR_data = filtered_RR_smooth;
+time = new_time_vector;
+RR_data = resampled_RR_pchip;
 
 % Assuming filtered_RR and filtered_RR_time are given (if these are your
 % standard variables)
@@ -582,7 +585,7 @@ for i = 1:mouse_window_seconds:length(time)
     minimaTimes = window_RR_time(localMinima);
 
     % Filter minima based on criteria
-    criteriaIndices = minimaValues < mean_RR_window - 2 * std_RR_window;
+    criteriaIndices = minimaValues < mean_RR_window - 1.5 * std_RR_window;
     filteredMinimaValues = minimaValues(criteriaIndices);
     filteredMinimaTimes = minimaTimes(criteriaIndices);
 
@@ -628,7 +631,6 @@ end
 % Replace the original HRB and HRB_time with the filtered ones
 HRB = filtered_HRB;
 HRB_time = filtered_HRB_time;
-
 
 %% plot HRB
 sleepscore_time_cut = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
@@ -685,7 +687,15 @@ ylabel('RR intervals');
 title('HRV (un-resampled)');
 grid on;
 linkaxes([subplot(4,1,1), subplot(4,1,2), subplot(4,1,3), subplot(4,1,4)], 'x');
-
+%% 
+figure;
+plot_sleep(filtered_RR_time, filtered_RR_smooth, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
+hold on;
+scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV (un-resampled)');
+grid on;
 
 %% SLEEP: Load sleep score
 
@@ -861,17 +871,6 @@ NREMinclMA_binary_vector_cut = NREMinclMA_binary_vector(round(TTL_EEG_onset+1):e
 [NREMinclMA_onset_cut, NREMinclMA_offset_cut] = binary_to_OnOff(NREMinclMA_binary_vector_cut);
 NREMinclMA_duration_cut = NREMinclMA_offset_cut-NREMinclMA_onset_cut;
 NREMinclMA_periods_cut = [NREMinclMA_onset_cut NREMinclMA_offset_cut];
-%% Devide the 4 sleep phase variables into the hours in which they occured
-
-% Assuming startTimeNextHour and endTimePreviousHour are defined as before
-hoursList = startTimeNextHour:hours(1):endTimePreviousHour;
-secSignalHours = hours(hoursList - startTimeNextHour) * 3600; % Convert hours to seconds
-
-% Example call for the REM_periods_cut variable
-NREMinclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMinclMA_periods_cut, secSignalHours, startTimeNextHour);
-NREMexclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMexclMA_periods_cut, secSignalHours, startTimeNextHour);
-REM_hourlySegments = segmentSleepDataIntoHours(REM_periods_cut, secSignalHours, startTimeNextHour);
-wake_hourlySegments = segmentSleepDataIntoHours(wake_periods_cut, secSignalHours, startTimeNextHour);
 
 %% Plot NE, EMG, EEG and HRV for exloration
 
@@ -1080,6 +1079,19 @@ end
 % Use the function to remove overlaps from NREMexclMA_periods_cut
 NREMexclMA_periods_cut = removeOverlaps(NREMexclMA_periods_cut, REM_lead_up);
 NREMexclMA_periods_cut = removeOverlaps(NREMexclMA_periods_cut, wake_lead_up);
+
+%% Devide the 4 sleep phase variables into the hours in which they occured
+
+% Assuming startTimeNextHour and endTimePreviousHour are defined as before
+hoursList = startTimeNextHour:hours(1):endTimePreviousHour;
+secSignalHours = hours(hoursList - startTimeNextHour) * 3600; % Convert hours to seconds
+
+% Example call for the REM_periods_cut variable
+NREMinclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMinclMA_periods_cut, secSignalHours, startTimeNextHour);
+NREMexclMA_periods_cut_hourlySegments = segmentSleepDataIntoHours(NREMexclMA_periods_cut, secSignalHours, startTimeNextHour);
+REM_hourlySegments = segmentSleepDataIntoHours(REM_periods_cut, secSignalHours, startTimeNextHour);
+wake_hourlySegments = segmentSleepDataIntoHours(wake_periods_cut, secSignalHours, startTimeNextHour);
+
 %% Get NE troughs for (transition) sleep periods
 %Takes the peak values from each time interval
 
@@ -3170,3 +3182,23 @@ plot(segment_times, LF_percent);
 xlabel('Time (seconds)');
 ylabel('LF%');
 title('LF% over Original Time');
+
+%% ICA playground
+filtered_EMG_ICA = double(filtered_EMG);
+[coeffs, L] = wavedec(filtered_EMG_ICA, 8, 'db4');
+coeffs_rescaled = coeffs * 1000; % Example scaling factor
+[icasig, A, W] = fastica(coeffs_rescaled);
+for i = 1:size(icasig, 1)
+    componentEnvelope = abs(hilbert(icasig(i, :)));
+    % Further analysis to identify ECG components
+end
+% Assume 'icasig' contains the independent components obtained from ICA
+numComponents = size(icasig, 1);
+
+% Plotting all components
+figure;
+for i = 1:numComponents
+    subplot(numComponents, 1, i);
+    plot(icasig(i, :));
+    title(['ICA Component ', num2str(i)]);
+end
