@@ -35,8 +35,8 @@ Mouse_124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practic
 %test
 Mouse_3129_ctrl = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep\319_NE_As_sleep\319_NE_As_sleep_2020-07-21_12-07-19-593.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 
-%Mouse_168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep\168_sleep_data'};
-mouse = Mouse_124 ;
+Mouse_168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep\168_sleep_data'};
+mouse = Mouse_168 ;
 %% load data
 
 data_FPrig = TDTbin2mat(mouse{1}); % FP rig 
@@ -55,30 +55,43 @@ EEG_fs = data_EEGrig.streams.(mouse{9}).fs; %sampling frequency for EEG signal
 EEG_all = data_EEGrig.streams.(mouse{9}).data; %EEG signal
 EEG = EEG_all(mouse{10},:); %add channel (1 or 2)
 EMG = data_EEGrig.streams.(mouse{11}).data; %EMG 
+%% Cut off 1st second due to FP noise
 
-%% remove period before TTL pulse
+% Calculate the number of samples to remove (equivalent to 1 second)
+samplesToRemove_EEG_EMG = EEG_fs; % Number of samples in 1 second for EEG and EMG
+samplesToRemove_FP = signal_fs; % Number of samples in 1 second for photometry signals
 
-% TTL pusle for FP
-TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
-first_TTL = TTL_FP(1)*signal_fs;
-onset_FP = first_TTL;
-if first_TTL<1
-    onset_FP = 1;
-end
+% Directly trim the first second from EEG and EMG
+EEG = EEG(samplesToRemove_EEG_EMG:end);
+EMG = EMG(samplesToRemove_EEG_EMG:end);
 
-% TTL pusle for EEG
-TTL_FP_EEG = data_EEGrig.epocs.(mouse{12}).onset; %CHOOSE RIG THAT EEG IS ACQUIRED ON
-first_TTL_EEG = TTL_FP_EEG(1)*EEG_fs;
-onset_FP_EEG = first_TTL_EEG;
-if first_TTL_EEG<1
-    onset_FP_EEG = 1;
-end
+% Directly trim the first second from signal_405_2 and signal_465_2
+signal_405_2 = signal_405_2(samplesToRemove_FP:end);
+signal_465_2 = signal_465_2(samplesToRemove_FP:end);
 
-signal_465_2 = signal_465_2(onset_FP:end);
-signal_405_2 = signal_405_2(onset_FP:end);
-
-EEG = EEG(onset_FP_EEG:end);
-EMG = EMG(onset_FP_EEG:end);
+% %% remove period before TTL pulse
+% 
+% % TTL pusle for FP
+% TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
+% first_TTL = TTL_FP(1)*signal_fs;
+% onset_FP = first_TTL;
+% if first_TTL<1
+%     onset_FP = 1;
+% end
+% 
+% % TTL pusle for EEG
+% TTL_FP_EEG = data_EEGrig.epocs.(mouse{12}).onset; %CHOOSE RIG THAT EEG IS ACQUIRED ON
+% first_TTL_EEG = TTL_FP_EEG(1)*EEG_fs;
+% onset_FP_EEG = first_TTL_EEG;
+% if first_TTL_EEG<1
+%     onset_FP_EEG = 1;
+% end
+% 
+% signal_465_2 = signal_465_2(onset_FP:end);
+% signal_405_2 = signal_405_2(onset_FP:end);
+% 
+% EEG = EEG(onset_FP_EEG:end);
+% EMG = EMG(onset_FP_EEG:end);
 
 
 %% time signal
@@ -92,6 +105,8 @@ sec_signal_EEG = fs_signal_EEG/EEG_fs; % time vector for EEG signal
 fs_signal_EMG = 1:1:length(EMG);
 sec_signal_EMG = fs_signal_EMG/EEG_fs; % time vector for EMG signal
 
+
+
 %% Normalize
 % Here the fluorescence traces are normalised based on a fit of the 405 nm
 % channel. This should remove the drift in the 465 nm channel. make sure to
@@ -104,7 +119,7 @@ MeanFilter = ones(MeanFilterOrder,1)/MeanFilterOrder;
 MeanFilterOrder1 = 5000; % for smoothing
 MeanFilter1 = ones(MeanFilterOrder1,1)/MeanFilterOrder1;
 
-reg2 = polyfit_R2020a(signal_405_2(round(mouse{14}*signal_fs)), signal_465_2(round(mouse{14}*signal_fs)), 1);
+reg2 = polyfit_R2020a(signal_405_2, signal_465_2, 1);
 a2 = reg2(1);
 b2 = reg2(2);
 controlFit_465_2 = a2.*signal_405_2 + b2;
@@ -115,10 +130,6 @@ delta_465_2 = normDat_2 * 100;
 % smoothing traces
 delta465_filt_2 = filtfilt(MeanFilter,1,double(delta_465_2));
 ds_factor_FP = 100; % also used for plotting later (section 9b)
-
-
-
-%% 
 
 % downsampling traces for plotting
 ds_delta465_filt_2 = downsample(delta465_filt_2, ds_factor_FP);
@@ -131,6 +142,254 @@ bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
 
 % Apply the bandpass filter to your EMG data
 filtered_EMG = filtfilt(bpFilt, EMG);
+%% Plot the normalization of FP
+figure
+a = subplot(4,1,1);
+plot(sec_signal_2, signal_405_2);
+title('raw control');
+b = subplot(4,1,2);
+plot(sec_signal_2, signal_465_2);
+title('raw signal');
+c = subplot(4,1,3);
+plot(sec_signal_2, signal_465_2);
+hold on
+plot(sec_signal_2, controlFit_465_2);
+title('fitted control');
+d = subplot(4,1,4);
+plot(sec_signal_2, delta465_filt_2);
+title('normalized signal 465');
+linkaxes([a,b,c,d],'x');
+
+%% Plot the FP, EEG and EMG together
+figure
+a = subplot(3,1,1);
+plot(ds_sec_signal_2,ds_delta465_filt_2)
+title('NE');
+b = subplot(3,1,2);
+plot(sec_signal_EEG, EEG);
+title('EEG');
+c = subplot(3,1,3);
+plot(sec_signal_EEG, EMG);
+title('EMG');
+linkaxes([a,b,c],'x');
+
+%% SLEEP: Load sleep score
+
+EEG_sleepscore = xlsread(mouse{15});
+
+% Create binary vectors for sleep stages
+%Awake
+wake_onset = rmmissing(EEG_sleepscore(:, 2)); % onset of each wake bout in sec (NaNs are removed)
+wake_duration = rmmissing(EEG_sleepscore(:, 3)); % duration of each wake bout in sec (NaNs are removed)
+
+%Slow-wave sleep
+sws_onset = rmmissing(EEG_sleepscore(:, 6)); % onset of each SWS bout in sec (NaNs are removed)
+duration_sws = rmmissing(EEG_sleepscore(:, 7)); % duration of each SWS bout in sec (NaNs are removed)
+
+%REM
+REM_onset = rmmissing(EEG_sleepscore(:, 10)); % onset of each REM bout in sec (NaNs are removed)
+REM_duration = rmmissing(EEG_sleepscore(:, 11)); % duration of each REM bout in sec (NaNs are removed)
+
+
+% Most EEG scorings don't start at time 0 - which shifts the timeline of the
+% scoring relative to the EEG/EMG traces - this is corrected for below
+if min([wake_onset(1), sws_onset(1), REM_onset(1)]) ~= 0
+    EEG_scoring_onset = min([wake_onset(1), sws_onset(1), REM_onset(1)]); % determines the number of seconds to be subtracted
+    wake_onset = wake_onset - EEG_scoring_onset;
+    sws_onset = sws_onset - EEG_scoring_onset;
+    REM_onset = REM_onset - EEG_scoring_onset;
+end
+
+
+wake_binary_vector = zeros([1, round(sec_signal_EEG(end))+200]); 
+for i=1:length(wake_onset) % making time vector for EEG scoring (frequency = 1Hz)
+    t = wake_onset(i)+1; % +1 to put time 0 as index 1
+    d = wake_duration(i)-1; % -1 compensates for adding 1
+    wake_binary_vector(t:t+d) = 1;
+end
+
+
+sws_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]); 
+for i=1:length(sws_onset) % making time vector for EEG scoring (frequency = 1Hz)
+    t = sws_onset(i)+1; 
+    d = duration_sws(i)-1;
+    sws_binary_vector(t:t+d) = 1;
+end
+
+
+REM_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
+for i=1:length(REM_onset) % making time vector for EEG scoring (frequency = 1Hz)
+    t = REM_onset(i)+1;
+    d = REM_duration(i)-1;
+    REM_binary_vector(t:t+d) = 1;
+end
+
+
+%%  SLEEP: 5a) Make sleep periods  
+% 2-column vectors with on- and offsets for each state
+wake_periods = [wake_onset wake_onset+wake_duration];
+sws_periods = [sws_onset sws_onset+duration_sws];
+REM_periods = [REM_onset REM_onset+REM_duration];
+
+%% SLEEP: 5b) Dividing wake bouts into microarousals (MA) and wake w/o MA
+
+MA_maxdur = 15; % maximum duration of microarrousal
+MA_idx = find(wake_duration < MA_maxdur);
+MA_onset = wake_onset(MA_idx);
+MA_duration = wake_duration(MA_idx);
+MA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
+for i=1:length(MA_onset) % making time vector for EEG scoring (frequency = 1Hz)
+    t = MA_onset(i)+1;
+    d = MA_duration(i)-1;
+    MA_binary_vector(t:t+d) = 1;
+end
+
+% remove micrarrousal from wake vectors
+wake_woMA_onset = wake_onset;
+wake_woMA_onset(MA_idx) = [];
+wake_woMA_duration = wake_duration;
+wake_woMA_duration(MA_idx) = [];
+wake_woMA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
+for i=1:length(wake_woMA_onset) % making time vector for EEG scoring (frequency = 1Hz)
+    t = wake_woMA_onset(i)+1;
+    d = wake_woMA_duration(i)-1;
+    wake_woMA_binary_vector(t:t+d) = 1;
+end
+
+% 2-column vectors with on- and offsets for each state
+MA_periods = [MA_onset MA_onset+MA_duration];
+wake_woMA_periods = [wake_woMA_onset wake_woMA_onset+wake_woMA_duration];
+
+
+
+%% SLEEP: 6) Alingment of EEG recording and FP recording
+
+%TTL_EEG_onset = onset_FP_EEG/EEG_fs;
+TTL_EEG_onset = samplesToRemove_EEG_EMG;
+
+
+% Remove first seconds of EEG score to align with FP trace
+wake_binary_vector_cut = wake_binary_vector(round(TTL_EEG_onset):end);
+sws_binary_vector_cut = sws_binary_vector(round(TTL_EEG_onset):end);
+REM_binary_vector_cut = REM_binary_vector(round(TTL_EEG_onset):end);
+MA_binary_vector_cut = MA_binary_vector(round(TTL_EEG_onset):end);
+wake_woMA_binary_vector_cut = wake_woMA_binary_vector(round(TTL_EEG_onset):end);
+
+
+% Align onset, offset, and duration vectors based on TTL
+[wake_onset_cut, wake_offset_cut] = binary_to_OnOff(wake_binary_vector_cut);
+wake_duration_cut = wake_offset_cut - wake_onset_cut;
+
+[sws_onset_cut, sws_offset_cut] = binary_to_OnOff(sws_binary_vector_cut);
+sws_duration_cut = sws_offset_cut - sws_onset_cut;
+
+if ~isnan(REM_onset)
+    [REM_onset_cut, REM_offset_cut] = binary_to_OnOff(REM_binary_vector_cut);
+    REM_duration_cut = REM_offset_cut - REM_onset_cut;
+else
+    REM_onset_cut = NaN;    % in case of no REM bouts
+    REM_offset_cut = NaN;
+    REM_duration_cut = NaN;
+end
+
+    [MA_onset_cut, MA_offset_cut] = binary_to_OnOff(MA_binary_vector_cut);
+    MA_duration_cut = MA_offset_cut - MA_onset_cut;
+
+    [wake_woMA_onset_cut, wake_woMA_offset_cut] = binary_to_OnOff(wake_woMA_binary_vector_cut);
+    wake_woMA_duration_cut = wake_woMA_offset_cut - wake_woMA_onset_cut;
+
+% Align period arrays according to TTL
+wake_periods_cut = [wake_onset_cut wake_offset_cut];
+sws_periods_cut = [sws_onset_cut sws_offset_cut];
+REM_periods_cut = [REM_onset_cut REM_offset_cut];
+MA_periods_cut = [MA_onset_cut MA_offset_cut];
+wake_woMA_periods_cut = [wake_woMA_onset_cut wake_woMA_offset_cut];
+
+%% SLEEP: Re-classify MA as NREM using boutscore_vector
+% Here you can pool MAs with NREM sleep which can be beneficial for some
+% analyses related to infraslow oscillations (eg. PSD analysis), where you
+% don't want to divide your traces into short/pure NREM bouts
+
+%State transitions (uncut vectors)
+% Creating one vector with different behaviors represented by unique
+% numbers (1=wake, 4=sws, 9=REM, 15=MA) at frequency 1Hz
+boutscore_vector = zeros([1, round(sec_signal_EEG(end))+200]);
+
+% Here using the unaligned "uncut" vectors
+for i=1:length(wake_woMA_onset)
+    t = wake_woMA_onset(i)+1;
+    d = wake_woMA_duration(i)-1;
+    boutscore_vector(t:t+d) = 1; % wake=1
+end
+
+for i=1:length(sws_onset)
+    t = sws_onset(i)+1;
+    d = duration_sws(i)-1;
+    boutscore_vector(t:t+d) = 4; % sws=4
+end
+
+if ~isnan(REM_onset)
+    for i=1:length(REM_onset)
+        t = REM_onset(i)+1;
+        d = REM_duration(i)-1;
+        boutscore_vector(t:t+d) = 9; %REM=9
+    end
+end
+
+for i=1:length(MA_onset)
+    t = MA_onset(i)+1;
+    d = MA_duration(i)-1;
+    boutscore_vector(t:t+d) = 15; %MA=15
+end
+
+% re-classify MA as NREM
+NREMinclMA_binary_vector = boutscore_vector==4 | boutscore_vector==15;
+%NREMinclMA_binary_vector_cut = NREMinclMA_binary_vector(round(TTL_EEG_onset+1):end);
+% [NREMinclMA_onset_cut, NREMinclMA_offset_cut] = binary_to_OnOff(NREMinclMA_binary_vector_cut);
+% NREMinclMA_duration_cut = NREMinclMA_offset_cut-NREMinclMA_onset_cut;
+% NREMinclMA_periods_cut = [NREMinclMA_onset_cut NREMinclMA_offset_cut];
+[NREMinclMA_onset, NREMinclMA_offset] = binary_to_OnOff(NREMinclMA_binary_vector);
+NREMinclMA_duration = NREMinclMA_offset-NREMinclMA_onset;
+NREMinclMA_periods = [NREMinclMA_onset NREMinclMA_offset];
+
+
+%% Plot sleep phases
+%Plotting the power bands with the RR-intervals and NE
+%sleepscore_time_cut = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
+sleepscore_time = 0:length(wake_woMA_binary_vector )-1; % should be same length for wake/sws/REM
+
+figure();
+
+% Subplot for NE
+a = subplot(3, 1, 1);
+plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+hold on;
+%plot(NE_sws_MA_Trunk_Timestamps, ds_delta465_filt_2(NE_sws_MA_Trunk_Timestamps), 'ro', 'MarkerFaceColor', 'g', 'MarkerSize', 2);
+xlabel('time (s)');
+ylabel('NE');
+title('NE');
+grid on;
+
+% Subplot for EEG
+b = subplot(3, 1, 2);
+plot_sleep(sec_signal_EEG, EEG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+hold on;
+xlabel('time (s)');
+ylabel('Amplitude (V)');
+title('EEG');
+grid on;
+
+% Subplot for EEG
+c = subplot(3, 1, 3);
+plot_sleep(sec_signal_EMG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+hold on;
+xlabel('time (s)');
+ylabel('Amplitude (V)');
+title('EMG');
+grid on;
+
+linkaxes([a,b,c],'x');
+
 %% Export EMG
 % Ensure both signals are column vectors and convert filtered_EMG to double
 sec_signal_EMG_col = sec_signal_EMG(:); % Convert to column vector if not already
@@ -189,7 +448,8 @@ for i = 1:totalFullHours
 end
 
 %% Determine movement peak threshold through plotting
-
+figure;
+subplot(3,1,1);
 plot(sec_signal_EMG, EMG);  % 'o-' specifies markers and lines
 
 % Adding a horizontal line at mean + 3.5*SD
@@ -205,8 +465,13 @@ title('EMG Data Plot');
 % Adding grid (optional)
 grid on;
 
+subplot(3,1,2);
+plot(sec_signal_EMG, EEG);  % 'o-' specifies markers and lines
+
+
 % Display the plot
 
+linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
 
 %% Determine HR and movement peaks
 
@@ -697,180 +962,6 @@ ylabel('RR intervals');
 title('HRV (un-resampled)');
 grid on;
 
-%% SLEEP: Load sleep score
-
-EEG_sleepscore = xlsread(mouse{15});
-
-% Create binary vectors for sleep stages
-%Awake
-wake_onset = rmmissing(EEG_sleepscore(:, 2)); % onset of each wake bout in sec (NaNs are removed)
-wake_duration = rmmissing(EEG_sleepscore(:, 3)); % duration of each wake bout in sec (NaNs are removed)
-
-%Slow-wave sleep
-sws_onset = rmmissing(EEG_sleepscore(:, 6)); % onset of each SWS bout in sec (NaNs are removed)
-duration_sws = rmmissing(EEG_sleepscore(:, 7)); % duration of each SWS bout in sec (NaNs are removed)
-
-%REM
-REM_onset = rmmissing(EEG_sleepscore(:, 10)); % onset of each REM bout in sec (NaNs are removed)
-REM_duration = rmmissing(EEG_sleepscore(:, 11)); % duration of each REM bout in sec (NaNs are removed)
-
-
-% Most EEG scorings don't start at time 0 - which shifts the timeline of the
-% scoring relative to the EEG/EMG traces - this is corrected for below
-if min([wake_onset(1), sws_onset(1), REM_onset(1)]) ~= 0
-    EEG_scoring_onset = min([wake_onset(1), sws_onset(1), REM_onset(1)]); % determines the number of seconds to be subtracted
-    wake_onset = wake_onset - EEG_scoring_onset;
-    sws_onset = sws_onset - EEG_scoring_onset;
-    REM_onset = REM_onset - EEG_scoring_onset;
-end
-
-
-wake_binary_vector = zeros([1, round(sec_signal_EEG(end))+200]); 
-for i=1:length(wake_onset) % making time vector for EEG scoring (frequency = 1Hz)
-    t = wake_onset(i)+1; % +1 to put time 0 as index 1
-    d = wake_duration(i)-1; % -1 compensates for adding 1
-    wake_binary_vector(t:t+d) = 1;
-end
-
-
-sws_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]); 
-for i=1:length(sws_onset) % making time vector for EEG scoring (frequency = 1Hz)
-    t = sws_onset(i)+1; 
-    d = duration_sws(i)-1;
-    sws_binary_vector(t:t+d) = 1;
-end
-
-
-REM_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
-for i=1:length(REM_onset) % making time vector for EEG scoring (frequency = 1Hz)
-    t = REM_onset(i)+1;
-    d = REM_duration(i)-1;
-    REM_binary_vector(t:t+d) = 1;
-end
-
-
-%%  SLEEP: 5a) Make sleep periods  
-% 2-column vectors with on- and offsets for each state
-wake_periods = [wake_onset wake_onset+wake_duration];
-sws_periods = [sws_onset sws_onset+duration_sws];
-REM_periods = [REM_onset REM_onset+REM_duration];
-
-%% SLEEP: 5b) Dividing wake bouts into microarousals (MA) and wake w/o MA
-
-MA_maxdur = 15; % maximum duration of microarrousal
-MA_idx = find(wake_duration < MA_maxdur);
-MA_onset = wake_onset(MA_idx);
-MA_duration = wake_duration(MA_idx);
-MA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
-for i=1:length(MA_onset) % making time vector for EEG scoring (frequency = 1Hz)
-    t = MA_onset(i)+1;
-    d = MA_duration(i)-1;
-    MA_binary_vector(t:t+d) = 1;
-end
-
-% remove micrarrousal from wake vectors
-wake_woMA_onset = wake_onset;
-wake_woMA_onset(MA_idx) = [];
-wake_woMA_duration = wake_duration;
-wake_woMA_duration(MA_idx) = [];
-wake_woMA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
-for i=1:length(wake_woMA_onset) % making time vector for EEG scoring (frequency = 1Hz)
-    t = wake_woMA_onset(i)+1;
-    d = wake_woMA_duration(i)-1;
-    wake_woMA_binary_vector(t:t+d) = 1;
-end
-
-% 2-column vectors with on- and offsets for each state
-MA_periods = [MA_onset MA_onset+MA_duration];
-wake_woMA_periods = [wake_woMA_onset wake_woMA_onset+wake_woMA_duration];
-
-
-
-%% SLEEP: 6) Alingment of EEG recording and FP recording
-
-TTL_EEG_onset = onset_FP_EEG/EEG_fs;
-
-
-% Remove first seconds of EEG score to align with FP trace
-wake_binary_vector_cut = wake_binary_vector(round(TTL_EEG_onset):end);
-sws_binary_vector_cut = sws_binary_vector(round(TTL_EEG_onset):end);
-REM_binary_vector_cut = REM_binary_vector(round(TTL_EEG_onset):end);
-MA_binary_vector_cut = MA_binary_vector(round(TTL_EEG_onset):end);
-wake_woMA_binary_vector_cut = wake_woMA_binary_vector(round(TTL_EEG_onset):end);
-
-
-% Align onset, offset, and duration vectors based on TTL
-[wake_onset_cut, wake_offset_cut] = binary_to_OnOff(wake_binary_vector_cut);
-wake_duration_cut = wake_offset_cut - wake_onset_cut;
-
-[sws_onset_cut, sws_offset_cut] = binary_to_OnOff(sws_binary_vector_cut);
-sws_duration_cut = sws_offset_cut - sws_onset_cut;
-
-if ~isnan(REM_onset)
-    [REM_onset_cut, REM_offset_cut] = binary_to_OnOff(REM_binary_vector_cut);
-    REM_duration_cut = REM_offset_cut - REM_onset_cut;
-else
-    REM_onset_cut = NaN;    % in case of no REM bouts
-    REM_offset_cut = NaN;
-    REM_duration_cut = NaN;
-end
-
-    [MA_onset_cut, MA_offset_cut] = binary_to_OnOff(MA_binary_vector_cut);
-    MA_duration_cut = MA_offset_cut - MA_onset_cut;
-
-    [wake_woMA_onset_cut, wake_woMA_offset_cut] = binary_to_OnOff(wake_woMA_binary_vector_cut);
-    wake_woMA_duration_cut = wake_woMA_offset_cut - wake_woMA_onset_cut;
-
-% Align period arrays according to TTL
-wake_periods_cut = [wake_onset_cut wake_offset_cut];
-sws_periods_cut = [sws_onset_cut sws_offset_cut];
-REM_periods_cut = [REM_onset_cut REM_offset_cut];
-MA_periods_cut = [MA_onset_cut MA_offset_cut];
-wake_woMA_periods_cut = [wake_woMA_onset_cut wake_woMA_offset_cut];
-
-%% SLEEP: Re-classify MA as NREM using boutscore_vector
-% Here you can pool MAs with NREM sleep which can be beneficial for some
-% analyses related to infraslow oscillations (eg. PSD analysis), where you
-% don't want to divide your traces into short/pure NREM bouts
-
-%State transitions (uncut vectors)
-% Creating one vector with different behaviors represented by unique
-% numbers (1=wake, 4=sws, 9=REM, 15=MA) at frequency 1Hz
-boutscore_vector = zeros([1, round(sec_signal_EEG(end))+200]);
-
-% Here using the unaligned "uncut" vectors
-for i=1:length(wake_woMA_onset)
-    t = wake_woMA_onset(i)+1;
-    d = wake_woMA_duration(i)-1;
-    boutscore_vector(t:t+d) = 1; % wake=1
-end
-
-for i=1:length(sws_onset)
-    t = sws_onset(i)+1;
-    d = duration_sws(i)-1;
-    boutscore_vector(t:t+d) = 4; % sws=4
-end
-
-if ~isnan(REM_onset)
-    for i=1:length(REM_onset)
-        t = REM_onset(i)+1;
-        d = REM_duration(i)-1;
-        boutscore_vector(t:t+d) = 9; %REM=9
-    end
-end
-
-for i=1:length(MA_onset)
-    t = MA_onset(i)+1;
-    d = MA_duration(i)-1;
-    boutscore_vector(t:t+d) = 15; %MA=15
-end
-
-% re-classify MA as NREM
-NREMinclMA_binary_vector = boutscore_vector==4 | boutscore_vector==15;
-NREMinclMA_binary_vector_cut = NREMinclMA_binary_vector(round(TTL_EEG_onset+1):end);
-[NREMinclMA_onset_cut, NREMinclMA_offset_cut] = binary_to_OnOff(NREMinclMA_binary_vector_cut);
-NREMinclMA_duration_cut = NREMinclMA_offset_cut-NREMinclMA_onset_cut;
-NREMinclMA_periods_cut = [NREMinclMA_onset_cut NREMinclMA_offset_cut];
 
 %% Plot NE, EMG, EEG and HRV for exloration
 
