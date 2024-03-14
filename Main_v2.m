@@ -1,15 +1,33 @@
+%PLEASE NOTE
+%You need to place the FP file in a folder ending in the 3-digit animal id
+%(e.g. 'Mouse_xxx' or 'Mxxx' or simply just the 3-digit animal ID).
+%Otherwise the code will not run appropriately
+
 %build-up
 name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'channel_name_blue_2' 'channel_name_violet_2' 'channel_name_red_2' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' };
 
 M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'Dv2A' 'Dv1A' 'red' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
+M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
+M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
+M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+mice_TTL = {M117, M124, };
+mice = {M168, M147, M149};
+mice_without_TTL = {M168, M147, M149};
+mice_without_TTL_IDs = {};
 
-mice = {M117, M124};
+%Extract names of the mice withoutTTL for later use
+for idx = 1:length(mice_without_TTL)
+    m = mice_without_TTL{idx}; % Assuming mouse is a cell array with relevant data
+    ID = sprintf('M%s', m{1}(end-2:end)); % Extract the ID as intended
+    mice_without_TTL_IDs{end+1} = ID; % Correctly append ID to the cell array
+end
+
 %% Load FP and EEG data for all mice
 
 % Loop to load data for each mouse
-for idx = 1:length(mice)
-    mouse = mice{idx};
+for idx = 1:length(mice_without_TTL)
+    mouse = mice_without_TTL{idx};
     
     % Dynamically generate variable names for data_FPrig and data_EEGrig
     data_FPrig_varName = sprintf('data_FPrig_%s', mouse{1}(end-2:end)); % Assumes the unique identifier is the last 3 characters of the first string in mouse array
@@ -24,87 +42,82 @@ end
 
 % Loop to process signals for each mouse and store outputs with dynamic names
 for idx = 1:length(mice)
-    mouse = mice{idx};
+    mouse = mice{idx}; % Assuming mouse is a cell array with relevant data
+    
+    % Extract the mouse identifier correctly assuming the first element is a path or identifier
+    mouseIdentifier = sprintf('M%s', mouse{1}(end-2:end)); % Adjust regexp as necessary for your identifiers
     
     % Dynamically name inputs based on mouse identifiers
     data_FPrig_input = eval(sprintf('data_FPrig_%s', mouse{1}(end-2:end)));
-    data_EEGrig_input = eval(sprintf('data_EEGrig_%s', mouse{2}(end-2:end)));
+    data_EEGrig_input = eval(sprintf('data_EEGrig_%s', mouse{1}(end-2:end)));
     
-    % Call processSignals function with dynamic variable names
-    [delta465_filt, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, data_EEGrig_input);
+    % Check if the current mouse identifier is in the mice_without_TTL list
+    if ismember(mouseIdentifier, mice_without_TTL_IDs)
+        % Call processSignals_without_TTL function for mice without TTL
+        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs] = processSignals_without_TTL(mouse, data_FPrig_input, data_EEGrig_input);
+    else
+        % Call processSignals function for other mice
+        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, data_EEGrig_input);
+        
+        % Dynamically save the onset_FP_EEG variable with mouse-specific names for mice processed with TTL
+        eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse(end-2:end)));
+    end
     
     % Dynamically save the output variables with mouse-specific names
-    eval(sprintf('delta465_filt_2_%s = delta465_filt;', mouse{1}(end-2:end)));
+    eval(sprintf('delta465_filt_2_%s = delta465_filt_2;', mouse{1}(end-2:end)));
     eval(sprintf('sec_signal_2_%s = sec_signal_2;', mouse{1}(end-2:end)));
     eval(sprintf('signal_fs_%s = signal_fs;', mouse{1}(end-2:end)));
     eval(sprintf('EEG_%s = EEG;', mouse{1}(end-2:end)));
     eval(sprintf('EMG_%s = EMG;', mouse{1}(end-2:end)));
     eval(sprintf('sec_signal_EEG_%s = sec_signal_EEG;', mouse{1}(end-2:end)));
     eval(sprintf('EEG_fs_%s = EEG_fs;', mouse{1}(end-2:end)));
-    eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{1}(end-2:end)));
 end
 
 %% QC - Check all traces are there
 
-% Number of mice
-numMice = length(mice);
-
-% Prepare figure for delta465_filt_2 plots
-figure;
-sgtitle('Delta465 Filt 2 Signals');
-for idx = 1:numMice
+for idx = 1:length(mice)
     mouse = mice{idx};
-    uniqueId = mouse{1}(end-2:end); % Extract unique identifier based on your naming convention
+    uniqueId = mouse{1}(end-2:end); % Extract unique identifier
     
-    % Load variables dynamically
-    delta465_filt_2 = eval(sprintf('delta465_filt_2_%s', uniqueId));
-    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId));
+    % Creating one figure per mouse
+    figure;
+    sgtitle(sprintf('Mouse %s', uniqueId)); % Set the figure title with the mouse ID
     
-    % Plot
-    subplot(numMice, 1, idx);
+    % Delta465 Filt 2 Signal Plot
+    subplot(3,1,1); % Adjust the number of rows as necessary if adding more plots
+    delta465_var_name = sprintf('delta465_filt_2_%s', uniqueId);
+    sec_signal_2_var_name = sprintf('sec_signal_2_%s', uniqueId);
+    delta465_filt_2 = eval(delta465_var_name);
+    sec_signal_2 = eval(sec_signal_2_var_name);
     plot(sec_signal_2, delta465_filt_2);
-    title(sprintf('Mouse %s Delta465 Filt 2', uniqueId));
+    title('Delta465 Filt 2');
     xlabel('Time (s)');
     ylabel('Delta F/F (%)');
-end
-
-% Prepare figure for EEG plots
-figure;
-sgtitle('EEG Signals');
-for idx = 1:numMice
-    mouse = mice{idx};
-    uniqueId = mouse{1}(end-2:end); % Extract unique identifier
     
-    % Load variables dynamically
-    EEG = eval(sprintf('EEG_%s', uniqueId));
-    sec_signal_EEG = eval(sprintf('sec_signal_EEG_%s', uniqueId));
-    
-    % Plot
-    subplot(numMice, 1, idx);
+    % EEG Signal Plot
+    subplot(3,1,2); % Adjust for EEG plot
+    EEG_var_name = sprintf('EEG_%s', uniqueId);
+    sec_signal_EEG_var_name = sprintf('sec_signal_EEG_%s', uniqueId);
+    EEG = eval(EEG_var_name);
+    sec_signal_EEG = eval(sec_signal_EEG_var_name);
     plot(sec_signal_EEG, EEG);
-    title(sprintf('Mouse %s EEG', uniqueId));
+    title('EEG');
     xlabel('Time (s)');
     ylabel('EEG Signal');
-end
-
-% Prepare figure for EMG plots
-figure;
-sgtitle('EMG Signals');
-for idx = 1:numMice
-    mouse = mice{idx};
-    uniqueId = mouse{1}(end-2:end); % Extract unique identifier
     
-    % Load variables dynamically
-    EMG = eval(sprintf('EMG_%s', uniqueId));
-    sec_signal_EEG = eval(sprintf('sec_signal_EEG_%s', uniqueId));
-    
-    % Plot
-    subplot(numMice, 1, idx);
-    plot(sec_signal_EEG, EMG);
-    title(sprintf('Mouse %s EMG', uniqueId));
+    % EMG Signal Plot (assuming you have EMG variables named similarly)
+    subplot(3,1,3); % Adjust for EMG plot
+    EMG_var_name = sprintf('EMG_%s', uniqueId);
+    sec_signal_EMG_var_name = sprintf('sec_signal_EEG_%s', uniqueId); % Adjust variable naming as necessary
+    EMG = eval(EMG_var_name);
+    sec_signal_EMG = eval(sec_signal_EMG_var_name); % Use this if you have a separate time signal for EMG
+    plot(sec_signal_EMG, EMG);
+    title('EMG');
     xlabel('Time (s)');
     ylabel('EMG Signal');
 end
+
+
 %% Downsample FP and filter EEG
 
 % downsampling traces for plotting
@@ -116,6 +129,15 @@ ds_sec_signal_2_117 = downsample(sec_signal_2_117, ds_factor_FP); % for plotting
 ds_delta465_filt_2_124 = downsample(delta465_filt_2_124, ds_factor_FP);
 ds_sec_signal_2_124 = downsample(sec_signal_2_124, ds_factor_FP); % for plotting
 
+ds_delta465_filt_2_168 = downsample(delta465_filt_2_168, ds_factor_FP);
+ds_sec_signal_2_168 = downsample(sec_signal_2_168, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_147 = downsample(delta465_filt_2_147, ds_factor_FP);
+ds_sec_signal_2_147 = downsample(sec_signal_2_147, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_149 = downsample(delta465_filt_2_149, ds_factor_FP);
+ds_sec_signal_2_149 = downsample(sec_signal_2_149, ds_factor_FP); % for plotting
+
 % Design a bandpass filter
 bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
     'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
@@ -124,11 +146,76 @@ bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
 % Apply the bandpass filter to your EMG data
 filtered_EMG_117 = filtfilt(bpFilt, EMG_117);
 filtered_EMG_124 = filtfilt(bpFilt, EMG_124);
+filtered_EMG_168 = filtfilt(bpFilt, EMG_168);
+filtered_EMG_147 = filtfilt(bpFilt, EMG_147);
+filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 10, 10, 20);
-[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 10, 10, 20);
+%[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 10, 10, 20);
+%[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 10, 10, 20);
+[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168,MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 10, 10, 20);
+[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147,MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 10, 10, 20);
+[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149,MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 10, 10, 20);
+
+%% QC - plot sleep
+% Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
+for idx = 1:length(mice_TTL)
+    mouse = mice_TTL{idx};
+    uniqueId = mouse{1}(end-2:end); % Extract mouse ID as a string
+
+    % Dynamically generate variable names based on the mouse ID
+    wake_woMA_varName = sprintf('wake_woMA_binary_vector_%s', uniqueId);
+    sws_varName = sprintf('sws_binary_vector_%s', uniqueId);
+    REM_varName = sprintf('REM_binary_vector_%s', uniqueId);
+    MA_varName = sprintf('MA_binary_vector_%s', uniqueId);
+    ds_sec_signal_2_varName = sprintf('ds_sec_signal_2_%s', uniqueId);
+    ds_delta465_filt_2_varName = sprintf('ds_delta465_filt_2_%s', uniqueId);
+    sec_signal_EEG_varName = sprintf('sec_signal_EEG_%s', uniqueId);
+    EEG_varName = sprintf('EEG_%s', uniqueId);
+    EMG_varName = sprintf('EMG_%s', uniqueId);
+
+    % Access the variables dynamically
+    wake_woMA_binary_vector = eval(wake_woMA_varName);
+    sws_binary_vector = eval(sws_varName);
+    REM_binary_vector = eval(REM_varName);
+    MA_binary_vector = eval(MA_varName);
+    ds_sec_signal_2 = eval(ds_sec_signal_2_varName);
+    ds_delta465_filt_2 = eval(ds_delta465_filt_2_varName);
+    sec_signal_EEG = eval(sec_signal_EEG_varName);
+    EEG = eval(EEG_varName);
+    EMG = eval(EMG_varName);
+    
+    sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
+
+    % Plot for the current mouse
+    figure;
+    sgtitle(sprintf('Mouse %s', uniqueId)); % Set the figure title with the mouse ID
+
+    a = subplot(3, 1, 1);
+        plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+        title(['Norepinephrine']);
+        xlabel('time (s)');
+        ylabel('NE (V)');
+        grid on;
+
+    b = subplot(3, 1, 2);
+        plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+        xlabel('time (s)');
+        ylabel('EMG (V)');
+        title(['EMG']);
+        grid on;
+
+    c = subplot(3, 1, 3);
+        plot_sleep(sec_signal_EEG, EEG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+        xlabel('time (s)');
+        ylabel('EEG (V)');
+        title(['EEG']);
+        grid on;
+
+    % Linking axes for synchronized zooming
+    linkaxes([a, b, c], 'x');
+end
 
 
 %% Power analysis on EEG
@@ -233,10 +320,8 @@ for idx = 1:length(mice)
 end
 
 % At this point, 'mice_data_hours' will have 2 columns: mouse number and hour segments with data
-%% Devide hourly NE data into sleep phases
-
-
-
+%% Devide hourly NE data into sleep phases if sleep phase is long enough
+min_sleep_period_duration = 90;
 
 sleepStages = {'NREMinclMA_periods', 'NREMexclMA_periods', 'wake_periods', 'REM_periods'};
 updated_mice_data_hours = []; % To store the expanded mice_data_hours data
@@ -263,26 +348,28 @@ for i = 1:size(mice_data_hours, 1)
             onset = sleepPeriods(periodIndex, 1);
             offset = sleepPeriods(periodIndex, 2);
             
-            % Indices where sec_signal_2_hourly is within the onset and offset
-            indices = find(sec_signal_2_hourly >= onset & sec_signal_2_hourly <= offset);
-            
-            allIndices = [allIndices; indices(:)]; % Ensure indices are a column vector before concatenation
-        end
+            % Check if the sleep period is longer than 120 seconds
+            if (offset - onset) > min_sleep_period_duration
+                % Indices where sec_signal_2_hourly is within the onset and offset
+                indices = find(sec_signal_2_hourly >= onset & sec_signal_2_hourly <= offset);
+                
 
-        % Use allIndices to extract the relevant segments
-        if ~isempty(allIndices)
-            filtered_sec_signal_2 = sec_signal_2_hourly(allIndices);
-            filtered_delta465_filt_2 = delta465_filt_2_hourly(allIndices);
-
-            % Save filtered data with new variable names
-            newSecSignalName = sprintf('sec_signal_2_%d_%d_%s', mouseNumber, hourSegment, stage{1}(1:end-8)); % Simplify stage name
-            newDeltaName = sprintf('delta465_filt_2_%d_%d_%s', mouseNumber, hourSegment, stage{1}(1:end-8));
-
-            eval([newSecSignalName ' = filtered_sec_signal_2;']);
-            eval([newDeltaName ' = filtered_delta465_filt_2;']);
-
-            % Update new mice_data_hours array
-            updated_mice_data_hours = [updated_mice_data_hours; [mouseNumber, hourSegment, {stage{1}(1:end-8)}, {newSecSignalName}, {eval(newSecSignalName)}, {newDeltaName}, {eval(newDeltaName)}]];
+                % Use allIndices to extract the relevant segments
+                if ~isempty(indices)
+                    filtered_sec_signal_2 = sec_signal_2_hourly(indices);
+                    filtered_delta465_filt_2 = delta465_filt_2_hourly(indices);
+        
+                    % Save filtered data with new variable names
+                    newSecSignalName = sprintf('sec_signal_2_%d_%d_%s', mouseNumber, hourSegment, stage{1}(1:end-8)); % Simplify stage name
+                    newDeltaName = sprintf('delta465_filt_2_%d_%d_%s', mouseNumber, hourSegment, stage{1}(1:end-8));
+        
+                    eval([newSecSignalName ' = filtered_sec_signal_2;']);
+                    eval([newDeltaName ' = filtered_delta465_filt_2;']);
+        
+                    % Update new mice_data_hours array
+                    updated_mice_data_hours = [updated_mice_data_hours; [mouseNumber, hourSegment, {stage{1}(1:end-8)}, {newSecSignalName}, {eval(newSecSignalName)}, {newDeltaName}, {eval(newDeltaName)}]];
+                end
+            end
         end
     end
 end
@@ -293,3 +380,465 @@ end
 %4th and 5th holds the name of FP time variable and the actual timestamps
 %in seconds
 %6th and 7th holds the name of FP data variable and the actual FP data
+%% PSD plots (One line across animals)
+PSD_NE_table = [];
+% Assuming the second column might not be uniformly numeric
+hourColumn = updated_mice_data_hours(:,2);
+
+% If hourColumn is a cell array, ensure it's numeric
+if iscell(hourColumn)
+    hourColumn = cell2mat(hourColumn);
+end
+
+uniqueHours = unique(hourColumn);
+
+% Initialize a map or container to hold the signal_fs for each hour
+signal_fs_map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+
+for idx = 1:length(uniqueHours)
+    uHour = uniqueHours(idx); % Working with numeric value directly
+
+    % Find all entries for this hour. Since updated_mice_data_hours(:,2) is a cell,
+    % and uHour is numeric, we need to convert each cell to numeric temporarily for comparison.
+    isCurrentHour = cellfun(@(x) isequal(x, uHour), updated_mice_data_hours(:,2));
+    hourEntriesIdx = find(isCurrentHour); % Indices of entries for the current hour
+    hourEntries = updated_mice_data_hours(hourEntriesIdx,:);
+
+    if isempty(hourEntries)
+        continue; % Skip if no entries for this hour
+    end
+
+    % Sorting by mouse number requires ensuring mouse numbers are numeric or handled as strings consistently
+    % This example proceeds under the assumption that sorting is not directly impacted by numeric vs. string,
+    % but adjust accordingly based on your specific needs and data structure.
+
+    % Extract the first mouse number for this hour
+    % (Here, you may need to adjust based on how mouse numbers are stored and used in your dataset)
+    firstMouseNumber = hourEntries{1, 1}; % Assuming first entry has the mouse number you need
+
+    % Construct the variable name for signal_fs based on the mouse number
+    signal_fs_varName = sprintf('signal_fs_%d', firstMouseNumber);
+
+    % Extract signal_fs for this mouse
+    if isKey(signal_fs_map, uHour)
+        fs = signal_fs_map(uHour); % Use existing value if already determined
+    else
+        % Extract from the workspace if not already determined
+        fs = evalin('base', signal_fs_varName); 
+        signal_fs_map(uHour) = fs; % Store for future reference
+    end
+    
+    % Prepare to collect plot data
+    plotData = struct();
+    
+    % Prepare the PSD_NE_table entries for this hour
+    PSD_NE_table_entries = [];
+
+    accumulatedData = struct();
+    
+    PXX = [];
+    PXXlog = [];
+    PXX_pk_f = [];
+    PXX_pk = [];
+    
+    for i = 1:size(hourEntries, 1)
+        mouseNumber = hourEntries(i, 1);
+        sleepStage = hourEntries(i, 3);
+        mouseNumber_value = hourEntries{i, 1}; % Assuming this is a numeric value
+        sleepStage_value = hourEntries{i, 3}; % Assuming this is also a numeric value
+
+        if iscell(sleepStage)
+            sleepStage = sleepStage{1}; % Extracting string from cell
+        end
+        validSleepStage = matlab.lang.makeValidName(sleepStage);
+
+        % Extract variable names and values from hourEntries
+        % Corrected by breaking into two steps to avoid direct chaining
+        secSignalCell = hourEntries(i, 4); % This will give you a cell
+        deltaSignalCell = hourEntries(i, 5); % Another cell
+        deltaSignalValuesCell = hourEntries(i, 7); % Cell containing the actual signal data
+    
+        % Now extract the actual string or data from the cell
+        secSignalName = secSignalCell{1};
+        deltaSignalName = deltaSignalCell{1};
+        deltaSignalValues = deltaSignalValuesCell{1};
+        
+        % Assuming fs is common or retrieved per animal/hour. If variable, adjust accordingly.
+        
+        % Process signal (e.g., detrend, calculate PSD)
+        % Extract the actual signal values
+        signal_trace = deltaSignalValues; % Your delta signal for the current segment
+        
+        % Assuming min_period_dur, max_freq, and sample_pr_sec are defined as before
+        max_freq = 0.1; % Maximum frequency for PSD
+        sample_pr_sec = 0.0005; % Frequency resolution for PSD
+        
+        % Detrend and center the signal around 0
+        [p, s, mu] = polyfit((1:numel(signal_trace))', signal_trace, 5);
+        f_y = polyval(p, (1:numel(signal_trace))', [], mu);
+        detrended_signal = signal_trace - f_y'; % Detrended data
+        
+        % Calculate Power Spectral Density (PSD)
+        [pxx, f] = pwelch(detrended_signal, [], [], 0:sample_pr_sec:max_freq, fs);
+        
+        logpxx = 10*log10(pxx);
+        FX{i} = f;
+        [pxx_pk_psd, max_idx] = max(pxx);
+        PXX_pk = [PXX_pk pxx_pk_psd];
+        pxx_pk_f = f(max_idx);
+        PXX_pk_f = [PXX_pk_f pxx_pk_f];
+        %PXXlog = [PXXlog logpxx'];
+        PXX = [PXX pxx'];
+        
+        figure
+        set(gcf, 'Position',  [100, 300, 1500, 250])
+        titleStr = sprintf('Sleep Stage: %s, Mouse: %d', sleepStage_value, mouseNumber_value);
+        sgtitle(titleStr); 
+        a = subplot(1,2,1);
+            %a.Position = [0.1300 0.1100 0.6200 0.8150];
+            plot(deltaSignalName,signal_trace);
+            hold on
+            plot(deltaSignalName,detrended_signal);
+            legend({'raw','fitted'})
+            hold off
+        b = subplot(1,2,2);
+            %b.Position = [0.8140 0.1100 0.1533 0.8150];
+            plot(f,pxx);
+        % This [pxx, f] can now be used as part of your plot data aggregation and PSD_NE_table entry calculation
+
+        % Accumulate pxx arrays and their lengths for later averaging
+        if ~isfield(accumulatedData, validSleepStage)
+            accumulatedData.(validSleepStage).pxx = {};
+            accumulatedData.(validSleepStage).lengths = [];
+        end
+        accumulatedData.(validSleepStage).pxx{end+1} = pxx;
+        accumulatedData.(validSleepStage).lengths(end+1) = length(deltaSignalValues);
+        
+        % Collect data for PSD_NE_table
+        % Assume you have a function or method to calculate the metrics for each segment
+        PSD_NE_table_entries = [PSD_NE_table_entries; calculateMetricsForPSD(f, pxx, mouseNumber, uHour, validSleepStage )];
+    end
+    
+    averagedPxx = struct();
+    for stage = fieldnames(accumulatedData).'
+        s = stage{1};
+        allPxx = accumulatedData.(s).pxx;
+        weights = accumulatedData.(s).lengths / sum(accumulatedData.(s).lengths);
+
+        % Initialize averaged pxx array
+        averagedPxx.(s) = zeros(size(allPxx{1}));
+        
+        % Calculate weighted average
+        for i = 1:length(allPxx)
+            averagedPxx.(s) = averagedPxx.(s) + allPxx{i} * weights(i);
+        end
+    end
+
+    % Update PSD_NE_table for this hour
+    % Assuming PSD_NE_table is initialized outside this loop
+    PSD_NE_table = [PSD_NE_table; PSD_NE_table_entries];
+end
+%% Get full plot
+
+PSD_NE_table = [];
+% Assuming the second column might not be uniformly numeric
+hourColumn = updated_mice_data_hours(:,2);
+
+% If hourColumn is a cell array, ensure it's numeric
+if iscell(hourColumn)
+    hourColumn = cell2mat(hourColumn);
+end
+
+uniqueHours = unique(hourColumn);
+
+% Initialize a map or container to hold the signal_fs for each hour
+signal_fs_map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+
+for idx = 1:length(uniqueHours)
+    uHour = uniqueHours(idx); % Working with numeric value directly
+
+    % Find all entries for this hour. Since updated_mice_data_hours(:,2) is a cell,
+    % and uHour is numeric, we need to convert each cell to numeric temporarily for comparison.
+    isCurrentHour = cellfun(@(x) isequal(x, uHour), updated_mice_data_hours(:,2));
+    hourEntriesIdx = find(isCurrentHour); % Indices of entries for the current hour
+    hourEntries = updated_mice_data_hours(hourEntriesIdx,:);
+
+    if isempty(hourEntries)
+        continue; % Skip if no entries for this hour
+    end
+
+    % Sorting by mouse number requires ensuring mouse numbers are numeric or handled as strings consistently
+    % This example proceeds under the assumption that sorting is not directly impacted by numeric vs. string,
+    % but adjust accordingly based on your specific needs and data structure.
+
+    % Extract the first mouse number for this hour
+    % (Here, you may need to adjust based on how mouse numbers are stored and used in your dataset)
+    firstMouseNumber = hourEntries{1, 1}; % Assuming first entry has the mouse number you need
+
+    % Construct the variable name for signal_fs based on the mouse number
+    signal_fs_varName = sprintf('signal_fs_%d', firstMouseNumber);
+
+    % Extract signal_fs for this mouse
+    if isKey(signal_fs_map, uHour)
+        fs = signal_fs_map(uHour); % Use existing value if already determined
+    else
+        % Extract from the workspace if not already determined
+        fs = evalin('base', signal_fs_varName); 
+        signal_fs_map(uHour) = fs; % Store for future reference
+    end
+    
+    % Prepare to collect plot data
+    plotData = struct();
+    
+    % Prepare the PSD_NE_table entries for this hour
+    PSD_NE_table_entries = [];
+
+    accumulatedData = struct();
+
+    figure; % New figure for each hour
+    hold on;
+    
+    for i = 1:size(hourEntries, 1)
+        mouseNumber = hourEntries(i, 1);
+        sleepStage = hourEntries(i, 3);
+        mouseNumber_value = hourEntries{i, 1}; % Assuming this is a numeric value
+        sleepStage_value = hourEntries{i, 3}; % Assuming this is also a numeric value
+
+        if iscell(sleepStage)
+            sleepStage = sleepStage{1}; % Extracting string from cell
+        end
+        validSleepStage = matlab.lang.makeValidName(sleepStage);
+
+        % Extract variable names and values from hourEntries
+        % Corrected by breaking into two steps to avoid direct chaining
+        secSignalCell = hourEntries(i, 4); % This will give you a cell
+        deltaSignalCell = hourEntries(i, 5); % Another cell
+        deltaSignalValuesCell = hourEntries(i, 7); % Cell containing the actual signal data
+    
+        % Now extract the actual string or data from the cell
+        secSignalName = secSignalCell{1};
+        deltaSignalName = deltaSignalCell{1};
+        deltaSignalValues = deltaSignalValuesCell{1};
+        
+        % Assuming fs is common or retrieved per animal/hour. If variable, adjust accordingly.
+        
+        % Process signal (e.g., detrend, calculate PSD)
+        % Extract the actual signal values
+        signal_trace = deltaSignalValues; % Your delta signal for the current segment
+        
+        % Assuming min_period_dur, max_freq, and sample_pr_sec are defined as before
+        max_freq = 0.1; % Maximum frequency for PSD
+        sample_pr_sec = 0.0005; % Frequency resolution for PSD
+        
+        % Detrend and center the signal around 0
+        [p, s, mu] = polyfit((1:numel(signal_trace))', signal_trace, 5);
+        f_y = polyval(p, (1:numel(signal_trace))', [], mu);
+        detrended_signal = signal_trace - f_y'; % Detrended data
+        
+        % Calculate Power Spectral Density (PSD)
+        [pxx, f] = pwelch(detrended_signal, [], [], 0:sample_pr_sec:max_freq, fs);
+
+        % Accumulate pxx arrays and their lengths for later averaging
+        if ~isfield(accumulatedData, validSleepStage)
+            accumulatedData.(validSleepStage).pxx = {};
+            accumulatedData.(validSleepStage).lengths = [];
+        end
+        accumulatedData.(validSleepStage).pxx{end+1} = pxx;
+        accumulatedData.(validSleepStage).lengths(end+1) = length(deltaSignalValues);
+        
+        % Collect data for PSD_NE_table
+        % Assume you have a function or method to calculate the metrics for each segment
+        PSD_NE_table_entries = [PSD_NE_table_entries; calculateMetricsForPSD(f, pxx, mouseNumber, uHour, validSleepStage )];
+    end
+    
+    averagedPxx = struct();
+    for stage = fieldnames(accumulatedData).'
+        s = stage{1};
+        allPxx = accumulatedData.(s).pxx;
+        weights = accumulatedData.(s).lengths / sum(accumulatedData.(s).lengths);
+
+        % Initialize averaged pxx array
+        averagedPxx.(s) = zeros(size(allPxx{1}));
+        
+        % Calculate weighted average
+        for i = 1:length(allPxx)
+            averagedPxx.(s) = averagedPxx.(s) + allPxx{i} * weights(i);
+        end
+    end
+
+    % Define a mapping of sleep stages to colors
+    colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+    sleepStages = {'NREMinclMA', 'NREMexclMA', 'REM', 'Wake'};
+    colorMap = containers.Map(sleepStages, colors);
+
+        % Convert all mouse numbers to strings first
+    mouseNumbersStr = cellfun(@(x) num2str(x), hourEntries(:,1), 'UniformOutput', false);
+
+    % Now you can safely use `unique` on the converted strings
+    uniqueMouseNumbers = unique(mouseNumbersStr);
+
+    % Construct the title string
+    titleStr = sprintf('Power Spectral Density from %d - %d. Averaged across Mouse %s', uHour, uHour+1, strjoin(uniqueMouseNumbers, ', '));
+
+    % Plot for this hour
+    for stage = fieldnames(averagedPxx).'
+        s = stage{1};
+        validSleepStage = matlab.lang.makeValidName(s); % Ensure it matches your colorMap keys
+        if isKey(colorMap, s) % Check if the sleep stage has a defined color
+            plotColor = colorMap(s);
+        else
+            plotColor = 'black'; % Default color if not specified
+        end
+        plot(f, averagedPxx.(s), 'DisplayName', s, 'Color', plotColor);
+    end
+    title(titleStr);
+    xlabel('Frequency (Hz)');
+    ylabel(' Weighted Power');
+    legend('show');
+    grid on;
+    hold off;
+    set(gcf,'color','white')
+
+    
+    % Update PSD_NE_table for this hour
+    % Assuming PSD_NE_table is initialized outside this loop
+    PSD_NE_table = [PSD_NE_table; PSD_NE_table_entries];
+end
+
+%% PSD plots (one line per animal)
+PSD_NE_table = [];
+% Assuming the second column might not be uniformly numeric
+hourColumn = updated_mice_data_hours(:,2);
+
+% If hourColumn is a cell array, ensure it's numeric
+if iscell(hourColumn)
+    hourColumn = cell2mat(hourColumn);
+end
+
+uniqueHours = unique(hourColumn);
+
+% Initialize a map or container to hold the signal_fs for each hour
+signal_fs_map = containers.Map('KeyType', 'double', 'ValueType', 'any');
+
+for idx = 1:length(uniqueHours)
+    uHour = uniqueHours(idx); % Working with numeric value directly
+
+    % Find all entries for this hour. Since updated_mice_data_hours(:,2) is a cell,
+    % and uHour is numeric, we need to convert each cell to numeric temporarily for comparison.
+    isCurrentHour = cellfun(@(x) isequal(x, uHour), updated_mice_data_hours(:,2));
+    hourEntriesIdx = find(isCurrentHour); % Indices of entries for the current hour
+    hourEntries = updated_mice_data_hours(hourEntriesIdx,:);
+
+    if isempty(hourEntries)
+        continue; % Skip if no entries for this hour
+    end
+
+    % Sorting by mouse number requires ensuring mouse numbers are numeric or handled as strings consistently
+    % This example proceeds under the assumption that sorting is not directly impacted by numeric vs. string,
+    % but adjust accordingly based on your specific needs and data structure.
+
+    % Extract the first mouse number for this hour
+    % (Here, you may need to adjust based on how mouse numbers are stored and used in your dataset)
+    firstMouseNumber = hourEntries{1, 1}; % Assuming first entry has the mouse number you need
+
+    % Construct the variable name for signal_fs based on the mouse number
+    signal_fs_varName = sprintf('signal_fs_%d', firstMouseNumber);
+
+    % Extract signal_fs for this mouse
+    if isKey(signal_fs_map, uHour)
+        fs = signal_fs_map(uHour); % Use existing value if already determined
+    else
+        % Extract from the workspace if not already determined
+        fs = evalin('base', signal_fs_varName); 
+        signal_fs_map(uHour) = fs; % Store for future reference
+    end
+    
+    % Prepare to collect plot data
+    plotData = struct();
+    
+    % Prepare the PSD_NE_table entries for this hour
+    PSD_NE_table_entries = [];
+    
+    figure; % New figure for each hour
+    hold on;
+    
+    for i = 1:size(hourEntries, 1)
+        mouseNumber = hourEntries(i, 1);
+        sleepStage = hourEntries(i, 3);
+
+        if iscell(sleepStage)
+            sleepStage = sleepStage{1}; % Extracting string from cell
+        end
+        validSleepStage = matlab.lang.makeValidName(sleepStage);
+
+        % Extract variable names and values from hourEntries
+        % Corrected by breaking into two steps to avoid direct chaining
+        secSignalCell = hourEntries(i, 4); % This will give you a cell
+        deltaSignalCell = hourEntries(i, 5); % Another cell
+        deltaSignalValuesCell = hourEntries(i, 7); % Cell containing the actual signal data
+    
+        % Now extract the actual string or data from the cell
+        secSignalName = secSignalCell{1};
+        deltaSignalName = deltaSignalCell{1};
+        deltaSignalValues = deltaSignalValuesCell{1};
+        
+        % Assuming fs is common or retrieved per animal/hour. If variable, adjust accordingly.
+        
+        % Process signal (e.g., detrend, calculate PSD)
+        % Extract the actual signal values
+        signal_trace = deltaSignalValues; % Your delta signal for the current segment
+        
+        % Assuming min_period_dur, max_freq, and sample_pr_sec are defined as before
+        min_period_dur = 120; % Minimum duration for inclusion in analysis
+        max_freq = 0.1; % Maximum frequency for PSD
+        sample_pr_sec = 0.0005; % Frequency resolution for PSD
+        
+        % Detrend and center the signal around 0
+        [p, s, mu] = polyfit((1:numel(signal_trace))', signal_trace, 5);
+        f_y = polyval(p, (1:numel(signal_trace))', [], mu);
+        detrended_signal = signal_trace - f_y'; % Detrended data
+        
+        % Calculate Power Spectral Density (PSD)
+        [pxx, f] = pwelch(detrended_signal, [], [], 0:sample_pr_sec:max_freq, fs);
+        
+        % This [pxx, f] can now be used as part of your plot data aggregation and PSD_NE_table entry calculation
+
+        % Store or plot the data
+        if ~isfield(plotData, validSleepStage )
+            plotData.(validSleepStage ) = struct('f', [], 'pxx', []);
+        end
+        plotData.(validSleepStage ).f = [plotData.(validSleepStage ).f; f]; % Assuming f is the same for all
+        plotData.(validSleepStage ).pxx = [plotData.(validSleepStage ).pxx; pxx];
+        
+        % Collect data for PSD_NE_table
+        % Assume you have a function or method to calculate the metrics for each segment
+        PSD_NE_table_entries = [PSD_NE_table_entries; calculateMetricsForPSD(f, pxx, mouseNumber, uHour, validSleepStage )];
+    end
+    
+        % Convert all mouse numbers to strings first
+    mouseNumbersStr = cellfun(@(x) num2str(x), hourEntries(:,1), 'UniformOutput', false);
+    
+    % Now you can safely use `unique` on the converted strings
+    uniqueMouseNumbers = unique(mouseNumbersStr);
+    
+    % Construct the title string
+    titleStr = sprintf('Hour %d - Animals: %s', uHour, strjoin(uniqueMouseNumbers, ', '));
+
+    % Plot for this hour
+    sleepStages = fieldnames(plotData);
+    for sIdx = 1:length(sleepStages)
+        stage = sleepStages{sIdx};
+        plot(plotData.(stage).f, mean(plotData.(stage).pxx, 1), 'DisplayName', stage); % Example mean; adjust as needed
+    end
+    % Use the constructed title string
+    title(titleStr);
+    xlabel('Frequency (Hz)');
+    ylabel('Power');
+    legend('show');
+    hold off;
+    
+    % Update PSD_NE_table for this hour
+    % Assuming PSD_NE_table is initialized outside this loop
+    PSD_NE_table = [PSD_NE_table; PSD_NE_table_entries];
+end
+
