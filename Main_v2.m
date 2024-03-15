@@ -152,11 +152,11 @@ filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-%[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 10, 10, 20);
-%[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 10, 10, 20);
-[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168,MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 10, 10, 20);
-[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147,MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 10, 10, 20);
-[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149,MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 10, 10, 20);
+[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 15, 15, 20);
+[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 15, 15, 20);
+[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168,MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 15, 15, 20);
+[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147,MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 15, 15, 20);
+[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149,MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 15, 15, 20);
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
@@ -380,6 +380,210 @@ end
 %4th and 5th holds the name of FP time variable and the actual timestamps
 %in seconds
 %6th and 7th holds the name of FP data variable and the actual FP data
+%% Get PSD for each sleep stage
+% Initialization
+max_freq = 0.1; % Maximum frequency for PSD analysis
+sample_pr_sec = 0.002; % Frequency resolution for PSD
+
+% Initialize the PSD_NE_table_new with headers
+PSD_NE_table_new = [{'MouseNumber', 'Hour', 'SleepStage', 'PeakPower', 'PeakPowerFreq', 'Freq25Quartile', 'MedianFrequency', 'Freq75Quartile', 'Freq95Quartile', 'AUC', 'TotalPower'}];
+PSD_data = [];
+% Loop through each hour
+for uHour = uniqueHours'
+    
+    % Find all entries for this hour
+    hourEntries = updated_mice_data_hours([updated_mice_data_hours{:, 2}] == uHour, :);
+
+    % Loop through each mouse for the current hour
+    for uMouseNumber = uniqueMouseNumbers'
+        
+        % Extract fs for the current mouse using its identifier
+        fs_varName = sprintf('signal_fs_%d', uMouseNumber);
+        fs = eval(fs_varName); % Assuming fs is defined in the workspace
+        
+        combinedPSDData = struct(); % Structure to hold combined PSD data for each sleep stage
+
+        % Loop through each sleep stage for the current mouse and hour
+        for uSleepStage = sleepStages
+            sleepStage = uSleepStage{1}(1:end-8); % Removing '_periods'
+            stageEntries = hourEntries(strcmp(hourEntries(:,3), sleepStage), :);
+
+            weightedPSD = [];
+            freqs = [];
+            totalDataPoints = 0;
+
+            % Process each sleep bout within the stage
+            for entry = stageEntries'
+                secSignalData = entry{5};
+                deltaSignalData = entry{7};
+
+                % Process each signal segment to calculate PSD
+                [detrendedSignal, segmentPSD, freqs, segmentDataPoints] = processSignalSegment(secSignalData, deltaSignalData, fs, max_freq, sample_pr_sec);
+
+                % figure
+                % set(gcf, 'Position',  [100, 300, 1500, 250])
+                % titleStr = sprintf('Sleep Stage: %s, Mouse: %d', sleepStage, uMouseNumber);
+                % sgtitle(titleStr); 
+                % a = subplot(1,2,1);
+                %     %a.Position = [0.1300 0.1100 0.6200 0.8150];
+                %     plot(secSignalData,deltaSignalData);
+                %     hold on
+                %     plot(secSignalData,detrendedSignal);
+                %     legend({'raw','fitted'})
+                %     hold off
+                % b = subplot(1,2,2);
+                %     %b.Position = [0.8140 0.1100 0.1533 0.8150];
+                %     plot(freqs,segmentPSD);
+
+                if isempty(weightedPSD)
+                    weightedPSD = segmentPSD * segmentDataPoints;
+                else
+                    weightedPSD = weightedPSD + segmentPSD * segmentDataPoints;
+                end
+                totalDataPoints = totalDataPoints + segmentDataPoints;
+            end
+
+            if totalDataPoints > 0
+                % Calculate average PSD for this stage
+                avgPSD = weightedPSD / totalDataPoints;
+                PSD_data = [PSD_data; [uMouseNumber, uHour, sleepStage, {freqs}, {avgPSD}, totalDataPoints]];
+
+                % Calculate additional metrics from avgPSD and freqs
+                [metrics] = calculatePSDMetrics(avgPSD, freqs);
+
+                % Append the calculated metrics for this mouse, hour, and sleep stage to PSD_NE_table_new
+                PSD_NE_table_new = [PSD_NE_table_new; {uMouseNumber, uHour, sleepStage, metrics.peakPower, metrics.peakPowerFreq, metrics.Freq25Quartile, metrics.MedianFrequency, metrics.Freq75Quartile, metrics.Freq95Quartile, metrics.AUC, metrics.totalPower}];
+            end
+        end
+    end
+end
+%% Get PSD per hour/stage cross animal
+
+% Initialize a table for averaged PSD data across mice for each sleep stage and hour
+avgPSD_data = [];
+
+% Unique hours and sleep stages for grouping
+uniqueHours = unique([PSD_data{:, 2}]);
+uniqueSleepStages = unique(PSD_data(:, 3));
+
+% Loop through each unique hour and sleep stage to average PSDs
+for hourIdx = 1:length(uniqueHours)
+    uHour = uniqueHours(hourIdx);
+
+    % Assuming uniqueHours was obtained from a numeric array
+    % Find all entries for this hour
+    hourEntriesIdx = find(cell2mat(PSD_data(:, 2)) == uHour);
+
+    for stageIdx = 1:length(uniqueSleepStages)
+        uSleepStage = uniqueSleepStages{stageIdx};
+
+        % Since uniqueSleepStages comes from a cell array of strings,
+        % use cellfun combined with strcmp to compare each element
+        stageMatches = cellfun(@(x) strcmp(x, uSleepStage), PSD_data(:, 3));
+        
+        % Now find the indices where both the hour and the sleep stage match
+        % This requires combining the logical arrays for hour and stage
+        matchingEntriesIdx = hourEntriesIdx(stageMatches(hourEntriesIdx));
+        
+        if isempty(matchingEntriesIdx)
+            continue; % Skip if no matching entries
+        end
+        
+        % Initialize accumulator for PSD sums and list to store mouse numbers
+        PSD_sum = zeros(size(PSD_data{matchingEntriesIdx(1), 5})); % Initialize based on the first entry's PSD size
+        numEntries = 0; % Count of matching entries
+        mouseNumbersList = []; % To store mouse numbers contributing to the average
+        
+        % Loop through matching entries to accumulate PSD sums and collect mouse numbers
+        for idx = matchingEntriesIdx'
+            currentAvgPSD = PSD_data{idx, 5};
+            PSD_sum = PSD_sum + currentAvgPSD; % Sum up the PSD values
+            numEntries = numEntries + 1; % Increment count
+            mouseNumbersList = [mouseNumbersList, PSD_data{idx, 1}]; % Append mouse number
+        end
+        
+        % Calculate the simple average PSD for the current hour and sleep stage
+        if numEntries > 0
+            avgPSD = PSD_sum / numEntries; % Calculate the simple average
+            currentFreqs = PSD_data{matchingEntriesIdx(1), 4}; % Frequencies assumed to be consistent
+            % Add the averaged PSD data and the list of mouse numbers to avgPSD_data
+            avgPSD_data = [avgPSD_data; {uHour, uSleepStage, currentFreqs, avgPSD, mouseNumbersList}];
+        end
+    end
+end
+
+%% plot
+% Assuming avgPSD_data is not empty and frequencies are consistent across all entries
+if isempty(avgPSD_data)
+    disp('avgPSD_data is empty. No plots can be generated.');
+    return; % Exit if avgPSD_data is empty
+end
+
+% Extract frequencies from the first row of avgPSD_data for plotting
+universalFreqs = avgPSD_data{1, 3}; % Use the frequencies from the first row for all plots
+
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+sleepStages = {'NREMinclMA', 'NREMexclMA', 'REM', 'wake'};
+colorMap = containers.Map(sleepStages, colors);
+
+uniqueHours = unique([avgPSD_data{:, 1}]);
+uniqueSleepStages = unique(avgPSD_data(:, 2));
+
+% Loop through each unique hour
+for hourIdx = 1:length(uniqueHours)
+    uHour = uniqueHours(hourIdx);
+
+    figure; % Create a new figure for each unique hour
+    hold on; % Hold on to plot multiple lines
+
+    % Initialize a container to collect mouse numbers for the current hour
+    mouseNumbersForHour = [];
+
+    % Loop through each unique sleep stage
+    for stageIdx = 1:length(uniqueSleepStages)
+        uSleepStage = uniqueSleepStages{stageIdx};
+
+        % Manual approach to find the matching entry
+        matchingEntryFound = false;
+        for i = 1:size(avgPSD_data, 1)
+            if avgPSD_data{i, 1} == uHour && strcmp(avgPSD_data{i, 2}, uSleepStage)
+                matchingEntryFound = true;
+                matchingEntryIdx = i;
+                disp(['Match found - Hour: ', num2str(uHour), ', Sleep Stage: ', uSleepStage, ', Row Index: ', num2str(matchingEntryIdx)]);
+                break; % Stop looking once a match is found
+            end
+        end
+
+        % Proceed if a matching entry is found
+        if matchingEntryFound
+            avgPSD = avgPSD_data{matchingEntryIdx, 4}; % Access nested PSD
+            mouseNumbersList = avgPSD_data{matchingEntryIdx, 5}; % Access mouse numbers
+            mouseNumbersForHour = union(mouseNumbersForHour, mouseNumbersList); % Accumulate mouse numbers
+
+            plotColor = colorMap(uSleepStage); % Determine the color for the plot
+            plot(universalFreqs, avgPSD, 'DisplayName', uSleepStage, 'Color', plotColor);
+        end
+    end
+
+    % Construct the title string with mouse numbers
+    mouseNumbersStr = strjoin(arrayfun(@(x) num2str(x), mouseNumbersForHour, 'UniformOutput', false), ', ');
+    titleStr = sprintf('Power Spectral Density from Hour %d - %d. Averaged across Mice %s', uHour, uHour+1, mouseNumbersStr);
+
+    title(titleStr);
+    xlabel('Frequency (Hz)');
+    ylabel('Weighted Power');
+    legend('show');
+    grid on;
+    hold off;
+    set(gcf, 'color', 'white');
+end
+
+%% Graveyard
+
+
+
+
+
 %% PSD plots (One line across animals)
 PSD_NE_table = [];
 % Assuming the second column might not be uniformly numeric

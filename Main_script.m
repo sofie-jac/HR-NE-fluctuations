@@ -30,13 +30,13 @@ name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'chan
 % First path is for the FP and 2nd is for EEG traces
 
 Mouse_117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
-Mouse_124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'Dv2A' 'Dv1A' 'red' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
+Mouse_124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'Dv2A' 'Dv1A' 'red' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\Score_124.xlsx'};
 
 %test
 Mouse_3129_ctrl = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20200721 NE Sleep deprivation\20200721_1-307_2-319_sleep\319_NE_As_sleep\319_NE_As_sleep_2020-07-21_12-07-19-593.exp' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 
-Mouse_168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\168.5.32.sleep\168_sleep_data'};
-mouse = Mouse_168 ;
+Mouse_168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data'};
+mouse = Mouse_124 ;
 %% load data
 
 data_FPrig = TDTbin2mat(mouse{1}); % FP rig 
@@ -68,30 +68,31 @@ EMG = EMG(samplesToRemove_EEG_EMG:end);
 % Directly trim the first second from signal_405_2 and signal_465_2
 signal_405_2 = signal_405_2(samplesToRemove_FP:end);
 signal_465_2 = signal_465_2(samplesToRemove_FP:end);
+%% 
 
-% %% remove period before TTL pulse
-% 
-% % TTL pusle for FP
-% TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
-% first_TTL = TTL_FP(1)*signal_fs;
-% onset_FP = first_TTL;
-% if first_TTL<1
-%     onset_FP = 1;
-% end
-% 
-% % TTL pusle for EEG
-% TTL_FP_EEG = data_EEGrig.epocs.(mouse{12}).onset; %CHOOSE RIG THAT EEG IS ACQUIRED ON
-% first_TTL_EEG = TTL_FP_EEG(1)*EEG_fs;
-% onset_FP_EEG = first_TTL_EEG;
-% if first_TTL_EEG<1
-%     onset_FP_EEG = 1;
-% end
-% 
-% signal_465_2 = signal_465_2(onset_FP:end);
-% signal_405_2 = signal_405_2(onset_FP:end);
-% 
-% EEG = EEG(onset_FP_EEG:end);
-% EMG = EMG(onset_FP_EEG:end);
+%% remove period before TTL pulse
+
+% TTL pusle for FP
+TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
+first_TTL = TTL_FP(1)*signal_fs;
+onset_FP = first_TTL;
+if first_TTL<1
+    onset_FP = 1;
+end
+
+% TTL pusle for EEG
+TTL_FP_EEG = data_EEGrig.epocs.(mouse{12}).onset; %CHOOSE RIG THAT EEG IS ACQUIRED ON
+first_TTL_EEG = TTL_FP_EEG(1)*EEG_fs;
+onset_FP_EEG = first_TTL_EEG;
+if first_TTL_EEG<1
+    onset_FP_EEG = 1;
+end
+
+signal_465_2 = signal_465_2(onset_FP:end);
+signal_405_2 = signal_405_2(onset_FP:end);
+
+EEG = EEG(onset_FP_EEG:end);
+EMG = EMG(onset_FP_EEG:end);
 
 
 %% time signal
@@ -264,9 +265,7 @@ wake_woMA_periods = [wake_woMA_onset wake_woMA_onset+wake_woMA_duration];
 
 %% SLEEP: 6) Alingment of EEG recording and FP recording
 
-%TTL_EEG_onset = onset_FP_EEG/EEG_fs;
-TTL_EEG_onset = samplesToRemove_EEG_EMG;
-
+TTL_EEG_onset = first_TTL_EEG;
 
 % Remove first seconds of EEG score to align with FP trace
 wake_binary_vector_cut = wake_binary_vector(round(TTL_EEG_onset):end);
@@ -304,6 +303,46 @@ sws_periods_cut = [sws_onset_cut sws_offset_cut];
 REM_periods_cut = [REM_onset_cut REM_offset_cut];
 MA_periods_cut = [MA_onset_cut MA_offset_cut];
 wake_woMA_periods_cut = [wake_woMA_onset_cut wake_woMA_offset_cut];
+%TTL_EEG_onset = onset_FP_EEG/EEG_fs;
+% TTL_EEG_onset = samplesToRemove_EEG_EMG;
+% 
+% 
+% % Remove first seconds of EEG score to align with FP trace
+% wake_binary_vector_cut = wake_binary_vector(round(TTL_EEG_onset):end);
+% sws_binary_vector_cut = sws_binary_vector(round(TTL_EEG_onset):end);
+% REM_binary_vector_cut = REM_binary_vector(round(TTL_EEG_onset):end);
+% MA_binary_vector_cut = MA_binary_vector(round(TTL_EEG_onset):end);
+% wake_woMA_binary_vector_cut = wake_woMA_binary_vector(round(TTL_EEG_onset):end);
+% 
+% 
+% % Align onset, offset, and duration vectors based on TTL
+% [wake_onset_cut, wake_offset_cut] = binary_to_OnOff(wake_binary_vector_cut);
+% wake_duration_cut = wake_offset_cut - wake_onset_cut;
+% 
+% [sws_onset_cut, sws_offset_cut] = binary_to_OnOff(sws_binary_vector_cut);
+% sws_duration_cut = sws_offset_cut - sws_onset_cut;
+% 
+% if ~isnan(REM_onset)
+%     [REM_onset_cut, REM_offset_cut] = binary_to_OnOff(REM_binary_vector_cut);
+%     REM_duration_cut = REM_offset_cut - REM_onset_cut;
+% else
+%     REM_onset_cut = NaN;    % in case of no REM bouts
+%     REM_offset_cut = NaN;
+%     REM_duration_cut = NaN;
+% end
+% 
+%     [MA_onset_cut, MA_offset_cut] = binary_to_OnOff(MA_binary_vector_cut);
+%     MA_duration_cut = MA_offset_cut - MA_onset_cut;
+% 
+%     [wake_woMA_onset_cut, wake_woMA_offset_cut] = binary_to_OnOff(wake_woMA_binary_vector_cut);
+%     wake_woMA_duration_cut = wake_woMA_offset_cut - wake_woMA_onset_cut;
+% 
+% % Align period arrays according to TTL
+% wake_periods_cut = [wake_onset_cut wake_offset_cut];
+% sws_periods_cut = [sws_onset_cut sws_offset_cut];
+% REM_periods_cut = [REM_onset_cut REM_offset_cut];
+% MA_periods_cut = [MA_onset_cut MA_offset_cut];
+% wake_woMA_periods_cut = [wake_woMA_onset_cut wake_woMA_offset_cut];
 
 %% SLEEP: Re-classify MA as NREM using boutscore_vector
 % Here you can pool MAs with NREM sleep which can be beneficial for some
@@ -356,13 +395,13 @@ NREMinclMA_periods = [NREMinclMA_onset NREMinclMA_offset];
 %% Plot sleep phases
 %Plotting the power bands with the RR-intervals and NE
 %sleepscore_time_cut = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
-sleepscore_time = 0:length(wake_woMA_binary_vector )-1; % should be same length for wake/sws/REM
+sleepscore_time = 0:length(wake_woMA_binary_vector_cut )-1; % should be same length for wake/sws/REM
 
 figure();
 
 % Subplot for NE
 a = subplot(3, 1, 1);
-plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on;
 %plot(NE_sws_MA_Trunk_Timestamps, ds_delta465_filt_2(NE_sws_MA_Trunk_Timestamps), 'ro', 'MarkerFaceColor', 'g', 'MarkerSize', 2);
 xlabel('time (s)');
@@ -372,7 +411,7 @@ grid on;
 
 % Subplot for EEG
 b = subplot(3, 1, 2);
-plot_sleep(sec_signal_EEG, EEG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+plot_sleep(sec_signal_EEG, EEG, sleepscore_time, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on;
 xlabel('time (s)');
 ylabel('Amplitude (V)');
@@ -381,7 +420,7 @@ grid on;
 
 % Subplot for EEG
 c = subplot(3, 1, 3);
-plot_sleep(sec_signal_EMG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on;
 xlabel('time (s)');
 ylabel('Amplitude (V)');
@@ -448,6 +487,9 @@ for i = 1:totalFullHours
 end
 
 %% Determine movement peak threshold through plotting
+sec_signal_EMG = sec_signal_EEG_124;
+EMG = EMG_124;
+
 figure;
 subplot(3,1,1);
 plot(sec_signal_EMG, EMG);  % 'o-' specifies markers and lines
@@ -473,7 +515,13 @@ plot(sec_signal_EMG, EEG);  % 'o-' specifies markers and lines
 
 linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
 
-%% Determine HR and movement peaks
+%% Determine HR and movement peaks - current version
+sec_signal_EMG = sec_signal_EEG_124;
+EMG = EMG_124;
+
+filtered_EMG = EMG_124;
+sec_signal_EMG = sec_signal_EEG_124;
+EEG_fs = EEG_fs_124;
 
 % Initialize selected peaks storage
 selected_peaks = [];
@@ -559,7 +607,7 @@ end
 end
 %% Remove selected peaks that are to quick
 % Calculate the minimum time interval between peaks based on physiological bounds
-min_interval_sec = 60 / 700; % Minimum time interval in seconds for 700 bpm
+min_interval_sec = 60 / 800; % Minimum time interval in seconds for 700 bpm
 
 % Sort the peaks by their timestamps
 selected_peak_times = sec_signal_EMG(selected_peak_locs);
@@ -584,7 +632,10 @@ bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
     'SampleRate', EEG_fs);
 
 % Apply the bandpass filter to your EMG data
-filtered_EMG = filtfilt(bpFilt, EMG);
+% filtered_EMG = filtfilt(bpFilt, EMG);
+filtered_EMG = EMG_124;
+sec_signal_EMG = sec_signal_EMG_124;
+EEG_fs = EEG_fs_124;
 
 % Initialize selected peaks storage
 selected_peaks = [];
@@ -642,27 +693,27 @@ for start_idx = 1:window_length_samples:length(filtered_EMG) - window_length_sam
         dynamic_threshold = mean_EMG_window + 2.5*sd_EMG_window;
         
         % Check if any data point exceeds the dynamic threshold
-    if any(valid_data > dynamic_threshold)
-        [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
-        
-        % Ensure actual_locs_window is adjusted based on the indices of valid_data
-        actual_locs_window = start_idx - 1 + find(valid_indices); % This line seems incorrect
-        actual_locs_window = actual_locs_window(locs_window); % This might need adjustment
-        
-        % Correct the way actual_locs_window is calculated
-        % If valid_indices directly correlates to locs_window, you need to map locs_window back to the original time
-        actual_locs_window = start_idx - 1 + locs_window; % This directly maps locs_window to global indices
-
-        % Ensure peaks_window and actual_locs_window are column vectors before concatenation
-        peaks_window = peaks_window(:);
-        actual_locs_window = actual_locs_window(:);
-
-        % Concatenate peaks and locations
-        selected_peaks = [selected_peaks; peaks_window];
-        selected_peak_locs = [selected_peak_locs; actual_locs_window];
-    end
+        if any(valid_data > dynamic_threshold)
+            [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
+            
+            % Ensure actual_locs_window is adjusted based on the indices of valid_data
+            actual_locs_window = start_idx - 1 + find(valid_indices); % This line seems incorrect
+            actual_locs_window = actual_locs_window(locs_window); % This might need adjustment
+            
+            % Correct the way actual_locs_window is calculated
+            % If valid_indices directly correlates to locs_window, you need to map locs_window back to the original time
+            actual_locs_window = start_idx - 1 + locs_window; % This directly maps locs_window to global indices
+    
+            % Ensure peaks_window and actual_locs_window are column vectors before concatenation
+            peaks_window = peaks_window(:);
+            actual_locs_window = actual_locs_window(:);
+    
+            % Concatenate peaks and locations
+            selected_peaks = [selected_peaks; peaks_window];
+            selected_peak_locs = [selected_peak_locs; actual_locs_window];
         end
-   
+    end
+
     
     % If there is movement in the current window and the previous one, consider removing peaks between those movements
     % Specific logic will depend on your requirements
@@ -678,43 +729,46 @@ end
 % Plotting peaks
 figure;
 
-% Plot the original EMG signal
-subplot(3,1,1);
+% % Plot the original EMG signal
+% subplot(2,1,1);
 plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs, quality_selected_peaks, 'ro');
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-xlabel('sec\_signal\_EMG');
-ylabel('Filtered EMG');
-title('Original EMG Data w. peaks corrected');
+xlabel('Time (s)');
+ylabel('EMG');
+title('EMG with Corrected Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+set(gcf,'color','white')
 grid on;
+legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
+
+% % Plot the filtered EMG signal with selected peaks
+% subplot(3,1,2);
+% plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs_v2, quality_selected_peaks_v2, 'ro');
+% hold on;
+% scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+% line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+% xlabel('sec\_signal\_EMG');
+% ylabel('Filtered EMG');
+% title('Original EMG Data w. peaks corrected v2');
+% grid on;
+
 
 % Plot the filtered EMG signal with selected peaks
-subplot(3,1,2);
-plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs_v2, quality_selected_peaks_v2, 'ro');
-hold on;
-scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
-line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-xlabel('sec\_signal\_EMG');
-ylabel('Filtered EMG');
-title('Original EMG Data w. peaks corrected v2');
-grid on;
-
-
-% Plot the filtered EMG signal with selected peaks
-subplot(3,1,3);
+% subplot(2,1,2);
 plot(sec_signal_EMG, EMG, 'b-', sec_signal_EMG(selected_peak_locs), selected_peaks, 'ro');
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-xlabel('sec\_signal\_EMG');
-ylabel('Filtered EMG');
-title('Filtered EMG with Selected Peaks (dynamic window mean+3.5SD) and Movement Peaks');
+xlabel('Time (s)');
+ylabel('EMG (V)');
+title('EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+set(gcf,'color','white')
 grid on;
 
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
-linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
+% linkaxes([subplot(3,1,1), subplot(3,1,2)], 'x');
 
 %% Make RR intervals & Remove selected peaks + RR's within movement chunks
 
@@ -749,6 +803,7 @@ end
 figure;
 
 plot(sec_signal_EMG, filtered_EMG, 'b-', sec_signal_EMG(selected_peak_locs), selected_peaks, 'ro');
+% plot(sec_signal_EMG, filtered_EMG, 'b-', quality_selected_peak_locs, quality_selected_peak_locs, 'ro');
 hold on;
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
 
@@ -757,6 +812,7 @@ scatter(RR_time, zeros(size(RR_time)), 'kx', 'LineWidth', 2); % Plotting RR_time
 xlabel('sec\_signal\_EMG');
 ylabel('Filtered EMG');
 title('Filtered EMG with Selected Peaks, Movement Peaks, and RR_time');
+set(gcf,'color','white')
 grid on;
 
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold', 'RR_time');
@@ -1188,18 +1244,20 @@ wake_hourlySegments = segmentSleepDataIntoHours(wake_periods_cut, secSignalHours
 
 NREMinclMA_periods_cut_pklocs = find_NE_troughs(NREMinclMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 REM_periods_cut_pklocs = find_NE_troughs(REM_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.5);
-NREMexclMA_periods_cut_pklocs = find_NE_troughs(NREMexclMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
+NREMexclMA_periods_cut_pklocs = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 1); % Change SD multiplyer to 1 for more selective troughs
 wake_periods_cut_pklocs = find_NE_troughs(wake_woMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-SWS_before_MA_filtered_pklocs = find_NE_troughs_transistions(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
+SWS_before_MA_filtered_pklocs = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, MA_periods_124, 15);
 SWS_before_wake_filtered_pklocs = find_NE_troughs_transistions(SWS_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 SWS_before_REM_filtered_pklocs = find_NE_troughs_transistions(SWS_before_REM_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 REM_before_wake_filtered_pklocs = find_NE_troughs_transistions(REM_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-
+ 
 %% visualize NE troughs (plocs_all)
+    sleepscore_time = 0:length(wake_woMA_binary_vector_124)-1; % Assuming all vectors are the same length
+
 figure
-plot_sleep(ds_sec_signal_2(1000:end), ds_delta465_filt_2(1000:end), sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
+plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
 hold on
-plot(SWS_before_REM_filtered_pklocs, delta465_filt_2(round(SWS_before_REM_filtered_pklocs*signal_fs)), 'r*')
+plot(pklocs_all, delta465_filt_2_124(round(pklocs_all*signal_fs)), 'r*')
 title('NE with selected peaks');
 %}
 %pklocs_all has all the peaks (which really are dips/valleys)
@@ -2020,18 +2078,18 @@ for stage_idx = 1:length(sleep_variables)
         %PXXlog = [PXXlog logpxx'];
         PXX = [PXX pxx'];
         
-        % figure
-        % set(gcf, 'Position',  [100, 300, 1500, 250])
-        % a = subplot(1,2,1);
-        %     %a.Position = [0.1300 0.1100 0.6200 0.8150];
-        %     plot(timetrace_i,NREM_data{i});
-        %     hold on
-        %     plot(timetrace_i,detrend_data);
-        %     legend({'raw','fitted'})
-        %     hold off
-        % b = subplot(1,2,2);
-        %     %b.Position = [0.8140 0.1100 0.1533 0.8150];
-        %     plot(f,pxx);
+        figure
+        set(gcf, 'Position',  [100, 300, 1500, 250])
+        a = subplot(1,2,1);
+            %a.Position = [0.1300 0.1100 0.6200 0.8150];
+            plot(timetrace_i,NREM_data{i});
+            hold on
+            plot(timetrace_i,detrend_data);
+            legend({'raw','fitted'})
+            hold off
+        b = subplot(1,2,2);
+            %b.Position = [0.8140 0.1100 0.1533 0.8150];
+            plot(f,pxx);
     end
     
     weighted_mean_PXX_iso = sum(period_duration.*PXX,2)/sum(period_duration); % weigthed mean trace (period durations are used as weights)
