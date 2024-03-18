@@ -411,7 +411,7 @@ grid on;
 
 % Subplot for EEG
 b = subplot(3, 1, 2);
-plot_sleep(sec_signal_EEG_168, EEG_168, sleepscore_time, wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168);
+plot_sleep(sec_signal_EEG, EEG, sleepscore_time, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on;
 xlabel('time (s)');
 ylabel('Amplitude (V)');
@@ -420,7 +420,7 @@ grid on;
 
 % Subplot for EEG
 c = subplot(3, 1, 3);
-plot_sleep(sec_signal_EEG_168, EMG_168, sleepscore_time, wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168);
+plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut);
 hold on;
 xlabel('time (s)');
 ylabel('Amplitude (V)');
@@ -516,12 +516,12 @@ plot(sec_signal_EMG, EEG);  % 'o-' specifies markers and lines
 linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
 
 %% Determine HR and movement peaks - current version
-sec_signal_EMG = sec_signal_EEG_168;
-EMG = EMG_168;
+sec_signal_EMG = sec_signal_EEG_124;
+EMG = EMG_124;
 
-filtered_EMG = EMG_168;
-sec_signal_EMG = sec_signal_EEG_168;
-EEG_fs = EEG_fs_168;
+filtered_EMG = EMG_124;
+sec_signal_EMG = sec_signal_EEG_124;
+EEG_fs = EEG_fs_124;
 
 % Initialize selected peaks storage
 selected_peaks = [];
@@ -1246,7 +1246,7 @@ NREMinclMA_periods_cut_pklocs = find_NE_troughs(NREMinclMA_periods_cut, signal_f
 REM_periods_cut_pklocs = find_NE_troughs(REM_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.5);
 NREMexclMA_periods_cut_pklocs = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 1); % Change SD multiplyer to 1 for more selective troughs
 wake_periods_cut_pklocs = find_NE_troughs(wake_woMA_periods_cut, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
-SWS_before_MA_filtered_pklocs = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, MA_periods_124, 15);
+SWS_before_MA_filtered_pklocs = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, MA_periods_124, 15);
 SWS_before_wake_filtered_pklocs = find_NE_troughs_transistions(SWS_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 SWS_before_REM_filtered_pklocs = find_NE_troughs_transistions(SWS_before_REM_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
 REM_before_wake_filtered_pklocs = find_NE_troughs_transistions(REM_before_wake_filtered, signal_fs, delta465_filt_2, sec_signal_2, 0.3);
@@ -1257,7 +1257,7 @@ REM_before_wake_filtered_pklocs = find_NE_troughs_transistions(REM_before_wake_f
 figure
 plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
 hold on
-plot(SWS_before_MA_filtered_pklocs, delta465_filt_2_124(round(SWS_before_MA_filtered_pklocs*signal_fs)), 'r*')
+plot(pklocs_all, delta465_filt_2_124(round(pklocs_all*signal_fs)), 'r*')
 title('NE with selected peaks');
 %}
 %pklocs_all has all the peaks (which really are dips/valleys)

@@ -11,9 +11,15 @@ M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice dat
 M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
 M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
 M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
-mice_TTL = {M117, M124, };
-mice = {M168, M147, M149};
+mice_TTL = {M124, M117};
+mice = {M168, M147, M149, M117, M124};
 mice_without_TTL = {M168, M147, M149};
+
+% Create a matrix of mice pairs where the first column is the mouse without EEG data
+% and the second column is the mouse with EEG data
+mice_pairs = {'M124', 'M117'}; % Example given with M124 and M117
+
+
 mice_without_TTL_IDs = {};
 
 %Extract names of the mice withoutTTL for later use
@@ -25,45 +31,55 @@ end
 
 %% Load FP and EEG data for all mice
 
-% Loop to load data for each mouse
-for idx = 1:length(mice_without_TTL)
-    mouse = mice_without_TTL{idx};
-    
-    % Dynamically generate variable names for data_FPrig and data_EEGrig
+for idx = 1:length(mice)
+    mouse = mice{idx};
+    mouseID = sprintf('M%s', mouse{1}(end-2:end)); % Extract the ID
+    disp(mouseID)
+
+        % Dynamically generate variable names for data_FPrig and data_EEGrig
     data_FPrig_varName = sprintf('data_FPrig_%s', mouse{1}(end-2:end)); % Assumes the unique identifier is the last 3 characters of the first string in mouse array
-    data_EEGrig_varName = sprintf('data_EEGrig_%s', mouse{2}(end-2:end)); % Same assumption for EEG rig path
-    
-    % Load data using TDTbin2mat and assign to dynamically named variables
+        % Load data using TDTbin2mat and assign to dynamically named variables
     eval([data_FPrig_varName, ' = TDTbin2mat(mouse{1});']); % FP rig data
-    eval([data_EEGrig_varName, ' = TDTbin2mat(mouse{2});']); % EEG rig data - might be the same as FP rig
+
+    % Check if this mouse is supposed to skip EEG data loading
+    if ~ismember(mouseID, mice_pairs(:, 1))
+        % Load EEG data as normal
+        data_EEGrig_varName = sprintf('data_EEGrig_%s', mouse{2}(end-2:end));
+        eval([data_EEGrig_varName, ' = TDTbin2mat(mouse{2});']); % EEG rig data - might be the same as FP rig
+    end
 end
 
 %% Preprocess FP, EEG and EMG
+for idx = 1:length(mice_TTL)
+    mouse = mice_TTL{idx};
+    mouseID = sprintf('M%s', mouse{1}(end-2:end)); % Extract the ID
+    disp(mouseID)
 
-% Loop to process signals for each mouse and store outputs with dynamic names
-for idx = 1:length(mice)
-    mouse = mice{idx}; % Assuming mouse is a cell array with relevant data
-    
-    % Extract the mouse identifier correctly assuming the first element is a path or identifier
-    mouseIdentifier = sprintf('M%s', mouse{1}(end-2:end)); % Adjust regexp as necessary for your identifiers
-    
-    % Dynamically name inputs based on mouse identifiers
     data_FPrig_input = eval(sprintf('data_FPrig_%s', mouse{1}(end-2:end)));
-    data_EEGrig_input = eval(sprintf('data_EEGrig_%s', mouse{1}(end-2:end)));
-    
-    % Check if the current mouse identifier is in the mice_without_TTL list
+        % Check if the current mouse identifier is in the mice_without_TTL list
     if ismember(mouseIdentifier, mice_without_TTL_IDs)
         % Call processSignals_without_TTL function for mice without TTL
         [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs] = processSignals_without_TTL(mouse, data_FPrig_input, data_EEGrig_input);
     else
-        % Call processSignals function for other mice
-        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, data_EEGrig_input);
-        
-        % Dynamically save the onset_FP_EEG variable with mouse-specific names for mice processed with TTL
-        eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse(end-2:end)));
-    end
+        % Determine if this mouse needs to pull EEG/EMG data from a partner
+        partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
+        if isempty(partnerIdx)
+            % This mouse has its own EEG data
+            partnerData = eval(sprintf('data_EEGrig_%s', mouse{1}(end-2:end)));
+        else
+            % This mouse needs to use its partner's EEG data
+            partnerID = mice_pairs{partnerIdx, 2};
+            % Remove any letters from partnerID, keeping only digits
+            partnerID_numeric = regexprep(partnerID, '\D', '');
+            disp(partnerID_numeric)
+            % Now use the modified partnerID_numeric in eval
+            partnerData = eval(sprintf('data_EEGrig_%s', partnerID_numeric));
+        end
     
-    % Dynamically save the output variables with mouse-specific names
+        % Now call processSignals with partnerData
+        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, partnerData);
+    end
+        % Dynamically save the output variables with mouse-specific names
     eval(sprintf('delta465_filt_2_%s = delta465_filt_2;', mouse{1}(end-2:end)));
     eval(sprintf('sec_signal_2_%s = sec_signal_2;', mouse{1}(end-2:end)));
     eval(sprintf('signal_fs_%s = signal_fs;', mouse{1}(end-2:end)));
@@ -71,6 +87,7 @@ for idx = 1:length(mice)
     eval(sprintf('EMG_%s = EMG;', mouse{1}(end-2:end)));
     eval(sprintf('sec_signal_EEG_%s = sec_signal_EEG;', mouse{1}(end-2:end)));
     eval(sprintf('EEG_fs_%s = EEG_fs;', mouse{1}(end-2:end)));
+    eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{1}(end-2:end)));
 end
 
 %% QC - Check all traces are there
@@ -152,7 +169,7 @@ filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 15, 15, 20);
+[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 20);
 [wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 15, 15, 20);
 [wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168,MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 15, 15, 20);
 [wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147,MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 15, 15, 20);
@@ -160,8 +177,8 @@ filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
-for idx = 1:length(mice_TTL)
-    mouse = mice_TTL{idx};
+for idx = 1:length(M)
+    mouse = M{idx};
     uniqueId = mouse{1}(end-2:end); % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
@@ -226,15 +243,34 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 %% Find NE troughs in sleep transitions and NREM
-NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.3);
-SWS_before_MA_pklocs_117 = find_NE_troughs_transistions(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.3);
-SWS_before_wake_pklocs_117 = find_NE_troughs_transistions(SWS_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.3);
-REM_before_wake_pklocs_117 = find_NE_troughs_transistions(REM_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.3);
+SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, MA_periods_117, 15);
+SWS_before_MA_pklocs_124 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, MA_periods_124, 15);
 
-NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.3);
-SWS_before_MA_pklocs_124 = find_NE_troughs_transistions(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.3);
-SWS_before_wake_pklocs_124 = find_NE_troughs_transistions(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.3);
+NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 10); % Change SD multiplyer to 1 for more selective troughs
+NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 10); % Change SD multiplyer to 1 for more selective troughs
+
+SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.5, 15);
+SWS_before_wake_pklocs_117 = findPeaksBeforeTransition(SWS_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.5, 15);
+
 REM_before_wake_pklocs_124 = find_NE_troughs_transistions(REM_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.3);
+%% visualize calculated troughs
+    sleepscore_time = 0:length(wake_woMA_binary_vector_117)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_117, ds_delta465_filt_2_117, sleepscore_time, wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117);
+hold on
+plot(SWS_before_wake_pklocs_117, delta465_filt_2_117(round(SWS_before_wake_pklocs_117*signal_fs)), 'r*')
+title('NE with selected peaks');
+
+%%% for next animal
+    sleepscore_time = 0:length(wake_woMA_binary_vector_124)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on
+plot(SWS_before_wake_pklocs_124, delta465_filt_2_124(round(SWS_before_wake_pklocs_124*signal_fs)), 'r*')
+title('NE with selected peaks');
+
 %% QC plot for NE troughs
 pklocs_variables_117 = {NREMexclMA_periods_pklocs_117, SWS_before_MA_pklocs_117, SWS_before_wake_pklocs_117, REM_before_wake_pklocs_117};
 titles_117 = {'NREM - M117', 'NREM to MA Transition - M117', 'NREM to Wake Transition - M117', 'REM to Wake Transition - M117'};
