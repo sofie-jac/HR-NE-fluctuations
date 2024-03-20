@@ -516,12 +516,12 @@ plot(sec_signal_EMG, EEG);  % 'o-' specifies markers and lines
 linkaxes([subplot(3,1,1), subplot(3,1,2), subplot(3,1,3)], 'x');
 
 %% Determine HR and movement peaks - current version
-sec_signal_EMG = sec_signal_EEG_168;
-EMG = EMG_168;
+sec_signal_EMG = sec_signal_EEG_124;
+EMG = EMG_124;
 
-filtered_EMG = EMG_168;
-sec_signal_EMG = sec_signal_EEG_168;
-EEG_fs = EEG_fs_168;
+filtered_EMG = EMG_124;
+sec_signal_EMG = sec_signal_EEG_124;
+EEG_fs = EEG_fs_124;
 
 % Initialize selected peaks storage
 selected_peaks = [];
@@ -773,8 +773,8 @@ legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 %% Make RR intervals & Remove selected peaks + RR's within movement chunks
 
 % Find the time between selected peaks ('RR') and record the timestamp of the first peak for each RR observation ('RR_time')
-RR = diff(selected_peak_locs) / EEG_fs; % Time between selected peaks in seconds
-RR_time = sec_signal_EMG(selected_peak_locs(1:end-1)); % Timestamp of the first peak for each RR observation
+RR = diff(quality_selected_peak_locs); % Time between selected peaks in seconds
+RR_time = quality_selected_peak_locs(1:end-1); % Timestamp of the first peak for each RR observation
 
 % Define minimum time between two movement peaks (in seconds)
 minimum_time_between_movement = 1.5;
@@ -866,6 +866,14 @@ resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 's
 resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
 resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
 resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'pchip');
+
+
+%% Assign mouse number to RR
+
+new_fs_RR_124 = new_fs;
+new_time_vector_124 = new_time_vector;
+resampled_RR_pchip_124 = resampled_RR_pchip;
+
 
 %% HRB calculation
 
@@ -1694,14 +1702,14 @@ max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
 power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
 
 % Sleep stage variables and titles
-NE_trough_variables = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
+event_var = {NREMexclMA_periods_cut_pklocs, NREMinclMA_periods_cut_pklocs, wake_periods_cut_pklocs, REM_periods_cut_pklocs};
 %titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
 %main_title = 'Averaged Activity During NE Troughs';
 
 % pklocs_variables = {NREMexclMA_periods_cut_pklocs, SWS_before_MA_filtered_pklocs, SWS_before_wake_filtered_pklocs, REM_before_wake_filtered_pklocs};
 % titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
 
-HRB_variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time};
+%HRB_variables = {NREMexclMA_periods_cut_HRB_time, NREMinclMA_periods_cut_HRB_time, wake_periods_cut_HRB_time, REM_periods_cut_HRB_time};
 titles = {'NREM excl MA', 'NREM incl MA', 'Wake', 'REM'};
 main_title = 'Averaged Activity During HRB';
 
@@ -1714,8 +1722,8 @@ epoc_FPtime_RR = linspace(-epoc_start, epoc_end, max_epoch_length);
 figure;
 
 % Iterate over each sleep stage and its NE trough variables
-for stage_idx = 1:length(HRB_variables)
-    event_type = HRB_variables{stage_idx}; % Select the current event type
+for stage_idx = 1:length(event_var)
+    event_type = event_var{stage_idx}; % Select the current event type
     event_name = titles{stage_idx}; % Current event name for titles
     num_events = length(event_type); % Number of events for the current sleep stage
     
