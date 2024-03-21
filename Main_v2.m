@@ -448,6 +448,9 @@ sample_pr_sec = 0.002; % Frequency resolution for PSD
 % Initialize the PSD_NE_table_new with headers
 PSD_NE_table_new = [{'MouseNumber', 'Hour', 'SleepStage', 'PeakPower', 'PeakPowerFreq', 'Freq25Quartile', 'MedianFrequency', 'Freq75Quartile', 'Freq95Quartile', 'AUC', 'TotalPower'}];
 PSD_data = [];
+uniqueMouseNumbers = unique(cell2mat(updated_mice_data_hours(:, 1)));
+uniqueHours = unique(cell2mat(updated_mice_data_hours(:, 2)));
+
 % Loop through each hour
 for uHour = uniqueHours'
     
@@ -571,8 +574,10 @@ for hourIdx = 1:length(uniqueHours)
         end
     end
 end
+%% Plot PSD for NREMinclMA per hour
+plotPSDBySleepStage(avgPSD_data, 'NREMinclMA')
 
-%% plot
+%% plot PSD per hour per sleepsatge
 % Assuming avgPSD_data is not empty and frequencies are consistent across all entries
 if isempty(avgPSD_data)
     disp('avgPSD_data is empty. No plots can be generated.');
