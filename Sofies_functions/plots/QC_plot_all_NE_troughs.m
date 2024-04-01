@@ -1,4 +1,4 @@
-function QC_plot_all_NE_troughs(pklocs_variables, titles, ds_delta465_filt_2, ds_sec_signal_2, signal_fs)
+function QC_plot_all_NE_troughs(pklocs_variables, titles, maintitle, ylab, ds_delta465_filt_2, ds_sec_signal_2, signal_fs)
 figure; % Create a new figure
 
 for subplot_idx = 1:4
@@ -19,10 +19,10 @@ for subplot_idx = 1:4
     % Update title to include the number of events
     title([titles{subplot_idx}, ' (', num2str(event_count), ' Events)']);
     xlabel('Time (s)');
-    ylabel('NE Activity');
+    ylabel(ylab);
     xlim([-30, 60]); % 30 seconds before to 60 seconds after the event
     hold off;
 end
 
 % Enhance plot readability
-sgtitle('NE Activity around Troughs');
+sgtitle(maintitle);

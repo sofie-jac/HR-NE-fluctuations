@@ -26,6 +26,7 @@ function MainPlot(event_var, epoc_start, epoc_end, titles, main_title, delta465_
         
         % Resetting collectors for each sleep stage
         NE_peak_epoc_collector = [];
+        RR_collector = [];
         SO_collector = [];
         Delta_collector = [];
         Theta_collector = [];
@@ -42,6 +43,11 @@ function MainPlot(event_var, epoc_start, epoc_end, titles, main_title, delta465_
         % Extract NE and EEG band epochs for the current sleep stage
         for i = 1:length(event_type)
             NEpk_i = event_type(i);
+            % Skip events too close to the start of the recording
+            if NEpk_i < epoc_start
+                disp(['Event ', num2str(i), ' skipped due to being too close to the start of the recording']);
+                continue;  % Skip to the next iteration of the loop
+            end
             if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
                 continue;
             end
@@ -115,6 +121,7 @@ function MainPlot(event_var, epoc_start, epoc_end, titles, main_title, delta465_
         
         % Resetting collectors for each sleep stage
         NE_peak_epoc_collector = [];
+        RR_collector = [];
         SO_collector = [];
         Delta_collector = [];
         Theta_collector = [];

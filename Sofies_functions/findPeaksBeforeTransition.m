@@ -1,5 +1,5 @@
 % Define a function to convert the transition points into onset/offset format
-function pklocs_all = findPeaksBeforeTransition(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, min_peak_prominence, min_peak_height, skip_threshold)
+function pklocs_all = findPeaksBeforeTransition(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, min_peak_prominence, min_peak_height, min_peak_dist, skip_threshold)
 
    % Initialize variables for storing results
     pklocs_all = []; % Stores all the peak (trough) locations
@@ -28,7 +28,7 @@ function pklocs_all = findPeaksBeforeTransition(SWS_before_MA_filtered, signal_f
                 continue;
             end
     
-            [pks, pklocs, w, p] = findpeaks(-NEtrace_i, 'MinPeakProminence', min_peak_prominence, 'MinPeakHeight', min_peak_height);
+            [pks, pklocs, w, p] = findpeaks(-NEtrace_i, 'MinPeakProminence', min_peak_prominence, 'MinPeakHeight', min_peak_height, 'MinPeakDistance', min_peak_dist);
     
             % If multiple troughs are detected, store only the one with the lowest NE value
             if ~isempty(pklocs)
@@ -42,11 +42,12 @@ function pklocs_all = findPeaksBeforeTransition(SWS_before_MA_filtered, signal_f
                 last_period_onset = current_period_onset; % Update last processed period onset
             end
         end
-            pklocs_all = [pklocs_all; pklocs_time];
+            pklocs_all = [pklocs_all; pklocs_time'];
     end
-        pklocs_all = pklocs_all';
+        % Ensure all values in pklocs_all are unique
+    pklocs_all = unique(pklocs_all);
 end
-    
+
 
     % periods = []; % Initialize empty matrix
     % for i = 1:length(transitionPoints)

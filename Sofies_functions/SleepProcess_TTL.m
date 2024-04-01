@@ -1,4 +1,4 @@
-function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_wake_filtered] = SleepProcess_TTL(mouse, sec_signal_EEG, EEG_fs, onset_FP_EEG, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
+function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_arousal_filtered] = SleepProcess_TTL(mouse, sec_signal_EEG, EEG_fs, onset_FP_EEG, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
     EEG_sleepscore = xlsread(mouse{15});
 
     % Create binary vectors for sleep stages
@@ -204,6 +204,8 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
         boutscore_vector(t:t+d) = 15; %MA=15
     end
     
+
+
     % Vectors indicate time of transitions in seconds
     transition_sws_wake =  find(diff(boutscore_vector)== -3);
     transition_wake_sws =  find(diff(boutscore_vector)== 3);
@@ -212,6 +214,17 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     transition_REM_sws =  find(diff(boutscore_vector)== -5);
     transition_sws_REM =  find(diff(boutscore_vector)== 5);
     transition_REM_MA =  find(diff(boutscore_vector)== 6);
+    % Adjust the transition_REM_arousal calculation to ignore MAs within REM
+    transition_REM_arousal = [];
+    for i = 2:length(boutscore_vector)-1
+        if (boutscore_vector(i-1) == 9 && boutscore_vector(i) == 15 && boutscore_vector(i+1) == 9)
+            % If an MA (15) is surrounded by REM (9), ignore this MA for arousal transition purposes
+            continue; % Skip to the next iteration, effectively ignoring this pattern
+        elseif (diff(boutscore_vector(i-1:i)) == 6 || diff(boutscore_vector(i-1:i)) == -8)
+            % Add the transition point if it's a genuine REM to arousal transition
+            transition_REM_arousal = [transition_REM_arousal, i-1];
+        end
+    end
     
     % Calculate the total duration of the signal
     totalDuration = length(boutscore_vector);
@@ -220,13 +233,13 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     SWS_before_MA_periods = findPeriodsBeforeTransition(transition_sws_MA, NREM_sec_before_transition, totalDuration);
     SWS_before_wake_periods = findPeriodsBeforeTransition(transition_sws_wake, NREM_sec_before_transition, totalDuration);
     SWS_before_REM_periods = findPeriodsBeforeTransition(transition_sws_REM, NREM_sec_before_transition, totalDuration);
-    REM_before_wake_periods = findPeriodsBeforeTransition(transition_REM_wake, REM_sec_before_transition, totalDuration);
+    REM_before_arousal_periods = findPeriodsBeforeTransition(transition_REM_arousal, REM_sec_before_transition, totalDuration);
     
     % Filter the identified periods to ensure they are within actual SWS periods
     SWS_before_MA_filtered = filterSWSPeriods(SWS_before_MA_periods, NREMinclMA_periods_cut);
     SWS_before_wake_filtered = filterSWSPeriods(SWS_before_wake_periods, NREMinclMA_periods_cut);
     SWS_before_REM_filtered = filterSWSPeriods(SWS_before_REM_periods, NREMinclMA_periods_cut);
-    REM_before_wake_filtered = filterSWSPeriods(REM_before_wake_periods, REM_periods_cut);
+    REM_before_arousal_filtered = filterSWSPeriods(REM_before_arousal_periods, REM_periods_cut);
 
 
     % Define NREMexclMA_periods_cut

@@ -532,19 +532,17 @@ EMG_signal = EMG_124; % Your signal
 waveletFunction = 'db4'; % Wavelet type
 Fs = EEG_fs_124; % Sampling rate
 
-% Determine the decomposition level corresponding to 13 Hz
-freqBand = Fs / 2;
+freqThreshold = 50; % Threshold frequency in Hz
 level = 0;
-while freqBand > 30
+while Fs / (2^(level + 1)) > freqThreshold
     level = level + 1;
-    freqBand = freqBand / 2;
 end
 
 % Wavelet packet decomposition
 wp = wpdec(EMG_signal, level, waveletFunction);
 
-% Navigate through the packet tree and zero out coefficients above 13 Hz
-nodes = (2^level - 1):(2^(level + 1) - 2); % Nodes at the level corresponding to > 13 Hz
+% Navigate through the packet tree and zero out coefficients above the threshold frequency
+nodes = (2^level - 1):(2^(level + 1) - 2); % Nodes at the level corresponding to > threshold frequency
 for node = nodes
     C = read(wp, 'data', node);
     C(:) = 0; % Zero out coefficients
@@ -554,7 +552,37 @@ end
 % Reconstruct the signal from the modified wavelet packet tree
 EMG_filtered = wprec(wp);
 
+
 % Now, you can continue with your HR detection code on EMG_filtered
+figure;
+
+% % Plot the original EMG signal
+subplot(2,1,1);
+plot(sec_signal_EMG, EMG_124, 'b-');
+hold on;
+line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+xlabel('Time (s)');
+ylabel('EMG');
+title('EMG Raw');
+set(gcf,'color','white')
+grid on;
+
+% Plot the filtered EMG signal with selected peaks
+subplot(2,1,2);
+plot(sec_signal_EMG, EMG_filtered, 'b-');
+xlabel('Time (s)');
+ylabel('EMG (V)');
+title('EMG Wavelet transformed');
+set(gcf,'color','white')
+grid on;
+
+linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
+%% 
+save('EMG_124.mat', 'EMG_124');
+save('EMG_117.mat', 'EMG_117');
+save('EMG_387.mat', 'EMG_387');
+
+
 %% Get clean sections for machine learning training
 % Your provided variables and code for movement detection
 sec_signal_EMG = sec_signal_EEG_124;
@@ -604,12 +632,12 @@ end
 
 
 %% Determine HR and movement peaks - current version
-sec_signal_EMG = sec_signal_EEG_124;
-EMG = EMG_124;
+sec_signal_EMG = sec_signal_EEG_387;
+EMG = EMG_387;
 
-filtered_EMG = EMG_124;
-sec_signal_EMG = sec_signal_EEG_124;
-EEG_fs = EEG_fs_124;
+filtered_EMG = EMG_387;
+sec_signal_EMG = sec_signal_EEG_387;
+EEG_fs = EEG_fs_387;
 
 % Initialize selected peaks storage
 selected_peaks = [];
@@ -698,6 +726,14 @@ end
 min_interval_sec = 60 / 800; % Minimum time interval in seconds for 700 bpm
 
 % Sort the peaks by their timestamps
+% Remove zeros from selected_peak_locs if present
+valid_indices = selected_peak_locs > 0;
+
+% Apply the valid indices to filter both selected_peak_locs and selected_peaks
+selected_peak_locs = selected_peak_locs(valid_indices);
+selected_peaks = selected_peaks(valid_indices);
+
+% Now selected_peak_locs no longer contains zeros and can be safely used for indexing
 selected_peak_times = sec_signal_EMG(selected_peak_locs);
 [sorted_peak_locs, sort_index] = sort(selected_peak_times);
 sorted_peaks = selected_peaks(sort_index);
@@ -711,6 +747,61 @@ valid_peaks_indices = [time_diffs >= min_interval_sec];
 % Select only the peaks that are valid based on their time difference
 quality_selected_peaks = sorted_peaks(valid_peaks_indices);
 quality_selected_peak_locs = sorted_peak_locs(valid_peaks_indices);
+
+%% New version of quality peaks
+% Calculate the minimum time interval between peaks based on physiological bounds
+min_interval_sec = 60 / 800; % Minimum time interval in seconds for 700 bpm
+
+% Sort the peaks by their timestamps
+% Remove zeros from selected_peak_locs if present
+% Find indices where selected_peak_locs is greater than 0
+valid_indices = selected_peak_locs > 0;
+
+% Apply the valid indices to filter both selected_peak_locs and selected_peaks
+selected_peak_locs = selected_peak_locs(valid_indices);
+selected_peaks = selected_peaks(valid_indices);
+
+% Now, selected_peak_locs no longer contains zeros, and selected_peaks has been reduced accordingly
+selected_peak_times = sec_signal_EMG(selected_peak_locs);
+
+% Sort the peaks by their timestamps
+[sorted_peak_times, sort_index] = sort(selected_peak_times);
+sorted_peaks = selected_peaks(sort_index);
+sorted_peak_locs = selected_peak_locs(sort_index);
+
+% Initialize lists to keep the peaks and locations that meet the criteria
+quality_selected_peaks = [];
+quality_selected_peak_locs = [];
+
+i = 1;
+while i <= length(sorted_peak_times)
+    current_peak = sorted_peaks(i);
+    current_loc = sorted_peak_locs(i);
+    % Assume current peak is valid initially
+    is_peak_valid = true;
+    
+    % Look ahead to check if the next peak is too close
+    if i < length(sorted_peak_times) && (sorted_peak_times(i + 1) - sorted_peak_times(i) < min_interval_sec)
+        next_peak = sorted_peaks(i + 1);
+        % If the next peak is higher, mark the current peak as invalid
+        if next_peak > current_peak
+            is_peak_valid = false;
+        else
+            % Otherwise, mark the next peak as invalid by removing it
+            % Note: we don't need to explicitly mark it, just skip adding it in the next iteration
+            i = i + 1;  % Skip the next peak
+        end
+    end
+    
+    % If the peak is valid, add it to the kept lists
+    if is_peak_valid
+        quality_selected_peaks  = [quality_selected_peaks ; current_peak];
+        quality_selected_peak_locs  = [quality_selected_peak_locs ; current_loc];
+    end
+    
+    i = i + 1;  % Move to the next peak
+end
+
 
 %% 
 % Example of calling the function with the required variables
@@ -789,6 +880,8 @@ for i = 1:length(clean_sections_to_use)
     selected_peaks_data{end+1} = binary_peaks;
 end
 
+minSegmentLength = min(cellfun(@length, EMG_data));
+
 % Truncate both EMG and peak data to the length of the shortest segment
 truncated_EMG_data = cellfun(@(x) x(1:minSegmentLength), EMG_data, 'UniformOutput', false);
 adjusted_peaks_data = cellfun(@(x) x(1:minSegmentLength), selected_peaks_data, 'UniformOutput', false);
@@ -801,139 +894,147 @@ numTest = floor(numSegments * 0.1);
 rng(1); % For reproducibility
 testIndices = randperm(numSegments, numTest);
 
-% Extract test segments and corresponding peak data
-XTest = zeros(minSegmentLength, 1, 1, numTest);
-YTest = zeros(minSegmentLength, numTest);
-for i = 1:numTest
-    idx = testIndices(i);
-    XTest(:, 1, 1, i) = truncated_EMG_data{idx};
-    YTest(:, i) = adjusted_peaks_data{idx}; % Use the binary vector
-end
+% Convert binary labels to categorical, one cell per sequence
+YTrainCategorical = cellfun(@(y) categorical(y), adjusted_peaks_data(trainIndices), 'UniformOutput', false);
+YTestCategorical = cellfun(@(y) categorical(y), adjusted_peaks_data(testIndices), 'UniformOutput', false);
 
-% Remove test segments from the training data
-trainIndices = setdiff(1:numSegments, testIndices);
-XTrain = zeros(minSegmentLength, 1, 1, length(trainIndices));
-YTrain = zeros(minSegmentLength, length(trainIndices));
-for i = 1:length(trainIndices)
-    idx = trainIndices(i);
-    XTrain(:, 1, 1, i) = truncated_EMG_data{idx};
-    YTrain(:, i) = adjusted_peaks_data{idx}; % Use the binary vector
-end
+% Transpose each label vector in YTrainCategorical and YTestCategorical to be row vectors
+YTrainCategorical = cellfun(@(y) y', YTrainCategorical, 'UniformOutput', false);
+YTestCategorical = cellfun(@(y) y', YTestCategorical, 'UniformOutput', false);
 
-% Optionally, reshape YTrain and YTest if your model expects a 4D input for labels
-% YTrain = reshape(YTrain, [minSegmentLength, 1, 1, length(trainIndices)]);
-% YTest = reshape(YTest, [minSegmentLength, 1, 1, numTest]);
+% Verify that XTrainCell and XTestCell are cell arrays where each cell is a column vector of the data
+XTrainCell = truncated_EMG_data(trainIndices);
+XTestCell = truncated_EMG_data(testIndices);
+
+% XTrainCell = cellfun(@(x) x', XTrainCell, 'UniformOutput', false);
+% XTestCell = cellfun(@(x) x', XTestCell, 'UniformOutput', false);
 
 
+%% Define the network and run the RNN
 
-% Reshape YTrain for binary classification across time points
-% Note: This assumes a model architecture expecting a 4D input for labels when using
-% convolutional networks. If your network is designed to output 1D vectors directly,
-% you might not need to reshape YTrain this way.
+inputSize = 1;  % Since you're working with 1D time series data
+numHiddenUnits = 100;  % Number of LSTM units
+numClasses = 2;  % Binary classification (peak or no peak)
 
-
-% Note: Adjust the training options and network architecture as necessary
-
-% % Extract the first segment of EMG data and its corresponding binary peaks vector
-% first_EMG_segment = truncated_EMG_data{8};
-% first_binary_peaks = adjusted_peaks_data{8};
-% 
-% % Time vector for the first segment, assuming constant sampling interval
-% time_vector = (0:length(first_EMG_segment)-1) / EEG_fs_124;
-% 
-% % Plot the first EMG segment
-% figure; 
-% plot(time_vector, first_EMG_segment);
-% hold on;
-% 
-% % Overlay the peaks on the EMG trace
-% % Peaks are marked as '1' in the binary vector, so multiply by max(EMG) for visualization
-% peak_indices = find(first_binary_peaks == 1);
-% peaks_plot = zeros(size(first_EMG_segment));
-% peaks_plot(peak_indices) = max(first_EMG_segment) * 1.1; % 10% above max for visibility
-% stem(time_vector, peaks_plot, 'Marker', 'none', 'Color', 'r', 'LineStyle', ':');
-% 
-% % Enhance the plot
-% xlabel('Time (s)');
-% ylabel('EMG Amplitude');
-% title('First EMG Segment with Peaks');
-% legend('EMG Signal', 'Detected Peaks');
-% grid on;
-% Preprocess EMG data for CNN input
-%% Define the network and run the CNN
-inputSize = [minSegmentLength, 1, 1];
-numFilters = 16; % Number of filters for convolutional layers
-filterSize = [3, 1]; % Size of filters
-poolSize = [2, 1]; % Pooling size
-
-layers = [
-    imageInputLayer(inputSize, 'Name', 'input', 'Normalization', 'none')
-    
-    convolution2dLayer(filterSize, numFilters, 'Padding', 'same', 'Name', 'conv1')
-    batchNormalizationLayer('Name', 'bn1')
-    reluLayer('Name', 'relu1')
-    maxPooling2dLayer(poolSize, 'Stride', [2,1], 'Name', 'maxpool1')
-    
-    convolution2dLayer(filterSize, numFilters*2, 'Padding', 'same', 'Name', 'conv2')
-    batchNormalizationLayer('Name', 'bn2')
-    reluLayer('Name', 'relu2')
-    maxPooling2dLayer(poolSize, 'Stride', [2,1], 'Name', 'maxpool2')
-    
-    flattenLayer('Name', 'flatten')
-    fullyConnectedLayer(64, 'Name', 'fc1')
-    reluLayer('Name', 'relu3')
-    dropoutLayer(0.5, 'Name', 'dropout')
-    
-    fullyConnectedLayer(1, 'Name', 'fc2') % For binary classification at each time step
-    sigmoidLayer('Name', 'sigmoid')
-    
-    regressionLayer('Name', 'output')
-];
+layers = [ ...
+    sequenceInputLayer(inputSize)
+    lstmLayer(numHiddenUnits,'OutputMode','sequence')
+    fullyConnectedLayer(numClasses)
+    softmaxLayer
+    classificationLayer];
 
 options = trainingOptions('adam', ...
-    'MaxEpochs', 30, ...
+    'MaxEpochs',30, ...
     'MiniBatchSize', 32, ...
-    'InitialLearnRate', 1e-3, ...
-    'Shuffle', 'every-epoch', ...
-    'Plots', 'training-progress', ...
-    'Verbose', false);
+    'GradientThreshold',1, ...
+    'InitialLearnRate',0.01, ...
+    'LearnRateSchedule','piecewise', ...
+    'LearnRateDropPeriod',125, ...
+    'LearnRateDropFactor',0.2, ...
+    'Verbose',0, ...
+    'Plots','training-progress', ...
+    'Shuffle','every-epoch', ...
+    'ValidationData', {XTestCell, YTestCategorical}, ...
+    'ValidationFrequency',30);
 
-[trainedNet, trainInfo] = trainNetwork(XTrain, YTrain, layers, options);
+
+[trainedNet, trainInfo] = trainNetwork(XTrainCell, YTrainCategorical, layers, options);
+
+YPred = classify(trainedNet, XTestCell);
+
+% Initialize a variable to accumulate the number of correct predictions
+numCorrect = 0;
+totalTimesteps = 0;
+
+% Iterate over each sequence to compare predictions with true labels
+for i = 1:numel(YPred)
+    % Calculate the number of correct predictions for the current sequence
+    numCorrect = numCorrect + sum(YPred{i} == YTestCategorical{i});
+    totalTimesteps = totalTimesteps + numel(YTestCategorical{i});
+end
+
+% Calculate overall accuracy
+accuracy = numCorrect / totalTimesteps;
+disp(['Test Accuracy: ', num2str(accuracy)]);
+
+%% 
+% Segment the new EMG data into sections of length 'minSegmentLength'
+numFullSegments = floor(length(EMG_124) / minSegmentLength);
+remainder = mod(length(EMG_124), minSegmentLength);
+numNewSegments = numFullSegments + (remainder > 0);  % Add one more segment if there is a remainder
+XNew = zeros(minSegmentLength, 1, 1, numNewSegments);
+
+% Populate segments
+for i = 1:numFullSegments
+    startIndex = (i-1) * minSegmentLength + 1;
+    endIndex = i * minSegmentLength;
+    XNew(:, 1, 1, i) = EMG_124(startIndex:endIndex);
+end
+
+% Handle the remainder of the EMG data
+if remainder > 0
+    lastSegment = zeros(minSegmentLength, 1);
+    lastSegment(1:remainder, 1) = EMG_124(end-remainder+1:end);
+    XNew(:, 1, 1, numNewSegments) = lastSegment;
+end
+
+% Convert to a cell array, each cell containing a single column vector
+XNewCell = squeeze(num2cell(XNew, [1]));
+XNewCell = XNewCell';
+XNewCell = cellfun(@(x) x', XNewCell, 'UniformOutput', false);
+% Convert each cell's contents to single
+XNewCell = cellfun(@(x) single(x), XNewCell, 'UniformOutput', false);
+
+% Use the 'predict' function to get raw scores
+scoresNew = predict(trainedNet, XNewCell);
+
+% Convert scores to binary predictions using a custom threshold (e.g., 0.5)
+threshold = 0.5;
+binaryPredictions = cellfun(@(s) double(s(:, 2) > threshold), scoresNew, 'UniformOutput', false);
+
+% Concatenate the binary results to form one full-length binary prediction vector
+binaryFullPrediction = cat(1, binaryPredictions{:});
+
+% Truncate the extra zeros from the last segment if there was a remainder
+if remainder > 0
+    binaryFullPrediction = binaryFullPrediction(1:end-(minSegmentLength-remainder));
+end
+
+% Count the number of detected peaks again
+numDetectedPeaks = sum(binaryFullPrediction);
+disp(['Number of Detected Peaks: ', num2str(numDetectedPeaks)]);
 
 
+% binaryFullPrediction now corresponds to the full length of EMG_124
+% First, find the locations of the predicted peaks
+predicted_peak_locs = find(binaryFullPrediction);
+predicted_peaks = EMG(predicted_peak_locs);
 
 %% Plot movement and selected peaks
 
+
+% Calculate mean and standard deviation of the filtered EMG signal
+mean_EMG = mean(EMG);
+sd_EMG = std(EMG);
+
+% Set threshold as mean + 3.5 * SD for movement detection
+threshold = mean_EMG + 3.5 * sd_EMG;
 % Plotting peaks
 figure;
 
 % % Plot the original EMG signal
-% subplot(2,1,1);
+subplot(2,1,1);
 plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs, quality_selected_peaks, 'ro');
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-xlabel('Time (s)');
-ylabel('EMG');
-title('EMG with Corrected Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
-set(gcf,'color','white')
+xlabel('sec\_signal\_EMG');
+ylabel('Filtered EMG');
+title('Original EMG Data w. peaks corrected v2');
 grid on;
-legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
-
-% % Plot the filtered EMG signal with selected peaks
-% subplot(3,1,2);
-% plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs_v2, quality_selected_peaks_v2, 'ro');
-% hold on;
-% scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
-% line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-% xlabel('sec\_signal\_EMG');
-% ylabel('Filtered EMG');
-% title('Original EMG Data w. peaks corrected v2');
-% grid on;
-
 
 % Plot the filtered EMG signal with selected peaks
-% subplot(2,1,2);
+subplot(2,1,2);
 plot(sec_signal_EMG, EMG, 'b-', sec_signal_EMG(selected_peak_locs), selected_peaks, 'ro');
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
@@ -946,7 +1047,32 @@ grid on;
 
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
-% linkaxes([subplot(3,1,1), subplot(3,1,2)], 'x');
+linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
+
+
+% % Plot the filtered EMG signal with selected peaks
+% subplot(3,1,2);
+% plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_locs_v2, quality_selected_peaks_v2, 'ro');
+% hold on;
+% scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+% line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+% xlabel('sec\_signal\_EMG');
+% ylabel('Filtered EMG');
+% title('Original EMG Data w. peaks corrected v2');
+% grid on;
+
+plot(sec_signal_EMG, EMG_124, 'b-');
+hold on;
+% Overlay the machine learning detected peaks
+scatter(sec_signal_EMG(predicted_peak_locs), predicted_peaks, ''); % 'm^' for magenta triangles
+scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+xlabel('Time (s)');
+ylabel('EMG');
+title('EMG with Machine Learning detected peak and Movement Peaks');
+set(gcf,'color','white')
+grid on;
+legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
 %% Make RR intervals & Remove selected peaks + RR's within movement chunks
 
@@ -1048,12 +1174,51 @@ resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vect
 
 %% Assign mouse number to RR
 
-new_fs_RR_124 = new_fs;
-new_time_vector_124 = new_time_vector;
-resampled_RR_pchip_124 = resampled_RR_pchip;
+new_fs_RR_392 = new_fs;
+new_time_vector_392 = new_time_vector;
+resampled_RR_pchip_392 = resampled_RR_pchip;
 
 
 %% HRB calculation
+
+[HRB, HRB_time] = findHRB(new_time_vector, resampled_RR_pchip);
+
+%% 
+% Your initial plot code (assuming it's already executed)
+figure;
+plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on;
+scatter(HRB_time, HRB, 'b', 'filled'); % Plotting HRB
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV p-chip (M124)');
+grid on;
+
+% Adding vertical dashed lines for each trough variable
+% NREMexclMA_periods_pklocs_124 in black
+for i = 1:length(NREMexclMA_periods_pklocs_124)
+    xline(NREMexclMA_periods_pklocs_124(i), '--', 'Color', 'k');
+end
+
+% SWS_before_MA_pklocs_124 in yellow
+for i = 1:length(SWS_before_MA_pklocs_124)
+    xline(SWS_before_MA_pklocs_124(i), '--', 'Color', 'y');
+end
+
+% SWS_before_wake_pklocs_124 in blue
+for i = 1:length(SWS_before_wake_pklocs_124)
+    xline(SWS_before_wake_pklocs_124(i), '--', 'Color', 'b');
+end
+
+% REM_before_wake_pklocs_124 in white
+for i = 1:length(REM_before_wake_pklocs_124)
+    xline(REM_before_wake_pklocs_124(i), '--', 'Color', 'w');
+end
+
+hold off; % Release the plot for further commands
+
+%% 
+
 
 %Input which RR it should be based on
 time = new_time_vector;
@@ -1194,15 +1359,7 @@ ylabel('RR intervals');
 title('HRV (un-resampled)');
 grid on;
 linkaxes([subplot(4,1,1), subplot(4,1,2), subplot(4,1,3), subplot(4,1,4)], 'x');
-%% 
-figure;
-plot_sleep(filtered_RR_time, filtered_RR_smooth, sleepscore_time_cut, wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut,MA_binary_vector_cut);
-hold on;
-scatter(HRB_time, HRB, 'y', 'filled'); % Plotting movement peaks in yellow
-xlabel('Time (s)');
-ylabel('RR intervals');
-title('HRV (un-resampled)');
-grid on;
+
 
 
 %% Plot NE, EMG, EEG and HRV for exloration

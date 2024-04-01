@@ -1,59 +1,34 @@
-function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_arousal_filtered] = SleepProcess_without_TTL(mouse, sec_signal_EEG, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
-    EEG_sleepscore = xlsread(mouse{15});
-
-    % Create binary vectors for sleep stages
-    %Awake
-    wake_onset = rmmissing(EEG_sleepscore(:, 2)); % onset of each wake bout in sec (NaNs are removed)
-    wake_duration = rmmissing(EEG_sleepscore(:, 3)); % duration of each wake bout in sec (NaNs are removed)
+function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_arousal_filtered] = SleepProcess_viewpoint(mouse, sec_signal_EEG, onset_FP_EEG, EEG_fs, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
+    % loads hypno, ViewpointData needs to be a struct - see above
+    addpath(genpath(['J:\CTN\NedergaardLAB\Personal_folders\Mie\EEG data from NH\EEG toolbox']));
+    ViewpointData.FileInfo=loadEXP([mouse{2}],'no');
     
-    %Slow-wave sleep
-    sws_onset = rmmissing(EEG_sleepscore(:, 6)); % onset of each SWS bout in sec (NaNs are removed)
-    duration_sws = rmmissing(EEG_sleepscore(:, 7)); % duration of each SWS bout in sec (NaNs are removed)
+    [FullHypno,TimeScaleAbs,TimeScaleBin,TimeScaleHypno]=ExtractFullHypno(ViewpointData,1);
     
-    %REM
-    REM_onset = rmmissing(EEG_sleepscore(:, 10)); % onset of each REM bout in sec (NaNs are removed)
-    REM_duration = rmmissing(EEG_sleepscore(:, 11)); % duration of each REM bout in sec (NaNs are removed)
+    FullHypno = FullHypno(find(FullHypno~=0,1):end);
+    time_correction = round(TimeScaleBin(1));
+    int_sig = zeros(1,time_correction);
     
+    wake_binary_vector = [int_sig FullHypno==1];
+    sws_binary_vector = [int_sig FullHypno==2];
+    REM_binary_vector = [int_sig FullHypno==4];
     
-    % Most EEG scorings don't start at time 0 - which shifts the timeline of the
-    % scoring relative to the EEG/EMG traces - this is corrected for below
-    if min([wake_onset(1), sws_onset(1), REM_onset(1)]) ~= 0
-        EEG_scoring_onset = min([wake_onset(1), sws_onset(1), REM_onset(1)]); % determines the number of seconds to be subtracted
-        wake_onset = wake_onset - EEG_scoring_onset;
-        sws_onset = sws_onset - EEG_scoring_onset;
-        REM_onset = REM_onset - EEG_scoring_onset;
-    end
+    [wake_onset, wake_offset] = binary_to_OnOff(wake_binary_vector);
+    [sws_onset, sws_offset] = binary_to_OnOff(sws_binary_vector);
+    [REM_onset, REM_offset] = binary_to_OnOff(REM_binary_vector);
     
+    wake_duration = wake_offset-wake_onset;
+    duration_sws = sws_offset-sws_onset;
+    REM_duration = REM_offset-REM_onset;
     
-    wake_binary_vector = zeros([1, round(sec_signal_EEG(end))+200]); 
-    for i=1:length(wake_onset) % making time vector for EEG scoring (frequency = 1Hz)
-        t = wake_onset(i)+1; % +1 to put time 0 as index 1
-        d = wake_duration(i)-1; % -1 compensates for adding 1
-        wake_binary_vector(t:t+d) = 1;
-    end
+    sleepscore_time = [TimeScaleHypno TimeScaleHypno(end)+1:1:TimeScaleHypno(end)+time_correction];
     
-    
-    sws_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]); 
-    for i=1:length(sws_onset) % making time vector for EEG scoring (frequency = 1Hz)
-        t = sws_onset(i)+1; 
-        d = duration_sws(i)-1;
-        sws_binary_vector(t:t+d) = 1;
-    end
-    
-    
-    REM_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
-    for i=1:length(REM_onset) % making time vector for EEG scoring (frequency = 1Hz)
-        t = REM_onset(i)+1;
-        d = REM_duration(i)-1;
-        REM_binary_vector(t:t+d) = 1;
-    end
-    
-    
-    %SLEEP: 5a) Make sleep periods  
     % 2-column vectors with on- and offsets for each state
     wake_periods = [wake_onset wake_onset+wake_duration];
     sws_periods = [sws_onset sws_onset+duration_sws];
     REM_periods = [REM_onset REM_onset+REM_duration];
+
+
     
     %SLEEP: 5b) Dividing wake bouts into microarousals (MA) and wake w/o MA
     
@@ -61,7 +36,7 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     MA_idx = find(wake_duration < MA_maxdur);
     MA_onset = wake_onset(MA_idx);
     MA_duration = wake_duration(MA_idx);
-    MA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
+    MA_binary_vector = zeros([1, (sum([ViewpointData.FileInfo.HypnoFiles.Duration]))+time_correction]);
     for i=1:length(MA_onset) % making time vector for EEG scoring (frequency = 1Hz)
         t = MA_onset(i)+1;
         d = MA_duration(i)-1;
@@ -73,7 +48,7 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     wake_woMA_onset(MA_idx) = [];
     wake_woMA_duration = wake_duration;
     wake_woMA_duration(MA_idx) = [];
-    wake_woMA_binary_vector =  zeros([1, round(sec_signal_EEG(end))+200]);
+    wake_woMA_binary_vector = zeros([1, (sum([ViewpointData.FileInfo.HypnoFiles.Duration]))+time_correction]);
     for i=1:length(wake_woMA_onset) % making time vector for EEG scoring (frequency = 1Hz)
         t = wake_woMA_onset(i)+1;
         d = wake_woMA_duration(i)-1;
@@ -83,12 +58,11 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     % 2-column vectors with on- and offsets for each state
     MA_periods = [MA_onset MA_onset+MA_duration];
     wake_woMA_periods = [wake_woMA_onset wake_woMA_onset+wake_woMA_duration];
-    
+
     
     %SLEEP: 6) Alingment of EEG recording and FP recording
     
-    %cut off the 1st secound due to noise
-    TTL_EEG_onset = 1;
+    TTL_EEG_onset = onset_FP_EEG; 
     
     % Remove first seconds of EEG score to align with FP trace
     wake_binary_vector_cut = wake_binary_vector(round(TTL_EEG_onset):end);
@@ -97,7 +71,7 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     MA_binary_vector_cut = MA_binary_vector(round(TTL_EEG_onset):end);
     wake_woMA_binary_vector_cut = wake_woMA_binary_vector(round(TTL_EEG_onset):end);
     
-    
+
     % Align onset, offset, and duration vectors based on TTL
     [wake_onset_cut, wake_offset_cut] = binary_to_OnOff(wake_binary_vector_cut);
     wake_duration_cut = wake_offset_cut - wake_onset_cut;
@@ -193,10 +167,13 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
         boutscore_vector(t:t+d) = 4; % sws=4
     end
     
-    for i=1:length(REM_onset_cut)
-        t = REM_onset_cut(i)+1;
-        d = REM_duration_cut(i)-1;
-        boutscore_vector(t:t+d) = 9; %REM=9
+    % Check if REM_onset_cut and REM_duration_cut contain finite values before attempting to use them
+    if ~isempty(REM_onset_cut) && all(isfinite(REM_onset_cut)) && all(isfinite(REM_duration_cut))
+        for i = 1:length(REM_onset_cut)
+            t = REM_onset_cut(i) + 1;
+            d = REM_duration_cut(i) - 1;
+            boutscore_vector(t:t+d) = 9; %REM=9
+        end
     end
     
     for i=1:length(MA_onset_cut)
@@ -213,6 +190,7 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     transition_REM_sws =  find(diff(boutscore_vector)== -5);
     transition_sws_REM =  find(diff(boutscore_vector)== 5);
     transition_REM_MA =  find(diff(boutscore_vector)== 6);
+    % Adjust the transition_REM_arousal calculation to ignore MAs within REM
     transition_REM_arousal = [];
     for i = 2:length(boutscore_vector)-1
         if (boutscore_vector(i-1) == 9 && boutscore_vector(i) == 15 && boutscore_vector(i+1) == 9)
@@ -224,23 +202,21 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
         end
     end
     
+
     % Calculate the total duration of the signal
     totalDuration = length(boutscore_vector);
     
     % Identify periods before transitions
     SWS_before_MA_periods = findPeriodsBeforeTransition(transition_sws_MA, NREM_sec_before_transition, totalDuration);
     SWS_before_wake_periods = findPeriodsBeforeTransition(transition_sws_wake, NREM_sec_before_transition, totalDuration);
-    SWS_before_REM_periods = findPeriodsBeforeTransition(transition_sws_REM, REM_sec_before_transition, totalDuration);
-    REM_before_arousal_periods = findPeriodsBeforeTransition(transition_REM_arousal, NREM_sec_before_transition, totalDuration);
+    SWS_before_REM_periods = findPeriodsBeforeTransition(transition_sws_REM, NREM_sec_before_transition, totalDuration);
+    REM_before_arousal_periods = findPeriodsBeforeTransition(transition_REM_arousal, REM_sec_before_transition, totalDuration);
     
     % Filter the identified periods to ensure they are within actual SWS periods
     SWS_before_MA_filtered = filterSWSPeriods(SWS_before_MA_periods, NREMinclMA_periods_cut);
     SWS_before_wake_filtered = filterSWSPeriods(SWS_before_wake_periods, NREMinclMA_periods_cut);
     SWS_before_REM_filtered = filterSWSPeriods(SWS_before_REM_periods, NREMinclMA_periods_cut);
     REM_before_arousal_filtered = filterSWSPeriods(REM_before_arousal_periods, REM_periods_cut);
-    
-
-
 
 
     % Define NREMexclMA_periods_cut

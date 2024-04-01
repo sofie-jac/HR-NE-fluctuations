@@ -3,22 +3,63 @@
 %(e.g. 'Mouse_xxx' or 'Mxxx' or simply just the 3-digit animal ID).
 %Otherwise the code will not run appropriately
 
+% M399 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M392 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', ''); 
+% M403 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M412 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M414 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M416 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M418 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M486 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'PtC1', (100:7000), 'save_path', '');
+% M408 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+% M420 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
+
+%timecorrctions
+% recording_ID	time_correction_in_s
+% 387_Arch	2
+% 399_Arch	2
+% 392_Arch	4
+% 403_Arch	3
+% 412_Arch	4
+% 414_Arch	3
+% 416_Arch	4
+% 418_Arch	5
+% 486_Arch	2
+% 408_YFP	    1
+% 420_YFP	    0
+% 468_YFP	    3
+% 477_YFP	    1
+% 484_YFP	    1
+
 %build-up
 name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'channel_name_blue_2' 'channel_name_violet_2' 'channel_name_red_2' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' };
+%For viewpoint files, load in .exp file in the 2nd place
+%Animal muner is now in the 3rd place and time correction in the 4th
 
-M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'x465A' 'x405A' 'red' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
-M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'Dv2A' 'Dv1A' 'red' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
-M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
-M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
-M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M399 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_Arch_NOR_2021-03-12_14-46-42-245.exp' '399' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+M392 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch\392_Arch_NOR\392_Arch_NOR_2021-03-10_10-31-55-535.exp' '392' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+
+M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
+M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '124' '' '' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
+M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '168' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
+M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '147' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
+M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '149' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+
 mice_TTL = {M124, M117};
-mice = {M168, M147, M149, M117, M124};
+mice = {M168, M147, M149, M117, M124, M387, M392};
 mice_without_TTL = {M168, M147, M149};
+viewpoint_mice = {'M387', 'M399', 'M392'};
+v = {M387, M392};
+synapse_mice = {M168, M147, M149, M117, M124};
 
 % Create a matrix of mice pairs where the first column is the mouse without EEG data
 % and the second column is the mouse with EEG data
-mice_pairs = {'M124', 'M117'}; % Example given with M124 and M117
+mice_pairs = {'M124', 'M117', 'M149', 'M147'}; % Example given with M124 and M117
 
+% Reshape mice_pairs into a two-column format
+num_pairs = numel(mice_pairs) / 2;
+mice_pairs = reshape(mice_pairs, 2, num_pairs).';
 
 mice_without_TTL_IDs = {};
 
@@ -29,37 +70,67 @@ for idx = 1:length(mice_without_TTL)
     mice_without_TTL_IDs{end+1} = ID; % Correctly append ID to the cell array
 end
 
+
 %% Load FP and EEG data for all mice
 
-for idx = 1:length(mice)
-    mouse = mice{idx};
-    mouseID = sprintf('M%s', mouse{1}(end-2:end)); % Extract the ID
-    disp(mouseID)
+for idx = 1:length(v)
+    mouse = v{idx};
+    % Since mouse{3} contains the ID for all mice, directly use it to create the mouseID
+    mouseID = sprintf('M%s', mouse{3}); % mouse{3} is directly used, making mouseID a char array
+    
+    % Debugging print to verify mouseID
+    disp(mouseID);
+    
+    % Define the FP and EEG variable names based on the mouse ID
+    data_FPrig_varName = sprintf('data_FPrig_%s', mouse{3});
+    
+    % Load FP rig data for all mice
+    eval([data_FPrig_varName, ' = TDTbin2mat(mouse{1});']);
 
-        % Dynamically generate variable names for data_FPrig and data_EEGrig
-    data_FPrig_varName = sprintf('data_FPrig_%s', mouse{1}(end-2:end)); % Assumes the unique identifier is the last 3 characters of the first string in mouse array
-        % Load data using TDTbin2mat and assign to dynamically named variables
-    eval([data_FPrig_varName, ' = TDTbin2mat(mouse{1});']); % FP rig data
-
-    % Check if this mouse is supposed to skip EEG data loading
-    if ~ismember(mouseID, mice_pairs(:, 1))
-        % Load EEG data as normal
-        data_EEGrig_varName = sprintf('data_EEGrig_%s', mouse{2}(end-2:end));
-        eval([data_EEGrig_varName, ' = TDTbin2mat(mouse{2});']); % EEG rig data - might be the same as FP rig
+    % Skip loading EEG data for viewpoint mice by comparing the string directly
+    if ~ismember(mouseID, viewpoint_mice) && ~ismember(mouseID, mice_pairs(:, 1))
+        % Note: Since mouseID is a char, we use it directly without braces
+        data_EEGrig_varName = sprintf('data_EEGrig_%s', mouse{3});
+        eval([data_EEGrig_varName, ' = TDTbin2mat(mouse{2});']); % Load EEG rig data if conditions are met
     end
+    % Viewpoint EEG is handled in a separate function later
 end
-
 %% Preprocess FP, EEG and EMG
-for idx = 1:length(mice_TTL)
-    mouse = mice_TTL{idx};
-    mouseID = sprintf('M%s', mouse{1}(end-2:end)); % Extract the ID
+%For each mouse, check if they are part of the group with out a TTL pulse
+%Either way, check if they have a partner ID with the EEG data, if yes: use
+%the EEG rig from that animal and extract channel 2. If not, use it's own
+%ID for the EEG rig.
+
+for idx = 1:length(v)
+    mouse = v{idx};
+    mouseID = sprintf('M%s', mouse{3}); % Extract the ID
     disp(mouseID)
 
-    data_FPrig_input = eval(sprintf('data_FPrig_%s', mouse{1}(end-2:end)));
+    data_FPrig_input = eval(sprintf('data_FPrig_%s', mouse{3}));
         % Check if the current mouse identifier is in the mice_without_TTL list
-    if ismember(mouseIdentifier, mice_without_TTL_IDs)
+    if ismember(mouseID, mice_without_TTL_IDs)
+                % Determine if this mouse needs to pull EEG/EMG data from a partner
+        partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
+        if isempty(partnerIdx)
+            % This mouse has its own EEG data
+            partnerData = eval(sprintf('data_EEGrig_%s', mouse{3}));
+        else
+            % This mouse needs to use its partner's EEG data
+            partnerID = mice_pairs{partnerIdx, 2};
+            % Remove any letters from partnerID, keeping only digits
+            partnerID_numeric = regexprep(partnerID, '\D', '');
+            disp(partnerID_numeric)
+            % Now use the modified partnerID_numeric in eval
+            partnerData = eval(sprintf('data_EEGrig_%s', partnerID_numeric));
+        end
         % Call processSignals_without_TTL function for mice without TTL
-        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs] = processSignals_without_TTL(mouse, data_FPrig_input, data_EEGrig_input);
+        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs] = processSignals_without_TTL(mouse, data_FPrig_input, partnerData);
+
+    elseif ismember(mouseID, viewpoint_mice)
+        %Process viewpoint data with TTL in it's own way
+        [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG, EEG_rig] = processSignals_Viewpoint_with_TTL(mouse, data_FPrig_input);
+        eval(sprintf('data_EEGrig_%s = EEG_rig;', mouse{3}));
+        eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{3}));
     else
         % Determine if this mouse needs to pull EEG/EMG data from a partner
         partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
@@ -80,14 +151,14 @@ for idx = 1:length(mice_TTL)
         [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, partnerData);
     end
         % Dynamically save the output variables with mouse-specific names
-    eval(sprintf('delta465_filt_2_%s = delta465_filt_2;', mouse{1}(end-2:end)));
-    eval(sprintf('sec_signal_2_%s = sec_signal_2;', mouse{1}(end-2:end)));
-    eval(sprintf('signal_fs_%s = signal_fs;', mouse{1}(end-2:end)));
-    eval(sprintf('EEG_%s = EEG;', mouse{1}(end-2:end)));
-    eval(sprintf('EMG_%s = EMG;', mouse{1}(end-2:end)));
-    eval(sprintf('sec_signal_EEG_%s = sec_signal_EEG;', mouse{1}(end-2:end)));
-    eval(sprintf('EEG_fs_%s = EEG_fs;', mouse{1}(end-2:end)));
-    eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{1}(end-2:end)));
+    eval(sprintf('delta465_filt_2_%s = delta465_filt_2;', mouse{3}));
+    eval(sprintf('sec_signal_2_%s = sec_signal_2;', mouse{3}));
+    eval(sprintf('signal_fs_%s = signal_fs;', mouse{3}));
+    eval(sprintf('EEG_%s = EEG;', mouse{3}));
+    eval(sprintf('EMG_%s = EMG;', mouse{3}));
+    eval(sprintf('sec_signal_EEG_%s = sec_signal_EEG;', mouse{3}));
+    eval(sprintf('EEG_fs_%s = EEG_fs;', mouse{3}));
+    eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{3}));
 end
 
 %% QC - Check all traces are there
@@ -136,18 +207,18 @@ end
 
 
 %% Downsample FP and filter EEG
-
-
     % Normalize fluorescence traces
 MeanFilterOrder = 2000; % for smoothing
 MeanFilter = ones(MeanFilterOrder,1)/MeanFilterOrder;
 
 % Smoothing traces for trough detection
-delta465_filt_2_117 = filtfilt(MeanFilter,1,delta465_filt_2_117);
-delta465_filt_2_124 = filtfilt(MeanFilter,1,delta465_filt_2_124);
-delta465_filt_2_168 = filtfilt(MeanFilter,1,delta465_filt_2_168);
-delta465_filt_2_147 = filtfilt(MeanFilter,1,delta465_filt_2_147);
-delta465_filt_2_149 = filtfilt(MeanFilter,1,delta465_filt_2_149);
+delta465_filt_2_117_smooth = filtfilt(MeanFilter,1,delta465_filt_2_117);
+delta465_filt_2_124_smooth = filtfilt(MeanFilter,1,delta465_filt_2_124);
+delta465_filt_2_168_smooth = filtfilt(MeanFilter,1,delta465_filt_2_168);
+delta465_filt_2_147_smooth = filtfilt(MeanFilter,1,delta465_filt_2_147);
+delta465_filt_2_149_smooth = filtfilt(MeanFilter,1,delta465_filt_2_149);
+delta465_filt_2_387_smooth = filtfilt(MeanFilter,1,delta465_filt_2_387);
+delta465_filt_2_392_smooth = filtfilt(MeanFilter,1,delta465_filt_2_392);
 
 % downsampling traces for plotting
 ds_factor_FP = 100; % also used for plotting later (section 9b)
@@ -167,33 +238,49 @@ ds_sec_signal_2_147 = downsample(sec_signal_2_147, ds_factor_FP); % for plotting
 ds_delta465_filt_2_149 = downsample(delta465_filt_2_149, ds_factor_FP);
 ds_sec_signal_2_149 = downsample(sec_signal_2_149, ds_factor_FP); % for plotting
 
-% Design a bandpass filter
-bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
-    'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
-    'SampleRate', EEG_fs_117);
+ds_delta465_filt_2_387 = downsample(delta465_filt_2_387, ds_factor_FP);
+ds_sec_signal_2_387 = downsample(sec_signal_2_387, ds_factor_FP); % for plotting
 
-% Apply the bandpass filter to your EMG data
-filtered_EMG_117 = filtfilt(bpFilt, EMG_117);
-filtered_EMG_124 = filtfilt(bpFilt, EMG_124);
-filtered_EMG_168 = filtfilt(bpFilt, EMG_168);
-filtered_EMG_147 = filtfilt(bpFilt, EMG_147);
-filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
+ds_delta465_filt_2_392 = downsample(delta465_filt_2_392, ds_factor_FP);
+ds_sec_signal_2_392 = downsample(sec_signal_2_392, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_117_smooth = downsample(delta465_filt_2_117_smooth, ds_factor_FP);
+ds_delta465_filt_2_124_smooth = downsample(delta465_filt_2_124_smooth, ds_factor_FP);
+ds_delta465_filt_2_168_smooth = downsample(delta465_filt_2_168_smooth, ds_factor_FP);
+ds_delta465_filt_2_147_smooth = downsample(delta465_filt_2_147_smooth, ds_factor_FP);
+ds_delta465_filt_2_149_smooth = downsample(delta465_filt_2_149_smooth, ds_factor_FP);
+ds_delta465_filt_2_387_smooth = downsample(delta465_filt_2_387_smooth, ds_factor_FP);
+ds_delta465_filt_2_392_smooth = downsample(delta465_filt_2_392_smooth, ds_factor_FP);
+
+% Design a bandpass filter
+% bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+%     'CutoffFrequency1', 20, 'CutoffFrequency2', 300, ...
+%     'SampleRate', EEG_fs_117);
+% 
+% % Apply the bandpass filter to your EMG data
+% filtered_EMG_117 = filtfilt(bpFilt, EMG_117);
+% filtered_EMG_124 = filtfilt(bpFilt, EMG_124);
+% filtered_EMG_168 = filtfilt(bpFilt, EMG_168);
+% filtered_EMG_147 = filtfilt(bpFilt, EMG_147);
+% filtered_EMG_149 = filtfilt(bpFilt, EMG_149);
 
 
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117,MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 45);
-[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124,MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 45);
-[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168,MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 45);
-[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147,MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 45);
-[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149,MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 45);
+[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_arousal_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 15);
+[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_arousal_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 15);
+[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_arousal_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 15);
+[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147, MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_arousal_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 15);
+[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149, MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_arousal_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 15);
+[wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_arousal_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
+[wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_arousal_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
-for idx = 1:length(M)
-    mouse = M{idx};
-    uniqueId = mouse{1}(end-2:end); % Extract mouse ID as a string
+for idx = 1:length(v)
+    mouse = v{idx};
+    uniqueId = mouse{3}; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     wake_woMA_varName = sprintf('wake_woMA_binary_vector_%s', uniqueId);
@@ -218,11 +305,10 @@ for idx = 1:length(M)
     EMG = eval(EMG_varName);
     
     sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
+    uniqueIdStr = string(uniqueId);
 
     % Plot for the current mouse
     figure;
-    sgtitle(sprintf('Mouse %s', uniqueId)); % Set the figure title with the mouse ID
-
     a = subplot(3, 1, 1);
         plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
         title(['Norepinephrine']);
@@ -247,8 +333,24 @@ for idx = 1:length(M)
     % Linking axes for synchronized zooming
     linkaxes([a, b, c], 'x');
 end
+%% Get RR intervals
+[RR_387, RR_time_387, RR_fs_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387);
+[RR_124, RR_time_124, RR_fs_124] = GetRRIntervals(M124, EMG_124, sec_signal_EEG_124, EEG_fs_124);
+[RR_399, RR_time_399, RR_fs_399] = GetRRIntervals(M399, -EMG_399, sec_signal_EEG_399, EEG_fs_399);
 
 
+%% Get HRB
+[HRB, HRB_time] = findHRB(new_time_vector, resampled_RR_pchip);
+
+figure;
+plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on;
+scatter(HRB_time, HRB, 'b', 'filled'); % Plotting HRB
+hold off;
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV p-chip (M124)');
+grid on;
 %% Power analysis on EEG
 power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
 frw = 0:0.2:30;
@@ -257,17 +359,95 @@ window_in_sec = 1; % sec. 1 for 30 sec
 %[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 %% Find NE troughs in sleep transitions and NREM
-SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, MA_periods_117, 15, 15);
-SWS_before_MA_pklocs_124 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, MA_periods_124, 15, 15);
+SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, MA_periods_117, 15, 15);
+SWS_before_MA_pklocs_124 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, MA_periods_124, 15, 15);
 
-NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 3); % Change SD multiplyer to 1 for more selective troughs
-NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 3); % Change SD multiplyer to 1 for more selective troughs
+NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 3); % Change SD multiplyer to 1 for more selective troughs
+NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 3); % Change SD multiplyer to 1 for more selective troughs
 
-SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0.1, mean(delta465_filt_2_124)-5, 15);
-SWS_before_wake_pklocs_117 = findPeaksBeforeTransition(SWS_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0.1, mean(delta465_filt_2_117)-5, 15);
+SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0.1, mean(delta465_filt_2_124)-5, 15, 15);
+SWS_before_wake_pklocs_117 = findPeaksBeforeTransition(SWS_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0.1, mean(delta465_filt_2_117)-5, 15, 15);
 
-REM_before_wake_pklocs_117 = findPeaksBeforeTransition(REM_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117, sec_signal_2_117, 0, 0, 15);
-REM_before_wake_pklocs_124 = findPeaksBeforeTransition(REM_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124, sec_signal_2_124, 0, 0, 15);
+REM_before_wake_pklocs_117 = findPeaksBeforeTransition(REM_before_arousal_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0, 0, 0, 15);
+REM_before_wake_pklocs_124 = findPeaksBeforeTransition(REM_before_arousal_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
+
+% Logical condition for values not in the ranges 18950 to 19000 and 5400 to 5450
+not_in_range = ~(REM_before_wake_pklocs_124 > 18950 & REM_before_wake_pklocs_124 < 19000) & ~(REM_before_wake_pklocs_124 > 5400 & REM_before_wake_pklocs_124 < 5450);
+
+% Apply logical indexing to keep only values not in the specified ranges
+REM_before_wake_pklocs_124 = REM_before_wake_pklocs_124(not_in_range);
+SWS_before_MA_pklocs_124 = SWS_before_MA_pklocs_124';
+NREMexclMA_periods_pklocs_124 = NREMexclMA_periods_pklocs_124';
+%% 
+% Find the maximum length among the variables
+maxLen = max([length(SWS_before_MA_pklocs_124), length(NREMexclMA_periods_pklocs_124), ...
+              length(SWS_before_wake_pklocs_124), length(REM_before_wake_pklocs_124)]);
+
+% Preallocate arrays of NaNs to the maximum length
+SWS_before_MA_124_padded = NaN(maxLen, 1);
+NREMexclMA_periods_124_padded = NaN(maxLen, 1);
+SWS_before_wake_124_padded = NaN(maxLen, 1);
+REM_before_wake_124_padded = NaN(maxLen, 1);
+
+% Fill the preallocated arrays with actual data
+SWS_before_MA_124_padded(1:length(SWS_before_MA_pklocs_124)) = SWS_before_MA_pklocs_124;
+NREMexclMA_periods_124_padded(1:length(NREMexclMA_periods_pklocs_124)) = NREMexclMA_periods_pklocs_124;
+SWS_before_wake_124_padded(1:length(SWS_before_wake_pklocs_124)) = SWS_before_wake_pklocs_124;
+REM_before_wake_124_padded(1:length(REM_before_wake_pklocs_124)) = REM_before_wake_pklocs_124;
+
+% Calculate the differences between consecutive observations
+Diff_SWS_before_MA_124 = [NaN; diff(SWS_before_MA_124_padded)];
+Diff_NREMexclMA_periods_124 = [NaN; diff(NREMexclMA_periods_124_padded)];
+Diff_SWS_before_wake_124 = [NaN; diff(SWS_before_wake_124_padded)];
+Diff_REM_before_wake_124 = [NaN; diff(REM_before_wake_124_padded)];
+
+% Compile into a structure for easy access
+NE_trough_locs = struct('SWS_before_MA_pklocs_124', round(SWS_before_MA_124_padded), ...
+                   'Diff_SWS_before_MA_124', round(Diff_SWS_before_MA_124), ...
+                   'NREMexclMA_periods_pklocs_124', round(NREMexclMA_periods_124_padded), ...
+                   'Diff_NREMexclMA_periods_124', round(Diff_NREMexclMA_periods_124), ...
+                   'SWS_before_wake_pklocs_124', round(SWS_before_wake_124_padded), ...
+                   'Diff_SWS_before_wake_124', round(Diff_SWS_before_wake_124), ...
+                   'REM_before_wake_pklocs_124', round(REM_before_wake_124_padded), ...
+                   'Diff_REM_before_wake_124', round(Diff_REM_before_wake_124));
+
+% Accessing data example:
+% dataFrame.SWS_before_MA_pklocs_124
+
+
+%% 
+% Initialize an array to hold the furthest peak time and its distance from offset for each bout
+peak_info = []; % Each row: [peak time, distance to offset]
+
+% Iterate through each bout
+for i = 1:size(REM_before_arousal_filtered_124, 1)
+    bout_onset = REM_before_arousal_filtered_124(i, 1);
+    bout_offset = REM_before_arousal_filtered_124(i, 2);
+    
+    % Find peaks that fall within this bout
+    peaks_in_bout = REM_before_wake_pklocs_124(REM_before_wake_pklocs_124 >= bout_onset & REM_before_wake_pklocs_124 <= bout_offset);
+    
+    % Calculate distances of these peaks from the bout's offset
+    distances = bout_offset - peaks_in_bout;
+    
+    % Find the peak furthest from the offset
+    if ~isempty(distances)
+        [max_distance, idx] = max(distances);
+        furthest_peak = peaks_in_bout(idx);
+        peak_info = [peak_info; furthest_peak, max_distance];
+    end
+end
+
+% Sort the peak_info array by distance to offset, descending
+[~, sortIdx] = sort(peak_info(:, 2), 'descend');
+sorted_peak_info = peak_info(sortIdx, :);
+
+% Display the top 3 peaks furthest from their bout's offset
+num_peaks_to_display = min(3, size(sorted_peak_info, 1)); % Ensure we don't exceed the number of found peaks
+for i = 1:num_peaks_to_display
+    fprintf('Peak time: %f, Distance to offset: %f\n', sorted_peak_info(i, 1), sorted_peak_info(i, 2));
+end
+
 %% visualize calculated troughs
     sleepscore_time = 0:length(wake_woMA_binary_vector_117)-1; % Assuming all vectors are the same length
 
@@ -281,17 +461,149 @@ title('NE with selected peaks');
     sleepscore_time = 0:length(wake_woMA_binary_vector_124)-1; % Assuming all vectors are the same length
 
 figure
-plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124_smooth, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
 hold on
-plot(NREMexclMA_periods_pklocs_124, delta465_filt_2_124(round(NREMexclMA_periods_pklocs_124*signal_fs)), 'r*')
+plot(SWS_before_wake_pklocs_124, delta465_filt_2_124_smooth(round(SWS_before_wake_pklocs_124*signal_fs)), 'r*')
 title('NE with selected peaks');
+
+%% Percent HRB assocaitated troughs
+
+% Assuming HRB_time and the trough variables are defined
+trough_variables = {
+    'NREM (M124)', NREMexclMA_periods_pklocs_124;
+    'NREM to MA transition (M124)', SWS_before_MA_pklocs_124;
+    'NREM to wake transition (M124)', SWS_before_wake_pklocs_124;
+    'REM to MA/wake transition (M124)', REM_before_wake_pklocs_124
+};
+
+% Combine all trough times for checking consecutive troughs
+all_trough_times = sort([NREMexclMA_periods_pklocs_124; SWS_before_MA_pklocs_124; SWS_before_wake_pklocs_124; REM_before_wake_pklocs_124]);
+
+resultsTable = NETroughToHRBAssociation(trough_variables, all_trough_times, HRB_time);
+
+%% 
+
+[NE_associated_HRB_time, HRB_times_no_troughs] = separateHRBAssociatedTroughs(trough_variables, all_trough_times, HRB_time);
+
+% Assuming 'NE_associated_HRB_time' and 'HRB_times_no_troughs' are available
+% and contain the HRB times that are associated and not associated with NE troughs, respectively.
+% And assuming HRB_time and HRB variables contain all HRB events and their times.
+
+    sleepscore_time = 0:length(wake_woMA_binary_vector_124)-1; % Assuming all vectors are the same length
+
+% Corrected color specifications using RGB triplets
+figure;
+plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on;
+
+% Scatter plot for HRBs that are associated with NE troughs in green
+scatter(NE_associated_HRB_time, HRB(ismember(HRB_time, NE_associated_HRB_time)), 'g', 'filled');
+
+% Scatter plot for HRBs that aren't associated with NE troughs in red
+scatter(HRB_times_no_troughs, HRB(ismember(HRB_time, HRB_times_no_troughs)), 'r', 'filled');
+
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV p-chip (M124)');
+grid on;
+
+% NREM_M124__HRB in black
+for i = 1:length(NREM_M124__HRB)
+    xline(NREM_M124__HRB(i), '--', 'Color', 'k');
+end
+
+% NREM_M124__no_HRB in gray
+for i = 1:length(NREM_M124__no_HRB)
+    xline(NREM_M124__no_HRB(i), '--', 'Color', [0.5 0.5 0.5]);
+end
+
+% NREMToMATransition_M124__HRB in orange
+for i = 1:length(NREMToMATransition_M124__HRB)
+    xline(NREMToMATransition_M124__HRB(i), '--', 'Color', 'yellow');
+end
+
+% NREMToMATransition_M124__no_HRB in yellow
+for i = 1:length(NREMToMATransition_M124__no_HRB)
+    xline(NREMToMATransition_M124__no_HRB(i), '--', 'Color', 'white');
+end
+
+% NREMToWakeTransition_M124__HRB in dark green
+for i = 1:length(NREMToWakeTransition_M124__HRB)
+    xline(NREMToWakeTransition_M124__HRB(i), '--', 'Color', [0, 0.5, 0]);
+end
+
+% NREMToWakeTransition_M124__no_HRB in light green
+for i = 1:length(NREMToWakeTransition_M124__no_HRB)
+    xline(NREMToWakeTransition_M124__no_HRB(i), '--', 'Color', [0.5647, 0.9333, 0.5647]);
+end
+
+% REMToMA_wakeTransition_M124__HRB in dark blue
+for i = 1:length(REMToMA_wakeTransition_M124__HRB)
+    xline(REMToMA_wakeTransition_M124__HRB(i), '--', 'Color', [0.6784, 0.8471, 0.9020]);
+end
+
+% REMToMA_wakeTransition_M124__no_HRB in light blue
+for i = 1:length(REMToMA_wakeTransition_M124__no_HRB)
+    xline(REMToMA_wakeTransition_M124__no_HRB(i), '--', 'Color', [0, 0, 0.6]);
+end
+
+hold off; % Release the plot for further commands
+
+%% Split HRB no through by sleep stage
+
+[NREMinclMA_HRB_124, NREMexclMA_HRB_124, wake_HRB_124, REM_HRB_124] = categorizeHRBBySleepStage(HRB_times_no_troughs, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124);
+
+figure;
+plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on;
+
+% Assuming 'HRB' is an array with HRB markers, and 'HRB_time' is the corresponding time array
+% Note: You may need to adjust the 'HRB' array access to match the specific values you wish to plot for each category.
+
+% Scatter plot for NREMinclMA_HRB_124 in yellow
+scatter(NREMinclMA_HRB_124, HRB(ismember(HRB_time, NREMinclMA_HRB_124)), 'y', 'filled');
+
+% Scatter plot for NREMexclMA_HRB_124 in red
+scatter(NREMexclMA_HRB_124, HRB(ismember(HRB_time, NREMexclMA_HRB_124)), 'r', 'filled');
+
+% Scatter plot for REM_HRB_124 in green
+scatter(REM_HRB_124, HRB(ismember(HRB_time, REM_HRB_124)), 'g', 'filled');
+
+% Scatter plot for wake_HRB_124 in blue
+scatter(wake_HRB_124, HRB(ismember(HRB_time, wake_HRB_124)), 'b', 'filled');
+
+xlabel('Time (s)');
+ylabel('RR intervals');
+title('HRV p-chip (M124)');
+grid on;
+hold off;
+
 %% Generate the main plot
 
 event_var = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124};
-titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition'};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake/MA Transition'};
 main_title = 'Averaged Activity During NE Trough (M124)';
 
-MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+
+%% Generate the main plot for HRB associated NE vs HRB not associated NE vs HRB not associated with NE
+
+event_var = {NREM_M124__HRB, NREMToMATransition_M124__HRB, NREMToWakeTransition_M124__HRB, REMToMA_wakeTransition_M124__HRB};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake/MA Transition'};
+main_title = 'Averaged Activity During NE Troughs That Are HRB Related (M124)';
+MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+
+event_var = {NREM_M124__no_HRB, NREMToMATransition_M124__no_HRB, NREMToWakeTransition_M124__no_HRB, REMToMA_wakeTransition_M124__no_HRB};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake/MA Transition'};
+main_title = 'Averaged Activity During NE Troughs That Are Not HRB Related (M124)';
+MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+
+event_var = {NREMexclMA_HRB_124, NREMinclMA_HRB_124, wake_HRB_124, REM_HRB_124};
+filteredEventVars = FilterHRBperSleepStageForPlottings(event_var, 30, 60, sec_signal_2_124);
+titles = {'NREM excl. MA', 'NREM incl. MA', 'Wake', 'REM'};
+main_title = 'Averaged Activity During HRBs Which Are Not NE Trough Related (M124)';
+MainPlot(filteredEventVars, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+
 %% QC plot for NE troughs
 pklocs_variables_117 = {NREMexclMA_periods_pklocs_117, SWS_before_MA_pklocs_117, SWS_before_wake_pklocs_117, REM_before_wake_pklocs_117};
 titles_117 = {'NREM - M117', 'NREM to MA Transition - M117', 'NREM to Wake Transition - M117', 'REM to Wake Transition - M117'};
@@ -299,8 +611,43 @@ QC_plot_all_NE_troughs(pklocs_variables_117, titles_117, ds_delta465_filt_2_117,
 
 
 pklocs_variables_124 = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124};
-titles_124 = {'NREM - M124', 'NREM to MA Transition - M124', 'NREM to Wake Transition - M124', 'REM to Wake Transition - M124'};
-QC_plot_all_NE_troughs(pklocs_variables_124, titles_124, ds_delta465_filt_2_124, ds_sec_signal_2_124, signal_fs_124)
+titles_124 = {'NREM - M124', 'NREM to MA Transition - M124', 'NREM to Wake Transition - M124', 'REM to Wake/MA Transition - M124'};
+maintitle = 'RR Activity Around Troughs';
+ylab = 'RR Intervals';
+QC_plot_all_NE_troughs(pklocs_variables_124, titles_124, maintitle, ylab, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124)
+
+% Assume REM_before_wake_pklocs_124, ds_delta465_filt_2, and ds_sec_signal_2 are defined
+pklocs = REM_before_wake_pklocs_124; % Trough times
+event_count = length(pklocs); % Number of troughs
+
+for i = 1:event_count
+    pkloc_time = pklocs(i);
+    % Find the index of pkloc_time in ds_sec_signal_2
+    [~, closest_index] = min(abs(ds_sec_signal_2_124 - pkloc_time));
+    start_index = max(1, closest_index - round(30 * signal_fs_124));
+    end_index = min(length(ds_delta465_filt_2_124_smooth), closest_index + round(60 * signal_fs_124));
+    
+    % Create a new figure for each trough
+    figure; % Create a new figure window for each plot to make it one by one
+    hold on;
+    
+    % Plot the NE trace for this event, ensuring the time axis is centered at the trough
+    plot_time = ds_sec_signal_2_124(start_index:end_index) - ds_sec_signal_2_124(closest_index);
+    plot(plot_time, ds_delta465_filt_2_124_smooth(start_index:end_index));
+    
+    % Formatting the plot
+    title(['Trough ' num2str(i) ' NE Activity']);
+    xlabel('Time (s) relative to trough');
+    ylabel('NE Activity');
+    xlim([-30, 60]); % 30 seconds before to 60 seconds after the trough
+    grid on;
+    hold off;
+    
+    % Pause and wait for the user to close the figure or press a key to continue to the next plot
+    waitforbuttonpress; % Wait for a button press to continue
+    % Alternatively, use pause; and manually close the figure to move to the next one
+end
+
 %% QC plot for HRB events - not run yet!
 sleep_stage_periods_117 = {NREMexclMA_periods_117, NREMinclMA_periods_117, wake_periods_117, REM_periods_117};
 sleep_stages_117 = {'NREM excl MA - M117', 'NREM incl MA - M117', 'Wake - M117', 'REM - M117'};
@@ -314,9 +661,9 @@ QC_plot_all_HRB(sleep_stage_periods_124, sleep_stages_124, HRB_124, HRB_time_124
 
 mice_data_hours = []; % To store mouse numbers and their corresponding data hours
 
-for idx = 1:length(mice)
-    mouse = mice{idx};
-    mouseNumber = mouse{1}(end-2:end); % Extract unique mouse identifier
+for idx = 1:length(synapse_mice)
+    mouse = synapse_mice{idx};
+    mouseNumber = mouse{3}; % Extract unique mouse identifier
     
     % Assuming data_FPrig contains the start and end time information for each mouse
     data_FPrig_varName = sprintf('data_FPrig_%s', mouseNumber);
@@ -688,13 +1035,33 @@ for i = 1:size(mice_data_hours, 1)
         end
     end
 end
+%% 
 
 % Assuming NREM_mice_data_hours is your input matrix or table
 % with columns: Mouse ID, Hour, Sleep Stage, Variable Name, sec_signal_2 Data, Variable Name 2, delta465_filt_2 Data
 
+
+% Convert hours from cells to a numeric array and subtract 6.5 to get Zeitgeber Time
+% Assuming NREM_mice_data_hours(:, 2) contains the 'hours' data
+
+if iscell(NREM_mice_data_hours(:, 2))
+    % Extract numeric values from cells
+    hoursNumeric = cell2mat(NREM_mice_data_hours(:, 2));
+else
+    % If 'hours' is already a numeric array, we don't need to convert it
+    hoursNumeric = NREM_mice_data_hours(:, 2);
+end
+
+% Subtract 6.5 to get the Zeitgeber Time
+zeitgeberTimes = hoursNumeric - 6.5;
+
+% Verify if zeitgeberTimes contains NaN values
+if any(isnan(zeitgeberTimes))
+    warning('NaN values found after subtraction in "zeitgeberTimes"');
+end
+
 % Convert the first two columns to strings if they are not already
 mouseIDs = string(NREM_mice_data_hours(:, 1));
-hours = string(NREM_mice_data_hours(:, 2));
 
 % Create a unique key for each combination of Mouse ID and Hour by concatenating
 uniqueKeys = mouseIDs + "_" + hours;
@@ -733,12 +1100,15 @@ for i = 1:length(uniqueCombinations)
     mouseHourSplit = split(uniqueCombinations(i), '_');
     mouseID = str2double(mouseHourSplit(1));
     mouseID = int64(mouseID);
-    hour = str2double(mouseHourSplit(2));
-    hour = int32(hour);
-
+    
+    % Use the pre-calculated Zeitgeber Time for the current rows
+    % Adjust the index to match the rows from unique combinations
+    hourIndex = find(mouseIDs == mouseHourSplit(1) & hoursNumeric == str2double(mouseHourSplit(2)));
+    hour = zeitgeberTimes(hourIndex(1));
+    
     % Append to the output array
     % Including the count of NREM bouts (length of rows for this combination) and mean duration
-    percent_NREM = [percent_NREM; {mouseID, hour-7, percentOfHour, length(rows), meanDuration}];
+    percent_NREM = [percent_NREM; {mouseID, hour, percentOfHour, length(rows), meanDuration}];
 end
 
 % Convert to table with additional columns for NREM bout count and mean duration
