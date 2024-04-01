@@ -39,6 +39,13 @@ name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'chan
 M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
 M399 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_Arch_NOR_2021-03-12_14-46-42-245.exp' '399' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
 M392 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch\392_Arch_NOR\392_Arch_NOR_2021-03-10_10-31-55-535.exp' '392' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M403 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch\403_Arch_NOR\403_Arch_NOR_2021-03-12_08-56-13-288.exp' '403' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M412 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch\412_Arch_NOR\412_Arch_NOR_2021-03-08_13-27-00-781.exp' '412' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M414 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch\414_Arch_NOR\414_Arch_NOR_2021-03-10_13-19-57-296.exp' '414' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M416 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch\416_Arch_NOR\416_Arch_NOR_2021-03-09_10-14-39-452.exp' '416' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+M418 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch\418_Arch_NOR\418_Arch_NOR_2021-03-09_13-02-50-098.exp' '418' '5' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+M486 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\486_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\486_arch\486_Arch_NOR\NOR_486_Arch_2021-07-07_12-53-47-510.exp' '486' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'PtC1'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+M420 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\420_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\420_YFP\420_YFP_NOR\420_YFP_NOR_2021-03-09_15-53-26-919.exp' '420' '0' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
 
 M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '124' '' '' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
@@ -47,9 +54,9 @@ M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_1
 M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '149' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
 
 mice_TTL = {M124, M117};
-mice = {M168, M147, M149, M117, M124, M387, M392};
+mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M486, M420};
 mice_without_TTL = {M168, M147, M149};
-viewpoint_mice = {'M387', 'M399', 'M392'};
+viewpoint_mice = {'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M486', 'M420'};
 v = {M387, M392};
 synapse_mice = {M168, M147, M149, M117, M124};
 
@@ -340,7 +347,7 @@ end
 
 
 %% Get HRB
-[HRB, HRB_time] = findHRB(new_time_vector, resampled_RR_pchip);
+[HRB, HRB_time] = findHRB(RR_time_124, RR_124);
 
 figure;
 plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
@@ -724,6 +731,7 @@ for idx = 1:length(synapse_mice)
 end
 
 % At this point, 'mice_data_hours' will have 2 columns: mouse number and hour segments
+
 %% Devide hourly NE data into sleep phases if sleep phase is long enough
 min_sleep_period_duration = 90;
 
@@ -1035,7 +1043,7 @@ for i = 1:size(mice_data_hours, 1)
         end
     end
 end
-%% 
+
 
 % Assuming NREM_mice_data_hours is your input matrix or table
 % with columns: Mouse ID, Hour, Sleep Stage, Variable Name, sec_signal_2 Data, Variable Name 2, delta465_filt_2 Data
@@ -1064,7 +1072,7 @@ end
 mouseIDs = string(NREM_mice_data_hours(:, 1));
 
 % Create a unique key for each combination of Mouse ID and Hour by concatenating
-uniqueKeys = mouseIDs + "_" + hours;
+uniqueKeys = mouseIDs + "_" + hoursNumeric;
 
 % Find unique combinations and their indices
 [uniqueCombinations, ~, groupIndices] = unique(uniqueKeys);
@@ -1105,7 +1113,7 @@ for i = 1:length(uniqueCombinations)
     % Adjust the index to match the rows from unique combinations
     hourIndex = find(mouseIDs == mouseHourSplit(1) & hoursNumeric == str2double(mouseHourSplit(2)));
     hour = zeitgeberTimes(hourIndex(1));
-    
+
     % Append to the output array
     % Including the count of NREM bouts (length of rows for this combination) and mean duration
     percent_NREM = [percent_NREM; {mouseID, hour, percentOfHour, length(rows), meanDuration}];
@@ -1116,14 +1124,448 @@ percent_NREM = cell2table(percent_NREM, 'VariableNames', {'MouseID', 'Zeitgeber 
 
 %% Plot %NREM, NREM bout n, and NREM bout duration
 
-plotNREMDataWithShading(percent_NREM, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true);
-plotNREMDataWithShading(percent_NREM, 'Mean NREM Bout Count per Hour', 'NREM_bout_n', 'Mean Bout Count', false);
-plotNREMDataWithShading(percent_NREM, 'Mean NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false);
+plotNREMDataWithShading(percent_NREM, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true, true);
+plotNREMDataWithShading(percent_NREM, 'Mean NREM Bout Count per Hour', 'NREM_bout_n', 'Mean Bout Count', false, true);
+plotNREMDataWithShading(percent_NREM, 'Mean NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false, true);
 
-plotIndividualAnimalData(percent_NREM, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true);
-plotIndividualAnimalData(percent_NREM, 'NREM Bout Count per Hour', 'NREM_bout_n', 'Bout Count', false);
-plotIndividualAnimalData(percent_NREM, 'NREM Bout Duration per Hour', 'NREM_bout_duration', 'Bout Duration (sec)', false);
+plotIndividualAnimalData(percent_NREM, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true, true);
+plotIndividualAnimalData(percent_NREM, 'NREM Bout Count per Hour', 'NREM_bout_n', 'Bout Count', false, true);
+plotIndividualAnimalData(percent_NREM, 'NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false, true);
+%% Cut NE data into 30 min
+mice_data_half_hours = []; % Initialize for storing mouse numbers and their corresponding data hours in 30-min segments
+
+for idx = 1:length(synapse_mice)
+    mouse = synapse_mice{idx};
+    mouseNumber = mouse{3}; % Extract unique mouse identifier
+
+    % Dynamically access the data_FPrig variable for the current mouse
+    data_FPrig_varName = sprintf('data_FPrig_%s', mouseNumber);
+    data_FPrig = eval(data_FPrig_varName);
+
+    % Extract start and end times from data_FPrig
+    startTimeStr = data_FPrig.info.utcStartTime;
+    endTimeStr = data_FPrig.info.utcStopTime;
+
+    % Convert to datetime in UTC timezone and adjust for local time zone
+    startTime = datetime(startTimeStr, 'InputFormat', 'HH:mm:ss', 'TimeZone', 'UTC') + hours(1);
+    endTime = datetime(endTimeStr, 'InputFormat', 'HH:mm:ss', 'TimeZone', 'UTC') + hours(1);
+
+    % Adjust startTime to the nearest half-hour forward or on the hour if it's exactly on the half-hour
+    minutePart = minute(startTime);
+    if minutePart < 30
+        startTime.Minute = 30;
+    elseif minutePart > 30
+        startTime = dateshift(startTime + hours(1), 'start', 'hour');
+    end
+
+    % Adjust endTime to the nearest half-hour back
+    minutePart = minute(endTime);
+    if minutePart > 30
+        endTime.Minute = 30;
+    elseif minutePart < 30 && minutePart > 0
+        endTime = dateshift(endTime, 'start', 'hour');
+    end
+
+    % Access signal frequency for the current mouse
+    signal_fs_varName = sprintf('signal_fs_%s', mouseNumber);
+    signal_fs = eval(signal_fs_varName);
+
+    % Access the FP data for the current mouse
+    delta465_filt_2_varName = sprintf('delta465_filt_2_%s', mouseNumber);
+    delta465_filt_2 = eval(delta465_filt_2_varName);
+
+    % Determine number of 30-minute intervals between startTime and endTime
+    totalFullHalfHours = hours(endTime - startTime) * 2;
+    currentSegmentStart = startTime;
+
+    for i = 1:totalFullHalfHours
+        % Use datevec to get the numeric components of the datetime
+        [year, month, day, hourSegment, min_segment, sec] = datevec(currentSegmentStart);
+        disp(hourSegment)
+    
+        segmentStartSec = seconds(currentSegmentStart - startTime);
+        segmentEndSec = segmentStartSec + 1800; % +30 minutes in seconds
+    
+        % Calculate indices for the segment
+        segmentStartIndex = round(segmentStartSec * signal_fs) + 1;
+        segmentEndIndex = min(round(segmentEndSec * signal_fs), length(delta465_filt_2));
+    
+        % Extract segments
+        segmentDelta = delta465_filt_2(segmentStartIndex:segmentEndIndex);
+        segmentTime = ((segmentStartIndex:segmentEndIndex) - segmentStartIndex + 1) / signal_fs;
+    
+        % Naming and saving segments dynamically with 30min suffix
+        eval(sprintf('delta465_filt_2_%s_%d_%d = segmentDelta;', mouseNumber, hourSegment, min_segment));
+        eval(sprintf('sec_signal_2_%s_%d_%d = segmentTime + segmentStartSec;', mouseNumber, hourSegment, min_segment));
+    
+        % Store mouse number and half-hour of data segment, formatted as 'HH:MM'
+        mice_data_half_hours = [mice_data_half_hours; {mouseNumber, sprintf('%02d:%02d', hourSegment, min_segment), '30min'}];
+    
+        % Advance to the next half-hour segment
+        currentSegmentStart = currentSegmentStart + minutes(30);
+    end
+end
+
+% Convert to table with additional columns for 30-min segments
+mice_data_half_hours_table = cell2table(mice_data_half_hours, 'VariableNames', {'MouseNumber', 'TimeSegment', 'Duration'});
+
+%% Add on the sleep phases for the 30 min data
+min_sleep_period_duration = 90;
+
+sleepStages = {'NREMinclMA_periods', 'NREMexclMA_periods', 'wake_periods', 'REM_periods'};
+updated_mice_data_half_hours = []; % To store the expanded data for 30-min segments
+
+for i = 1:size(mice_data_half_hours_table, 1)
+    mouseNumber = mice_data_half_hours_table.MouseNumber{i};
+    timeSegment = mice_data_half_hours_table.TimeSegment{i}; % This will be something like '14:30'
+    % Parse the timeSegment to extract the hour and minutes for variable naming
+    timeParts = split(timeSegment, ':');
+    hourSegment = str2double(timeParts{1});
+    minSegment = str2double(timeParts{2});
+
+    % Dynamic variable names for sec_signal_2 and delta465_filt_2 data
+    sec_signal_2_varName = sprintf('sec_signal_2_%s_%d_%d', mouseNumber, hourSegment, minSegment);
+    delta465_filt_2_varName = sprintf('delta465_filt_2_%s_%d_%d', mouseNumber, hourSegment, minSegment);
+    
+    % Check if the variables exist to handle cases where they might not due to filtering or other reasons
+    if exist(sec_signal_2_varName, 'var') && exist(delta465_filt_2_varName, 'var')
+        sec_signal_2_halfhourly = eval(sec_signal_2_varName);
+        delta465_filt_2_halfhourly = eval(delta465_filt_2_varName);
+
+        for stage = sleepStages
+            sleepVarName = sprintf('%s_%s', stage{1}, mouseNumber);
+            if exist(sleepVarName, 'var')
+                sleepPeriods = eval(sleepVarName); % Load sleep periods data
+
+                allIndices = []; % Initialize empty array to collect all relevant indices
+
+                % Collect indices for all periods within this sleep stage
+                for periodIndex = 1:size(sleepPeriods, 1)
+                    onset = sleepPeriods(periodIndex, 1);
+                    offset = sleepPeriods(periodIndex, 2);
+                    
+                    % Check if the sleep period is longer than 90 seconds
+                    if (offset - onset) > min_sleep_period_duration
+                        indices = find(sec_signal_2_halfhourly >= onset & sec_signal_2_halfhourly <= offset);
+
+                        if ~isempty(indices)
+                            filtered_sec_signal_2 = sec_signal_2_halfhourly(indices);
+                            filtered_delta465_filt_2 = delta465_filt_2_halfhourly(indices);
+            
+                            % Save filtered data with new variable names
+                            newSecSignalName = sprintf('sec_signal_2_%s_%d_%d_%s_30min', mouseNumber, hourSegment, minSegment, stage{1}(1:end-8)); % Simplify stage name
+                            newDeltaName = sprintf('delta465_filt_2_%s_%d_%d_%s_30min', mouseNumber, hourSegment, minSegment, stage{1}(1:end-8));
+            
+                            eval([newSecSignalName ' = filtered_sec_signal_2;']);
+                            eval([newDeltaName ' = filtered_delta465_filt_2;']);
+            
+                            % Update new mice_data_half_hours array
+                            updated_mice_data_half_hours = [updated_mice_data_half_hours; {mouseNumber, timeSegment, stage{1}(1:end-8), newSecSignalName, filtered_sec_signal_2, newDeltaName, filtered_delta465_filt_2}];
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+%% Get PSD for 30 min data
 
 
+% Initialization
+max_freq = 0.1; % Maximum frequency for PSD analysis
+sample_pr_sec = 0.002; % Frequency resolution for PSD
+
+
+% Loop through each entry in the updated_mice_data_half_hours
+% Initialization and function definitions are assumed to be as you provided.
+
+% Revised main loop structure:
+uniqueSleepStages = unique(updated_mice_data_half_hours(:, 3));
+uniqueTimeSegments = unique(updated_mice_data_half_hours(:, 2));
+
+% Create a unique identifier for each combination of MouseNumber, TimeSegment, and SleepStage
+combinationIDs = strcat(updated_mice_data_half_hours(:,1), '_', updated_mice_data_half_hours(:,2), '_', updated_mice_data_half_hours(:,3));
+
+% Find unique combinations
+[uniqueCombinationIDs, idx] = unique(combinationIDs);
+
+% Initialize your PSD table
+PSD_NE_table_new_30min = [{'MouseNumber', 'Hour', 'SleepStage', 'PeakPower', 'PeakPowerFreq', 'Freq25Quartile', 'MedianFrequency', 'Freq75Quartile', 'Freq95Quartile', 'AUC', 'TotalPower', 'avgPSD', 'Freqs'}];
+
+% Loop over unique combinations
+for i = 1:length(uniqueCombinationIDs)
+    % Extract the index of the current unique combination from the original data
+    currentIdx = idx(i);
+    mouseNumber = updated_mice_data_half_hours{currentIdx, 1};
+    timeSegment = updated_mice_data_half_hours{currentIdx, 2};
+    sleepStage = updated_mice_data_half_hours{currentIdx, 3};
+    
+    % Filter entries for the current combination
+    entries = updated_mice_data_half_hours(strcmp(combinationIDs, uniqueCombinationIDs{i}), :);
+    
+    % Initialize variables for combining PSD data
+    weightedPSD = [];
+    freqs = [];
+    totalDataPoints = 0;
+    
+    % Process each entry for the current combination
+    for j = 1:size(entries, 1)
+        secSignalData = entries{j, 5};
+        deltaSignalData = entries{j, 7};
+        
+        % Assume fs is defined for each mouse and doesn't change
+        fs_varName = sprintf('signal_fs_%s', mouseNumber);
+        fs = eval(fs_varName);
+
+        [detrendedSignal, segmentPSD, freqs, segmentDataPoints] = processSignalSegment(secSignalData, deltaSignalData, fs, max_freq, sample_pr_sec);
+        
+        if isempty(weightedPSD)
+            weightedPSD = segmentPSD * segmentDataPoints;
+        else
+            weightedPSD = weightedPSD + segmentPSD * segmentDataPoints; % Accumulate weighted PSD
+        end
+        
+        totalDataPoints = totalDataPoints + segmentDataPoints; % Accumulate total data points
+    end
+
+    % After processing all entries for the current combination, calculate and store metrics
+    if totalDataPoints > 0
+        avgPSD = weightedPSD / totalDataPoints;
+        
+        [metrics] = calculatePSDMetrics(avgPSD, freqs);
+        
+        % Extract hour and minute from timeSegment and format it
+        formattedHour = formatHour(timeSegment);
+
+        PSD_NE_table_new_30min = [PSD_NE_table_new_30min; {mouseNumber, formattedHour, sleepStage, metrics.peakPower, metrics.peakPowerFreq, metrics.Freq25Quartile, metrics.MedianFrequency, metrics.Freq75Quartile, metrics.Freq95Quartile, metrics.AUC, metrics.totalPower, avgPSD, freqs}];
+    end
+end
+
+%% mean PSD per hour/sleep stage for 30 min data
+
+% Initialize the new dataframe with headers
+mean_PSD_by_hour_and_stage = {'Hour', 'SleepStage', 'MeanPSD', 'Freqs'};
+
+uniqueHours = unique(PSD_NE_table_new_30min(2:end, 2)); % Excluding header row
+uniqueSleepStages = unique(PSD_NE_table_new_30min(2:end, 3));
+
+for i = 1:length(uniqueHours)
+    for j = 1:length(uniqueSleepStages)
+        currentHour = uniqueHours{i};
+        currentSleepStage = uniqueSleepStages{j};
+
+        % Initialize sumPSD and count for each combination of hour and sleep stage
+        sumPSD = [];
+        count = 0;
+        freqs = [];
+
+        % Iterate through the PSD_NE_table_new_30min to find matching entries
+        for k = 2:size(PSD_NE_table_new_30min, 1) % Skip header row
+            hour = PSD_NE_table_new_30min{k, 2};
+            sleepStage = PSD_NE_table_new_30min{k, 3};
+            if strcmp(hour, currentHour) && strcmp(sleepStage, currentSleepStage)
+                avgPSD = PSD_NE_table_new_30min{k, 12};
+                if isempty(sumPSD)
+                    sumPSD = avgPSD;
+                    freqs = PSD_NE_table_new_30min{k, 13};
+                else
+                    % Element-wise addition of the avgPSD to the sumPSD
+                    sumPSD = sumPSD + avgPSD; % Assumes avgPSD and sumPSD have the same size
+                end
+                count = count + 1;
+            end
+        end
+
+        if count > 0
+            % Calculate the mean PSD
+            meanPSD = sumPSD / count;
+            % Append the results to the new dataframe
+            mean_PSD_by_hour_and_stage = [mean_PSD_by_hour_and_stage; {currentHour, currentSleepStage, meanPSD, freqs}];
+        end
+    end
+end
+
+if isempty(mean_PSD_by_hour_and_stage)
+    disp('mean_PSD_by_hour_and_stage is empty. No plots can be generated.');
+    return; % Exit if mean_PSD_by_hour_and_stage is empty
+end
+
+% Define colors and sleep stages for plotting
+colors = {'blue', 'red', 'green', 'black'}; % Color for each sleep phase
+sleepStages = {'NREMinclMA', 'NREMexclMA', 'REM', 'wake'};
+colorMap = containers.Map(sleepStages, colors);
+
+% Extract unique time segments for plotting
+uniqueTimeSegments = unique(mean_PSD_by_hour_and_stage(2:end, 1)); % Skipping header row
+
+% Loop through each unique time segment
+for i = 1:length(uniqueTimeSegments)
+    uTimeSegment = uniqueTimeSegments{i};
+    figure; % Create a new figure for each time segment
+    hold on; % Hold on to plot multiple lines
+
+    % Extract frequencies from the first row for plotting (assuming consistency across rows)
+    universalFreqs = mean_PSD_by_hour_and_stage{2, 4}; % Directly access the frequencies array
+
+    % Loop through each sleep stage for plotting
+    for j = 1:length(sleepStages)
+        uSleepStage = sleepStages{j};
+        color = colorMap(uSleepStage);
+
+        % Initialize a flag to check if the stage is found for plotting
+        stageFound = false;
+
+        % Find matching rows for current time segment and sleep stage
+        for k = 2:size(mean_PSD_by_hour_and_stage, 1) % Skip header row
+            if strcmp(mean_PSD_by_hour_and_stage{k, 1}, uTimeSegment) && strcmp(mean_PSD_by_hour_and_stage{k, 2}, uSleepStage)
+                avgPSD = mean_PSD_by_hour_and_stage{k, 3}; % Directly access avgPSD
+                plot(universalFreqs, avgPSD, 'DisplayName', uSleepStage, 'Color', color);
+                stageFound = true;
+                break; % Break after finding the first match, assuming one row per sleep stage per time segment
+            end
+        end
+
+        % Check if the stage was not found for the current segment
+        if ~stageFound
+            disp(['No data found for ', uTimeSegment, ' - ', uSleepStage]);
+        end
+    end
+
+    titleStr = formatTitle(uTimeSegment);
+    title(titleStr);
+    xlabel('Frequency (Hz)');
+    ylabel('Power Spectral Density');
+    legend('show');
+    grid on;
+    hold off;
+    set(gcf, 'color', 'white');
+end
+%% Preprocess NREM plots
+% Initialize for storing processed data including actual data arrays
+sleepStages = {'NREMinclMA_periods'}; % Only interested in 'NREMinclMA_periods' for the final output
+NREM_mice_data_half_hours = [];
+
+for i = 1:size(mice_data_half_hours_table, 1)
+    mouseNumber = mice_data_half_hours_table.MouseNumber{i};
+    timeSegment = mice_data_half_hours_table.TimeSegment{i}; % 'HH:MM' format
+    
+    % Split the timeSegment into hours and minutes
+    [hoursPart, minutesPart] = strtok(timeSegment, ':');
+    minutesPart = strrep(minutesPart, ':', ''); % Remove colon
+    
+    % Remove leading zeros from the hour part
+    hoursPart = num2str(str2double(hoursPart));
+    
+    % Adjust minutes formatting
+    if strcmp(minutesPart, '00')
+        minutesFormatted = '0'; % For "00" minutes, format as "_0"
+    elseif strcmp(minutesPart, '30')
+        minutesFormatted = '30'; % Keep "30" minutes as "_30"
+    else
+        minutesFormatted = ['0', minutesPart]; % For non-standard cases, assuming correction
+    end
+    
+    % Combine the adjusted hour and minute parts
+    timeSegmentFormatted = [hoursPart, '_', minutesFormatted];
+        
+    % Dynamic variable names for sec_signal_2 and delta465_filt_2 data
+    sec_signal_2_varName = sprintf('sec_signal_2_%s_%s', mouseNumber, timeSegmentFormatted);
+    delta465_filt_2_varName = sprintf('delta465_filt_2_%s_%s', mouseNumber, timeSegmentFormatted);
+
+    
+    % Check if variables exist using the who function to avoid eval's overhead
+    if ismember(sec_signal_2_varName, who()) && ismember(delta465_filt_2_varName, who())
+        sec_signal_2_data = eval(sec_signal_2_varName);
+        delta465_filt_2_data = eval(delta465_filt_2_varName);
+
+        % Process sleep stages
+        for stage = sleepStages
+            sleepVarName = sprintf('%s_%s', stage{1}, mouseNumber);
+            if ismember(sleepVarName, who())
+                sleepPeriods = eval(sleepVarName); % Fetch sleep periods data
+                
+                for periodIndex = 1:size(sleepPeriods, 1)
+                    onset = sleepPeriods(periodIndex, 1);
+                    offset = sleepPeriods(periodIndex, 2);
+
+                    indices = find(sec_signal_2_data >= onset & sec_signal_2_data <= offset);
+
+                    if ~isempty(indices)
+                        filtered_sec_signal_2 = sec_signal_2_data(indices);
+                        filtered_delta465_filt_2 = delta465_filt_2_data(indices);
+                        
+                        % Store actual filtered data arrays directly
+                        NREM_mice_data_half_hours = [NREM_mice_data_half_hours; ...
+                                                     {mouseNumber, timeSegment, stage{1}(1:end-8), filtered_sec_signal_2, filtered_delta465_filt_2}];
+                    end
+                end
+            end
+        end
+    end
+end
+
+% Convert to table format, with variable names indicating the data they contain
+NREM_mice_data_half_hours_table = cell2table(NREM_mice_data_half_hours, ...
+                                             'VariableNames', {'MouseNumber', 'TimeSegment', 'SleepStage', 'FilteredSecSignal2Data', 'FilteredDelta465Filt2Data'});
+
+% Adjust 'HH:MM' to decimal hours correctly for Zeitgeber Time
+zeitgeberTimes = cellfun(@(x) str2double(x(1:2)) + (str2double(x(4:5)) == 30)*0.5, NREM_mice_data_half_hours_table.TimeSegment) - 6.75;
+
+% Ensure MouseNumber is a string for concatenation
+mouseIDs = string(NREM_mice_data_half_hours_table.MouseNumber);
+
+% Create unique keys for combinations of MouseID and Zeitgeber Time
+uniqueKeys = mouseIDs + "_" + string(zeitgeberTimes);
+
+% Find unique combinations and their indices
+[uniqueCombinations, ~, groupIndices] = unique(uniqueKeys);
+
+% Initialize the output array
+percent_NREM = [];
+
+for i = 1:length(uniqueCombinations)
+    % Find rows belonging to the current combination
+    rows = find(groupIndices == i);
+
+    totalSeconds = 0;
+    durations = []; % To store durations of NREM bouts for calculating the mean
+
+    for j = rows'
+        % Access the sec_signal_2 data directly
+        secSignalData = NREM_mice_data_half_hours_table.FilteredSecSignal2Data{j};
+        
+        % Check for non-empty and numeric type directly
+        if ~isempty(secSignalData) && isnumeric(secSignalData)
+            duration = max(secSignalData) - min(secSignalData);
+            totalSeconds = totalSeconds + duration;
+            durations = [durations; duration]; % Store the duration
+        end
+    end
+    
+    percentOfHour = (totalSeconds / (3600/2)) * 100;
+    meanDuration = mean(durations);
+
+    % Extract MouseID and Zeitgeber Time from the combination
+    comboParts = split(uniqueCombinations(i), '_');
+    mouseID = str2double(comboParts{1});
+    zeitgeberTime = str2double(comboParts{2}); % Extract numeric part directly
+
+    % Append to the output array
+    percent_NREM = [percent_NREM; {mouseID, zeitgeberTime, percentOfHour, numel(rows), meanDuration}];
+end
+
+% Convert to table with appropriate column names
+percent_NREM_30min = cell2table(percent_NREM, 'VariableNames', {'MouseID', 'Zeitgeber Time', 'PercentNREMinclMA', 'NREM_bout_n', 'NREM_bout_duration'});
+
+%% Plot 30 min of %NREM, NREM bout n, and NREM bout duration
+
+plotNREMDataWithShading(percent_NREM_30min, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true, false);
+plotNREMDataWithShading_30min(percent_NREM_30min, 'Mean NREM Bout Count per Hour', 'NREM_bout_n', 'Mean Bout Count', false, false);
+plotNREMDataWithShading_30min(percent_NREM_30min, 'Mean NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false, false);
+
+plotIndividualAnimalData(percent_NREM_30min, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true, false);
+plotIndividualAnimalData(percent_NREM_30min, 'NREM Bout Count per Hour', 'NREM_bout_n', 'Bout Count', false, false);
+plotIndividualAnimalData(percent_NREM_30min, 'NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false, false);
 
 

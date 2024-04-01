@@ -1,4 +1,4 @@
-function plotIndividualAnimalData(dataTable, plotTitle, variableName, yAxisLabel, useFixedYLim)
+function plotIndividualAnimalData(dataTable, plotTitle, variableName, yAxisLabel, useFixedYLim, wholeNumberTicks)
     % Extract unique Zeitgeber Times and Animal IDs
     uniqueTimes = unique(dataTable.('Zeitgeber Time'));
     animalIDs = unique(dataTable.MouseID);
@@ -60,6 +60,14 @@ function plotIndividualAnimalData(dataTable, plotTitle, variableName, yAxisLabel
     grid on;
     set(gca, 'Layer', 'top');
     legend('show', 'Location', 'southeast');
+
+    % Determine x-ticks based on the boolean flag
+    if wholeNumberTicks
+        xTicks = floor(min_x_lim):ceil(max(uniqueTimes) + 0.5); % Ticks at every whole number
+    else
+        xTicks = floor(min_x_lim):0.5:ceil(max(uniqueTimes) + 0.5); % Ticks at every whole and half number
+    end
+    xticks(xTicks);
     
     hold off;
     set(gcf, 'color', 'white');
