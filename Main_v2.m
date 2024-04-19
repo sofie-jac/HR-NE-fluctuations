@@ -32,37 +32,72 @@
 % 484_YFP	    1
 
 %build-up
-name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'channel_name_blue_2' 'channel_name_violet_2' 'channel_name_red_2' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' };
+%name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'channel_name_blue_2' 'channel_name_violet_2' 'channel_name_red_2' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' };
 %For viewpoint files, load in .exp file in the 2nd place
 %Animal muner is now in the 3rd place and time correction in the 4th
 
-M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
-M399 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_Arch_NOR_2021-03-12_14-46-42-245.exp' '399' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
-M392 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch\392_Arch_NOR\392_Arch_NOR_2021-03-10_10-31-55-535.exp' '392' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
-M403 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch\403_Arch_NOR\403_Arch_NOR_2021-03-12_08-56-13-288.exp' '403' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
-M412 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch\412_Arch_NOR\412_Arch_NOR_2021-03-08_13-27-00-781.exp' '412' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
-M414 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch\414_Arch_NOR\414_Arch_NOR_2021-03-10_13-19-57-296.exp' '414' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
-M416 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch\416_Arch_NOR\416_Arch_NOR_2021-03-09_10-14-39-452.exp' '416' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
-M418 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch\418_Arch_NOR\418_Arch_NOR_2021-03-09_13-02-50-098.exp' '418' '5' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
-M486 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\486_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\486_arch\486_Arch_NOR\NOR_486_Arch_2021-07-07_12-53-47-510.exp' '486' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'PtC1'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+%M399 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_Arch_NOR_2021-03-12_14-46-42-245.exp' '399' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M392 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch\392_Arch_NOR\392_Arch_NOR_2021-03-10_10-31-55-535.exp' '392' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+%M403 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch\403_Arch_NOR\403_Arch_NOR_2021-03-12_08-56-13-288.exp' '403' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+%M412 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\412_arch\412_Arch_NOR\412_Arch_NOR_2021-03-08_13-27-00-781.exp' '412' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+%M414 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\414_arch\414_Arch_NOR\414_Arch_NOR_2021-03-10_13-19-57-296.exp' '414' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+%M416 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\416_arch\416_Arch_NOR\416_Arch_NOR_2021-03-09_10-14-39-452.exp' '416' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M418 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\418_arch\418_Arch_NOR\418_Arch_NOR_2021-03-09_13-02-50-098.exp' '418' '5' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M468 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\468_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\468_YFP\NOR_468_YFP\NOR_468_YFP_2021-07-08_10-12-51-316.exp' '468' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'PtC1' 'PtC1'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
 M420 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\420_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\420_YFP\420_YFP_NOR\420_YFP_NOR_2021-03-09_15-53-26-919.exp' '420' '0' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M477 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\477_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\477_YFP\NOR_477_YFP\NOR_477_YFP_2021-07-08_13-03-24-035.exp' '477' '1' '' 'BuBo', 'V_Bo' '' '' '' '' 'PtC1' 'PtC1'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
+%M484 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\484_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\484_YFP\NOR_484_YFP\NOR_484_YFP_2021-07-07_10-04-57-598.exp' '484' '1' '' 'BuBo', 'V_Bo' '' '' '' '' 'PtC1' 'PtC1'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
 
-M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
-M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '124' '' '' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
-M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '168' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
-M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '147' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
-M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '149' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+%saline
+%M015 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\20221013_ACh_DPH_15_21' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\15_ACh_sal\15_ACh_sal_2022-10-13_10-34-10-557.exp' '015' '4' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\15_ACh_sal\15_ACh_sal_sleepscore.xlsx'};
+%M084 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\20210716_EEGFP_484_sal' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_2021-07-16_09-25-48-573.exp' '084' '0' '' 'BuBo' 'V_Bo' '' '' '' '' 'PtC0' 'PtC0'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_sleepscore_1s.xlsx'}; %Renamed to not be the same as the other one
+%M569 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\20220807_DPH_580_569' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\569_sal\569_sal_2022-08-07_10-34-40-287.exp' '569' '1' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\569_sal\569_sal_sleepscore.xlsx'};
+%M578 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\20220807_DPH_578_584' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\578_sal\578_sal_2022-08-07_06-48-50-071.exp' '578' '2' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\578_sal\578_sleepscore.xlsx'};
+M580 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\20220810_DPH_580_569' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\580_sal\580_sal_2022-08-10_10-24-28-685.exp' '580' '4' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\580_sal\850_sal_sleepcsore.xlsx'}; %sleepscore file named incorreclty in drive
+M588 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\20220809_DPH_588_592' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\588_sal\588_sal_2022-08-09_10-31-22-994.exp' '588' '1' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\588_sal\588_sal_sleepscore.xlsx'}; 
+%M592 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\20220806_diphenH_588_592' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\592_sal\592_sal_2022-08-06_10-37-48-796.exp' '592' '1' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\592_sal\592_sal_sleepscore.xlsx'};
+%M600 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\20220806_diphenH_602_600' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600\600_2022-08-06_06-52-56-321.exp' '600' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600_sal\600_sal_sleepscore.xlsx'};
+%M602 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\20220809_DPH_600_602' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_2022-08-09_06-54-24-717.exp' '602' '2' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_sleepscore.xlsx'};
 
-mice_TTL = {M124, M117};
-mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M486, M420};
-mice_without_TTL = {M168, M147, M149};
-viewpoint_mice = {'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M486', 'M420'};
-v = {M387, M392};
-synapse_mice = {M168, M147, M149, M117, M124};
+%Acetylecholine extra files
+%M007 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220228_007_ACh_1_NE_2_take3' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/20220228_007_EEG_EMG_take2_2022-02-28_14-45-39-008.exp' '007' '2' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (1000:12000) 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/007_sleepscore.xlsx' };
+%M003 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220304_003_final_ACh_1' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/20220304_003_final_2022-03-04_09-34-05-362.exp' '003' '5' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (500:750)  'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/003_sleepscore.xlsx'}; %cut FP 94 s
+M015 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220523_015_1_ACh_f' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220523_015_box3_scored/20220523_015_box3_2022-05-23_10-08-39-331.exp'  '015' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored/015_sleepscore.xlsx'};
+M017 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220602_017_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220602_017_EEG_EMG_scored/20220602_017_EEG_EMG_2022-06-02_14-00-09-032.exp' '017' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored/017_ACh_sleepscore.xlsx' }; 
+M019 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220602_019_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220602_019_EEG_EMG_scored/20220602_019_EEG_EMG_2022-06-02_10-14-19-397.exp' '019' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored/019_sleepscore.xlsx' }; %use deltafit4
+M021 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220523_021_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220523_021_EEG_TTL_scored/20220523_021_EEG_TTL_2022-05-23_14-15-14-291.exp' '021' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored/021_sleepscore.xlsx' }; 
+M023 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220603_023_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220603_023_EEG_EMG_scored/20220603_023_EEG_EMG_2022-06-03_11-12-03-064.exp' '023' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored/023_sleepscore.xlsx'}; 
+M025 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220601_025_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220601_025_EEG_EMG_scored_4h/20220601_025_EEG_EMG_2022-06-01_10-08-18-249.exp' '025' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h/025_sleepscore.xlsx'}; 
+
+%Anestesias mice
+%M071 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' '071' '' '' 'x465A' 'x405A' '' 'EEGw' 1 'EMG1' '' '' (1:18000) ''};
+%M073 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' '073' '' '' 'x465C' 'x405C' '' 'EEGw' 2 'EMG2' '' '' (1:18000) ''};
+
+
+%M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
+%M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '124' '' '' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
+%M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '168' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
+%M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '147' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
+%M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '149' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+
+%mice_TTL = {M124, M117};
+%mice_saline = {M015, M084, M569, M578, M580, M588, M592, M600, M602};
+%mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
+%mice_without_TTL = {M168, M147, M149, M071, M073};
+%viewpoint_mice = {'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
+%synapse_mice = {M168, M147, M149, M117, M124, M071, M073};
+%RR_mice_sal_yfp = {M420, M580, M588};
+%v = {M071, M073}; 
+
+viewpoint_mice = {'M019', 'M021', 'M023', 'M025','M420', 'M015', 'M580', 'M588'};
+
+o = {M019, M017, M015, M021, M023, M025}; %M021, M021,
 
 % Create a matrix of mice pairs where the first column is the mouse without EEG data
 % and the second column is the mouse with EEG data
-mice_pairs = {'M124', 'M117', 'M149', 'M147'}; % Example given with M124 and M117
+
+mice_pairs = {'M124', 'M117', 'M149', 'M147', 'M073', 'M071'}; % Example given with M124 and M117 - col 2 has the data
 
 % Reshape mice_pairs into a two-column format
 num_pairs = numel(mice_pairs) / 2;
@@ -73,15 +108,15 @@ mice_without_TTL_IDs = {};
 %Extract names of the mice withoutTTL for later use
 for idx = 1:length(mice_without_TTL)
     m = mice_without_TTL{idx}; % Assuming mouse is a cell array with relevant data
-    ID = sprintf('M%s', m{1}(end-2:end)); % Extract the ID as intended
+    ID = sprintf('M%s', m{3}); % Extract the ID as intended
     mice_without_TTL_IDs{end+1} = ID; % Correctly append ID to the cell array
 end
 
 
 %% Load FP and EEG data for all mice
 
-for idx = 1:length(v)
-    mouse = v{idx};
+for idx = 1:length(o)
+    mouse = o{idx};
     % Since mouse{3} contains the ID for all mice, directly use it to create the mouseID
     mouseID = sprintf('M%s', mouse{3}); % mouse{3} is directly used, making mouseID a char array
     
@@ -108,8 +143,8 @@ end
 %the EEG rig from that animal and extract channel 2. If not, use it's own
 %ID for the EEG rig.
 
-for idx = 1:length(v)
-    mouse = v{idx};
+for idx = 1:length(o)
+    mouse = o{idx};
     mouseID = sprintf('M%s', mouse{3}); % Extract the ID
     disp(mouseID)
 
@@ -118,6 +153,7 @@ for idx = 1:length(v)
     if ismember(mouseID, mice_without_TTL_IDs)
                 % Determine if this mouse needs to pull EEG/EMG data from a partner
         partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
+        disp(partnerIdx)
         if isempty(partnerIdx)
             % This mouse has its own EEG data
             partnerData = eval(sprintf('data_EEGrig_%s', mouse{3}));
@@ -138,6 +174,7 @@ for idx = 1:length(v)
         [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG, EEG_rig] = processSignals_Viewpoint_with_TTL(mouse, data_FPrig_input);
         eval(sprintf('data_EEGrig_%s = EEG_rig;', mouse{3}));
         eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{3}));
+        disp('is a viewpoint mouse')
     else
         % Determine if this mouse needs to pull EEG/EMG data from a partner
         partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
@@ -156,6 +193,7 @@ for idx = 1:length(v)
     
         % Now call processSignals with partnerData
         [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EEG_fs, onset_FP_EEG] = processSignals(mouse, data_FPrig_input, partnerData);
+        eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{3}));
     end
         % Dynamically save the output variables with mouse-specific names
     eval(sprintf('delta465_filt_2_%s = delta465_filt_2;', mouse{3}));
@@ -165,14 +203,13 @@ for idx = 1:length(v)
     eval(sprintf('EMG_%s = EMG;', mouse{3}));
     eval(sprintf('sec_signal_EEG_%s = sec_signal_EEG;', mouse{3}));
     eval(sprintf('EEG_fs_%s = EEG_fs;', mouse{3}));
-    eval(sprintf('onset_FP_EEG_%s = onset_FP_EEG;', mouse{3}));
 end
 
 %% QC - Check all traces are there
 
-for idx = 1:length(mice)
-    mouse = mice{idx};
-    uniqueId = mouse{1}(end-2:end); % Extract unique identifier
+for idx = 1:length(v)
+    mouse = v{idx};
+    uniqueId = mouse{3}; % Extract unique identifier
     
     % Creating one figure per mouse
     figure;
@@ -225,10 +262,54 @@ delta465_filt_2_168_smooth = filtfilt(MeanFilter,1,delta465_filt_2_168);
 delta465_filt_2_147_smooth = filtfilt(MeanFilter,1,delta465_filt_2_147);
 delta465_filt_2_149_smooth = filtfilt(MeanFilter,1,delta465_filt_2_149);
 delta465_filt_2_387_smooth = filtfilt(MeanFilter,1,delta465_filt_2_387);
+delta465_filt_2_468_smooth = filtfilt(MeanFilter,1,delta465_filt_2_468);
+delta465_filt_2_420_smooth = filtfilt(MeanFilter,1,delta465_filt_2_420);
 delta465_filt_2_392_smooth = filtfilt(MeanFilter,1,delta465_filt_2_392);
-
+delta465_filt_2_403_smooth = filtfilt(MeanFilter,1,delta465_filt_2_403);
+delta465_filt_2_412_smooth = filtfilt(MeanFilter,1,delta465_filt_2_412);
+delta465_filt_2_414_smooth = filtfilt(MeanFilter,1,delta465_filt_2_414);
+delta465_filt_2_416_smooth = filtfilt(MeanFilter,1,delta465_filt_2_416);
+delta465_filt_2_418_smooth = filtfilt(MeanFilter,1,delta465_filt_2_418);
+delta465_filt_2_484_smooth = filtfilt(MeanFilter,1,delta465_filt_2_484);
+delta465_filt_2_477_smooth = filtfilt(MeanFilter,1,delta465_filt_2_477);
+delta465_filt_2_015_smooth = filtfilt(MeanFilter,1,delta465_filt_2_015);
+delta465_filt_2_084_smooth = filtfilt(MeanFilter,1,delta465_filt_2_084);
+delta465_filt_2_569_smooth = filtfilt(MeanFilter,1,delta465_filt_2_569);
+delta465_filt_2_578_smooth = filtfilt(MeanFilter,1,delta465_filt_2_578);
+delta465_filt_2_580_smooth = filtfilt(MeanFilter,1,delta465_filt_2_580);
+delta465_filt_2_588_smooth = filtfilt(MeanFilter,1,delta465_filt_2_588);
+delta465_filt_2_592_smooth = filtfilt(MeanFilter,1,delta465_filt_2_592);
+delta465_filt_2_600_smooth = filtfilt(MeanFilter,1,delta465_filt_2_600);
+delta465_filt_2_602_smooth = filtfilt(MeanFilter,1,delta465_filt_2_602);
+delta465_filt_2_073_smooth = filtfilt(MeanFilter,1,delta465_filt_2_073);
+delta465_filt_2_015_smooth = filtfilt(MeanFilter,1,delta465_filt_2_015);
+delta465_filt_2_017_smooth = filtfilt(MeanFilter,1,delta465_filt_2_017);
+delta465_filt_2_021_smooth = filtfilt(MeanFilter,1,delta465_filt_2_021);
+delta465_filt_2_019_smooth = filtfilt(MeanFilter,1,delta465_filt_2_019);
+delta465_filt_2_073_smooth = filtfilt(MeanFilter,1,delta465_filt_2_073);
 % downsampling traces for plotting
 ds_factor_FP = 100; % also used for plotting later (section 9b)
+
+ds_delta465_filt_2_403 = downsample(delta465_filt_2_403, ds_factor_FP);
+ds_sec_signal_2_403 = downsample(sec_signal_2_403, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_412 = downsample(delta465_filt_2_412, ds_factor_FP);
+ds_sec_signal_2_412 = downsample(sec_signal_2_412, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_414 = downsample(delta465_filt_2_414, ds_factor_FP);
+ds_sec_signal_2_414 = downsample(sec_signal_2_414, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_420 = downsample(delta465_filt_2_420, ds_factor_FP);
+ds_sec_signal_2_420 = downsample(sec_signal_2_420, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_416 = downsample(delta465_filt_2_416, ds_factor_FP);
+ds_sec_signal_2_416 = downsample(sec_signal_2_416, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_418 = downsample(delta465_filt_2_418, ds_factor_FP);
+ds_sec_signal_2_418 = downsample(sec_signal_2_418, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_468 = downsample(delta465_filt_2_468, ds_factor_FP);
+ds_sec_signal_2_468 = downsample(sec_signal_2_468, ds_factor_FP); % for plotting
 
 ds_delta465_filt_2_117 = downsample(delta465_filt_2_117, ds_factor_FP);
 ds_sec_signal_2_117 = downsample(sec_signal_2_117, ds_factor_FP); % for plotting
@@ -251,13 +332,61 @@ ds_sec_signal_2_387 = downsample(sec_signal_2_387, ds_factor_FP); % for plotting
 ds_delta465_filt_2_392 = downsample(delta465_filt_2_392, ds_factor_FP);
 ds_sec_signal_2_392 = downsample(sec_signal_2_392, ds_factor_FP); % for plotting
 
+ds_delta465_filt_2_484 = downsample(delta465_filt_2_484, ds_factor_FP);
+ds_sec_signal_2_484 = downsample(sec_signal_2_484, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_477 = downsample(delta465_filt_2_477, ds_factor_FP);
+ds_sec_signal_2_477 = downsample(sec_signal_2_477, ds_factor_FP); % for plotting
+
+ds_delta465_filt_2_073 = downsample(delta465_filt_2_073, ds_factor_FP);
+ds_sec_signal_2_073 = downsample(sec_signal_2_073, ds_factor_FP); % for plotti
+
+ds_delta465_filt_2_015 = downsample(delta465_filt_2_015, ds_factor_FP);
+ds_sec_signal_2_015 = downsample(sec_signal_2_015, ds_factor_FP); % for plotting
+ds_delta465_filt_2_084 = downsample(delta465_filt_2_084, ds_factor_FP);
+ds_sec_signal_2_084 = downsample(sec_signal_2_084, ds_factor_FP); % for plotting
+ds_delta465_filt_2_569 = downsample(delta465_filt_2_569, ds_factor_FP);
+ds_sec_signal_2_569 = downsample(sec_signal_2_569, ds_factor_FP); % for plotting
+ds_delta465_filt_2_578 = downsample(delta465_filt_2_578, ds_factor_FP);
+ds_sec_signal_2_578 = downsample(sec_signal_2_578, ds_factor_FP); % for plotting
+ds_delta465_filt_2_580 = downsample(delta465_filt_2_580, ds_factor_FP);
+ds_sec_signal_2_580 = downsample(sec_signal_2_580, ds_factor_FP); % for plotting
+ds_delta465_filt_2_588 = downsample(delta465_filt_2_588, ds_factor_FP);
+ds_sec_signal_2_588 = downsample(sec_signal_2_588, ds_factor_FP); % for plotting
+ds_delta465_filt_2_592 = downsample(delta465_filt_2_592, ds_factor_FP);
+ds_sec_signal_2_592 = downsample(sec_signal_2_592, ds_factor_FP); % for plotting
+ds_delta465_filt_2_600 = downsample(delta465_filt_2_600, ds_factor_FP);
+ds_sec_signal_2_600 = downsample(sec_signal_2_600, ds_factor_FP); % for plotting
+ds_delta465_filt_2_602 = downsample(delta465_filt_2_602, ds_factor_FP);
+ds_sec_signal_2_602 = downsample(sec_signal_2_477, ds_factor_FP); % for plotting
+
+
 ds_delta465_filt_2_117_smooth = downsample(delta465_filt_2_117_smooth, ds_factor_FP);
 ds_delta465_filt_2_124_smooth = downsample(delta465_filt_2_124_smooth, ds_factor_FP);
 ds_delta465_filt_2_168_smooth = downsample(delta465_filt_2_168_smooth, ds_factor_FP);
 ds_delta465_filt_2_147_smooth = downsample(delta465_filt_2_147_smooth, ds_factor_FP);
 ds_delta465_filt_2_149_smooth = downsample(delta465_filt_2_149_smooth, ds_factor_FP);
+ds_delta465_filt_2_420_smooth = downsample(delta465_filt_2_420_smooth, ds_factor_FP);
+ds_delta465_filt_2_468_smooth = downsample(delta465_filt_2_468_smooth, ds_factor_FP);
 ds_delta465_filt_2_387_smooth = downsample(delta465_filt_2_387_smooth, ds_factor_FP);
 ds_delta465_filt_2_392_smooth = downsample(delta465_filt_2_392_smooth, ds_factor_FP);
+ds_delta465_filt_2_403_smooth = downsample(delta465_filt_2_403_smooth, ds_factor_FP);
+ds_delta465_filt_2_412_smooth = downsample(delta465_filt_2_412_smooth, ds_factor_FP);
+ds_delta465_filt_2_414_smooth = downsample(delta465_filt_2_414_smooth, ds_factor_FP);
+ds_delta465_filt_2_416_smooth = downsample(delta465_filt_2_416_smooth, ds_factor_FP);
+ds_delta465_filt_2_418_smooth = downsample(delta465_filt_2_418_smooth, ds_factor_FP);
+ds_delta465_filt_2_484_smooth = downsample(delta465_filt_2_484_smooth, ds_factor_FP);
+ds_delta465_filt_2_477_smooth = downsample(delta465_filt_2_477_smooth, ds_factor_FP);
+ds_delta465_filt_2_015_smooth = downsample(delta465_filt_2_015_smooth, ds_factor_FP);
+ds_delta465_filt_2_084_smooth = downsample(delta465_filt_2_084_smooth, ds_factor_FP);
+ds_delta465_filt_2_569_smooth = downsample(delta465_filt_2_569_smooth, ds_factor_FP);
+ds_delta465_filt_2_578_smooth = downsample(delta465_filt_2_578_smooth, ds_factor_FP);
+ds_delta465_filt_2_580_smooth = downsample(delta465_filt_2_580_smooth, ds_factor_FP);
+ds_delta465_filt_2_588_smooth = downsample(delta465_filt_2_588_smooth, ds_factor_FP);
+ds_delta465_filt_2_592_smooth = downsample(delta465_filt_2_592_smooth, ds_factor_FP);
+ds_delta465_filt_2_600_smooth = downsample(delta465_filt_2_600_smooth, ds_factor_FP);
+ds_delta465_filt_2_602_smooth = downsample(delta465_filt_2_602_smooth, ds_factor_FP);
+ds_delta465_filt_2_073_smooth = downsample(delta465_filt_2_073_smooth, ds_factor_FP);
 
 % Design a bandpass filter
 % bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
@@ -275,18 +404,32 @@ ds_delta465_filt_2_392_smooth = downsample(delta465_filt_2_392_smooth, ds_factor
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_arousal_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 15);
-[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_arousal_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 15);
-[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_arousal_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 15);
-[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147, MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_arousal_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 15);
-[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149, MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_arousal_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 15);
-[wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_arousal_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
-[wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_arousal_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
+[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_MA_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 15);
+[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_MA_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 15);
+[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_MA_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 15);
+[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147, MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_MA_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 15);
+[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149, MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_MA_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 15);
+[wake_woMA_binary_vector_073, sws_binary_vector_073, REM_binary_vector_073, MA_binary_vector_073, NREMinclMA_periods_073, NREMexclMA_periods_073, wake_periods_073, REM_periods_073, MA_periods_073, SWS_before_MA_filtered_073, SWS_before_wake_filtered_073, SWS_before_REM_filtered_073, REM_before_MA_filtered_073, REM_before_wake_filtered_073] = SleepProcess_without_TTL(M073, sec_signal_EEG_073, 20, 20, 15);
+
+[wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_MA_filtered_387, REM_before_wake_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
+[wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_MA_filtered_392, REM_before_wake_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
+
+
+[wake_woMA_binary_vector_403, sws_binary_vector_403, REM_binary_vector_403, MA_binary_vector_403, NREMinclMA_periods_403, NREMexclMA_periods_403, wake_periods_403, REM_periods_403, MA_periods_403, SWS_before_MA_filtered_403, SWS_before_wake_filtered_403, SWS_before_REM_filtered_403, REM_before_MA_filtered_403, REM_before_wake_filtered_403] = SleepProcess_viewpoint(M403, sec_signal_EEG_403, onset_FP_EEG_403, EEG_fs_403, 20, 20, 15);
+[wake_woMA_binary_vector_412, sws_binary_vector_412, REM_binary_vector_412, MA_binary_vector_412, NREMinclMA_periods_412, NREMexclMA_periods_412, wake_periods_412, REM_periods_412, MA_periods_412, SWS_before_MA_filtered_412, SWS_before_wake_filtered_412, SWS_before_REM_filtered_412, REM_before_MA_filtered_412, REM_before_wake_filtered_412] = SleepProcess_viewpoint(M412, sec_signal_EEG_412, onset_FP_EEG_412, EEG_fs_412, 20, 20, 15);
+[wake_woMA_binary_vector_414, sws_binary_vector_414, REM_binary_vector_414, MA_binary_vector_414, NREMinclMA_periods_414, NREMexclMA_periods_414, wake_periods_414, REM_periods_414, MA_periods_414, SWS_before_MA_filtered_414, SWS_before_wake_filtered_414, SWS_before_REM_filtered_414, REM_before_MA_filtered_414, REM_before_wake_filtered_414] = SleepProcess_viewpoint(M414, sec_signal_EEG_414, onset_FP_EEG_414, EEG_fs_414, 20, 20, 15);
+[wake_woMA_binary_vector_416, sws_binary_vector_416, REM_binary_vector_416, MA_binary_vector_416, NREMinclMA_periods_416, NREMexclMA_periods_416, wake_periods_416, REM_periods_416, MA_periods_416, SWS_before_MA_filtered_416, SWS_before_wake_filtered_416, SWS_before_REM_filtered_416, REM_before_MA_filtered_416, REM_before_wake_filtered_416] = SleepProcess_viewpoint(M416, sec_signal_EEG_416, onset_FP_EEG_416, EEG_fs_416, 20, 20, 15);
+[wake_woMA_binary_vector_418, sws_binary_vector_418, REM_binary_vector_418, MA_binary_vector_418, NREMinclMA_periods_418, NREMexclMA_periods_418, wake_periods_418, REM_periods_418, MA_periods_418, SWS_before_MA_filtered_418, SWS_before_wake_filtered_418, SWS_before_REM_filtered_418, REM_before_MA_filtered_418, REM_before_wake_filtered_418] = SleepProcess_viewpoint(M418, sec_signal_EEG_418, onset_FP_EEG_418, EEG_fs_418, 20, 20, 15);
+[wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420, NREMinclMA_periods_420, NREMexclMA_periods_420, wake_periods_420, REM_periods_420, MA_periods_420, SWS_before_MA_filtered_420, SWS_before_wake_filtered_420, SWS_before_REM_filtered_420, REM_before_MA_filtered_420, REM_before_wake_filtered_420] = SleepProcess_viewpoint(M420, sec_signal_EEG_420, onset_FP_EEG_420, EEG_fs_420, 20, 20, 15);
+[wake_woMA_binary_vector_468, sws_binary_vector_468, REM_binary_vector_468, MA_binary_vector_468, NREMinclMA_periods_468, NREMexclMA_periods_468, wake_periods_468, REM_periods_468, MA_periods_468, SWS_before_MA_filtered_468, SWS_before_wake_filtered_468, SWS_before_REM_filtered_468, REM_before_MA_filtered_468, REM_before_wake_filtered_468] = SleepProcess_viewpoint(M468, sec_signal_EEG_468, onset_FP_EEG_468, EEG_fs_468, 20, 20, 15);
+
+[wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580, NREMinclMA_periods_580, NREMexclMA_periods_580, wake_periods_580, REM_periods_580, MA_periods_580, SWS_before_MA_filtered_580, SWS_before_wake_filtered_580, SWS_before_REM_filtered_580, REM_before_MA_filtered_580, REM_before_wake_filtered_580] = SleepProcess_viewpoint(M580, sec_signal_EEG_580, onset_FP_EEG_580, EEG_fs_580, 20, 20, 15);
+[wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588, NREMinclMA_periods_588, NREMexclMA_periods_588, wake_periods_588, REM_periods_588, MA_periods_588, SWS_before_MA_filtered_588, SWS_before_wake_filtered_588, SWS_before_REM_filtered_588, REM_before_MA_filtered_588, REM_before_wake_filtered_588] = SleepProcess_viewpoint(M588, sec_signal_EEG_588, onset_FP_EEG_588, EEG_fs_588, 20, 20, 15);
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
-for idx = 1:length(v)
-    mouse = v{idx};
+for idx = 1:length(RR_mice_sal_yfp)
+    mouse = RR_mice_sal_yfp{idx};
     uniqueId = mouse{3}; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
@@ -320,7 +463,7 @@ for idx = 1:length(v)
         plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
         title(['Norepinephrine']);
         xlabel('time (s)');
-        ylabel('NE (V)');
+        ylabel('NE (df/f)');
         grid on;
 
     b = subplot(3, 1, 2);
@@ -341,23 +484,90 @@ for idx = 1:length(v)
     linkaxes([a, b, c], 'x');
 end
 %% Get RR intervals
-[RR_387, RR_time_387, RR_fs_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387);
-[RR_124, RR_time_124, RR_fs_124] = GetRRIntervals(M124, EMG_124, sec_signal_EEG_124, EEG_fs_124);
-[RR_399, RR_time_399, RR_fs_399] = GetRRIntervals(M399, -EMG_399, sec_signal_EEG_399, EEG_fs_399);
+% [RR_387, RR_time_387, RR_fs_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387);
+[RR_124, RR_time_124, RR_fs_124] = GetRRIntervals(M124, EMG_124, sec_signal_EEG_124, EEG_fs_124, 3.5, 2.5);
+%[RR_392, RR_time_392, RR_fs_392] = GetRRIntervals(M392, EMG_392, sec_signal_EEG_392, EEG_fs_392);
+[RR_403, RR_time_403, RR_fs_403] = GetRRIntervals(M403, EMG_403, sec_signal_EEG_403, EEG_fs_403, 2.5, 2.5); % could be used before 2730, but needs cutting prior to that
+%[RR_412, RR_time_412, RR_fs_412] = GetRRIntervals(M412, EMG_412, sec_signal_EEG_412, EEG_fs_412);
+%[RR_414, RR_time_414, RR_fs_414] = GetRRIntervals(M414, EMG_414, sec_signal_EEG_414, EEG_fs_414);
+[RR_416, RR_time_416, RR_fs_416] = GetRRIntervals(M416, -EMG_416, sec_signal_EEG_416, EEG_fs_416, 1, 2.5);
+%[RR_418, RR_time_418, RR_fs_418] = GetRRIntervals(M418, EMG_418, sec_signal_EEG_418, EEG_fs_418, 2.5);
+[RR_420, RR_time_420, RR_fs_420] = GetRRIntervals(M420, -EMG_420, sec_signal_EEG_420, EEG_fs_420, 6.3, 2.5);
+[RR_468, RR_time_468, RR_fs_468] = GetRRIntervals(M468, -EMG_468, sec_signal_EEG_468, EEG_fs_468, 2.5, 2.3); %Parts are good, others are messy
+%[RR_484, RR_time_484, RR_fs_484] = GetRRIntervals(M484, EMG_484, sec_signal_EEG_484, EEG_fs_484, 2.5);
+%[RR_477, RR_time_477, RR_fs_477] = GetRRIntervals(M477, -EMG_477, sec_signal_EEG_477, EEG_fs_477, 3.5);
+%[RR_015, RR_time_015, RR_fs_015] = GetRRIntervals(M015, -EMG_015, sec_signal_EEG_015, EEG_fs_015, 1); 
+[RR_084, RR_time_084, RR_fs_084] = GetRRIntervals(M084, -EMG_084, sec_signal_EEG_084, EEG_fs_084, 2.5, 2.5); %Acceptable but not great
+%[RR_569, RR_time_569, RR_fs_569] = GetRRIntervals(M569, EMG_569, sec_signal_EEG_569, EEG_fs_569, 2.5); 
+%[RR_578, RR_time_578, RR_fs_578] = GetRRIntervals(M578, -EMG_578, sec_signal_EEG_578, EEG_fs_578, 2.5);
+[RR_580, RR_time_580, RR_fs_580] = GetRRIntervals(M580, -EMG_580, sec_signal_EEG_580, EEG_fs_580, 2.3, 2.3); 
+[RR_588, RR_time_588, RR_fs_588] = GetRRIntervals(M588, -EMG_588, sec_signal_EEG_588, EEG_fs_588, 2.5, 2.5); %Best one!!!
+%[RR_592, RR_time_592, RR_fs_592] = GetRRIntervals(M592, -EMG_592, sec_signal_EEG_592, EEG_fs_592, 2.5, 2.5); 
+%[RR_600, RR_time_600, RR_fs_600] = GetRRIntervals(M600, -EMG_600, sec_signal_EEG_600, EEG_fs_600, 2.5, 2.5); 
+%[RR_602, RR_time_602, RR_fs_602] = GetRRIntervals(M602, -EMG_602, sec_signal_EEG_602, EEG_fs_602, 2.5, 2.5); 
+[RR_073, RR_time_073, RR_fs_073] = GetRRIntervals(M073, EMG_073, sec_signal_EEG_073, EEG_fs_073, 2.5, 2.5); 
 
+%015, 084, 569, 578, 580, 588, 592, 600, 602
+
+%387, 392, 403, 412, 414, 416, 418, 486, 420
 
 %% Get HRB
-[HRB, HRB_time] = findHRB(RR_time_124, RR_124);
+[HRB_124, HRB_time_124] = findHRB(RR_time_124, RR_124);
+[HRB_403, HRB_time_403] = findHRB(RR_time_403, RR_403);
+[HRB_416, HRB_time_416] = findHRB(RR_time_416, RR_416);
+[HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
+[HRB_580, HRB_time_580] = findHRB(RR_time_580, RR_580);
+[HRB_588, HRB_time_588] = findHRB(RR_time_588, RR_588);
 
-figure;
-plot_sleep(new_time_vector, resampled_RR_pchip, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
-hold on;
-scatter(HRB_time, HRB, 'b', 'filled'); % Plotting HRB
-hold off;
-xlabel('Time (s)');
-ylabel('RR intervals');
-title('HRV p-chip (M124)');
-grid on;
+% sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
+% 
+% figure;
+% plot_sleep(RR_time_420, RR_420, sleepscore_time, wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420);
+% hold on;
+% scatter(HRB_time_420, HRB_420, 'b', 'filled'); % Plotting HRB
+% hold off;
+% xlabel('Time (s)');
+% ylabel('RR intervals');
+% title('HRV p-chip (M403)');
+% grid on;
+
+    sleepscore_time_420 = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
+    sleepscore_time_580 = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
+    sleepscore_time_588 = 0:length(wake_woMA_binary_vector_588)-1; % Assuming all vectors are the same length
+
+    figure;
+    a = subplot(3, 1, 1);
+        plot_sleep(RR_time_420, RR_420, sleepscore_time_420, wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420);
+        hold on;
+        scatter(HRB_time_420, HRB_420, 'b', 'filled'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip (M420)');
+        grid on;
+
+    b = subplot(3, 1, 2);
+        plot_sleep(RR_time_580, RR_580, sleepscore_time_580, wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580);
+        hold on;
+        scatter(HRB_time_580, HRB_580, 'b', 'filled'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip (M580)');
+        grid on;
+
+    c = subplot(3, 1, 3);
+        plot_sleep(RR_time_588, RR_588, sleepscore_time_588, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
+        hold on;
+        scatter(HRB_time_588, HRB_588, 'b', 'filled'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip (M588)');
+        grid on;
+
+    % Linking axes for synchronized zooming
+    linkaxes([a, b, c], 'x');
 %% Power analysis on EEG
 power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
 frw = 0:0.2:30;
@@ -366,25 +576,84 @@ window_in_sec = 1; % sec. 1 for 30 sec
 %[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 %% Find NE troughs in sleep transitions and NREM
-SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, MA_periods_117, 15, 15);
-SWS_before_MA_pklocs_124 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, MA_periods_124, 15, 15);
-
+SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, MA_periods_117, 15, 15, 1.2);
 NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 3); % Change SD multiplyer to 1 for more selective troughs
-NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 3); % Change SD multiplyer to 1 for more selective troughs
-
-SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0.1, mean(delta465_filt_2_124)-5, 15, 15);
 SWS_before_wake_pklocs_117 = findPeaksBeforeTransition(SWS_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0.1, mean(delta465_filt_2_117)-5, 15, 15);
+REM_before_MA_pklocs_117 = findPeaksBeforeTransition(REM_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0, 0, 0, 15);
+REM_before_wake_pklocs_117 = findPeaksBeforeTransition(REM_before_wake_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0, 0, 0, 15);
 
-REM_before_wake_pklocs_117 = findPeaksBeforeTransition(REM_before_arousal_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 0, 0, 0, 15);
-REM_before_wake_pklocs_124 = findPeaksBeforeTransition(REM_before_arousal_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
+NREMexclMA_periods_pklocs_124 = find_NE_troughs(NREMexclMA_periods_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 3); % Change SD multiplyer to 1 for more selective troughs
+SWS_before_MA_pklocs_124 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, MA_periods_124, 15, 15, 1.2);
+SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0.1, mean(delta465_filt_2_124)-5, 15, 15);
+REM_before_MA_pklocs_124 = findPeaksBeforeTransition(REM_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
+REM_before_wake_pklocs_124 = findPeaksBeforeTransition(REM_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_420 = find_NE_troughs(NREMexclMA_periods_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0.7); % Lower value = more peaks
+SWS_before_MA_pklocs_420 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, MA_periods_420, 15, 15, 0.3);
+SWS_before_wake_pklocs_420 = findPeaksBeforeTransition(SWS_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0.1, mean(delta465_filt_2_420)-5, 15, 15);
+REM_before_MA_pklocs_420 = findPeaksBeforeTransition(REM_before_MA_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0, 0, 0, 0);
+REM_before_wake_pklocs_420 = findPeaksBeforeTransition(REM_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_124, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_580 = find_NE_troughs(NREMexclMA_periods_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0.7); % Lower value = more peaks
+SWS_before_MA_pklocs_580 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, MA_periods_580, 15, 15, 1.2);
+SWS_before_wake_pklocs_580 = findPeaksBeforeTransition(SWS_before_wake_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0.1, mean(delta465_filt_2_580)-5, 15, 15);
+REM_before_MA_pklocs_580 = findPeaksBeforeTransition(REM_before_MA_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0, 0, 0, 0);
+REM_before_wake_pklocs_580 = findPeaksBeforeTransition(REM_before_wake_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_124, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_588 = find_NE_troughs(NREMexclMA_periods_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0.7); % Lower value = more peaks
+SWS_before_MA_pklocs_588 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, MA_periods_588, 15, 15, 1.2);
+SWS_before_wake_pklocs_588 = findPeaksBeforeTransition(SWS_before_wake_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0.1, mean(delta465_filt_2_588)-5, 15, 15);
+REM_before_MA_pklocs_588 = findPeaksBeforeTransition(REM_before_MA_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0, 0, 0, 0);
+REM_before_wake_pklocs_588 = findPeaksBeforeTransition(REM_before_wake_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_124, 0, 0, 0, 0);
 
 % Logical condition for values not in the ranges 18950 to 19000 and 5400 to 5450
-not_in_range = ~(REM_before_wake_pklocs_124 > 18950 & REM_before_wake_pklocs_124 < 19000) & ~(REM_before_wake_pklocs_124 > 5400 & REM_before_wake_pklocs_124 < 5450);
+not_in_range_124 = ~(REM_before_wake_pklocs_124 > 18950 & REM_before_wake_pklocs_124 < 19000) & ~(REM_before_wake_pklocs_124 > 5400 & REM_before_wake_pklocs_124 < 5450);
+REM_before_wake_pklocs_124 = REM_before_wake_pklocs_124(not_in_range_124);
+
+not_in_range_588_NREMexclMA = ~(NREMexclMA_periods_pklocs_588 > 4400 & NREMexclMA_periods_pklocs_588 < 4450) & ~(NREMexclMA_periods_pklocs_588 > 7325 & NREMexclMA_periods_pklocs_588 < 7350)& ~(NREMexclMA_periods_pklocs_588 > 9705 & NREMexclMA_periods_pklocs_588 < 9710) & ~(NREMexclMA_periods_pklocs_588 > 10060 & NREMexclMA_periods_pklocs_588 < 10065) & ~(NREMexclMA_periods_pklocs_588 > 12035 & NREMexclMA_periods_pklocs_588 < 12045);
+NREMexclMA_periods_pklocs_588 = NREMexclMA_periods_pklocs_588(not_in_range_588_NREMexclMA);
+
+not_in_range_420_sws_to_MA =~(SWS_before_MA_pklocs_420 > 5780 & SWS_before_MA_pklocs_420 < 5790) &  ~(SWS_before_MA_pklocs_420 > 4980 & SWS_before_MA_pklocs_420 < 5100) &  ~(SWS_before_MA_pklocs_420 > 7090 & SWS_before_MA_pklocs_420 < 7100);
+SWS_before_MA_pklocs_420 = SWS_before_MA_pklocs_420(not_in_range_420_sws_to_MA);
 
 % Apply logical indexing to keep only values not in the specified ranges
-REM_before_wake_pklocs_124 = REM_before_wake_pklocs_124(not_in_range);
 SWS_before_MA_pklocs_124 = SWS_before_MA_pklocs_124';
 NREMexclMA_periods_pklocs_124 = NREMexclMA_periods_pklocs_124';
+
+%% visualize calculated troughs
+    sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_420, ds_delta465_filt_2_420_smooth, sleepscore_time, wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420);
+hold on
+plot(SWS_before_MA_pklocs_420, delta465_filt_2_420_smooth(round(SWS_before_MA_pklocs_420*signal_fs)), 'r*')
+title('NE with selected peaks');
+
+    sleepscore_time = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_580, ds_delta465_filt_2_580_smooth, sleepscore_time, wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580);
+hold on
+plot(NREMexclMA_periods_pklocs_580, delta465_filt_2_580_smooth(round(NREMexclMA_periods_pklocs_580*signal_fs)), 'r*')
+title('NE with selected peaks');
+
+    sleepscore_time = 0:length(wake_woMA_binary_vector_588)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_588, ds_delta465_filt_2_588_smooth, sleepscore_time, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
+hold on
+plot(NREMexclMA_periods_pklocs_588, delta465_filt_2_588_smooth(round(NREMexclMA_periods_pklocs_588*signal_fs)), 'r*')
+title('NE with selected peaks');
+
+%%% for next animal
+    sleepscore_time = 0:length(wake_woMA_binary_vector_124)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_124, ds_delta465_filt_2_124_smooth, sleepscore_time, wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124);
+hold on
+plot(NREMexclMA_periods_pklocs_124, delta465_filt_2_124_smooth(round(NREMexclMA_periods_pklocs_124*signal_fs)), 'r*')
+title('NE with selected peaks');
+
 %% 
 % Find the maximum length among the variables
 maxLen = max([length(SWS_before_MA_pklocs_124), length(NREMexclMA_periods_pklocs_124), ...

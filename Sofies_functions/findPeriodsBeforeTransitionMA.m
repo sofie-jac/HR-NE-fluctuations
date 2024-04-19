@@ -1,5 +1,5 @@
 % Define a function to convert the transition points into onset/offset format
-function pklocs_all = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, MA_periods, skip_threshold, min_peak_dist)
+function pklocs_all = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered, signal_fs, delta465_filt_2, sec_signal_2, MA_periods, skip_threshold, min_peak_dist, min_peak_prom)
 
    % Initialize variables for storing results
     pklocs_all = []; % Stores all the peak (trough) locations
@@ -28,7 +28,7 @@ function pklocs_all = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered, sign
                 continue;
             end
     
-            [pks, pklocs] = findpeaks(-NEtrace_i, 'MinPeakProminence', 1.2, 'MinPeakDistance', min_peak_dist);
+            [pks, pklocs] = findpeaks(-NEtrace_i, 'MinPeakProminence', min_peak_prom, 'MinPeakDistance', min_peak_dist);
     
             % If multiple troughs are detected, store only the one with the lowest NE value
             if ~isempty(pklocs)

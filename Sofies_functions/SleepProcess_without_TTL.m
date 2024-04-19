@@ -1,4 +1,4 @@
-function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_arousal_filtered] = SleepProcess_without_TTL(mouse, sec_signal_EEG, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
+function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_cut, MA_binary_vector_cut, NREMinclMA_periods_cut, NREMexclMA_periods_cut, wake_woMA_periods_cut, REM_periods_cut, MA_periods_cut, SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, REM_before_MA_filtered, REM_before_wake_filtered] = SleepProcess_without_TTL(mouse, sec_signal_EEG, time_before_MA_exclusion, NREM_sec_before_transition, REM_sec_before_transition)
     EEG_sleepscore = xlsread(mouse{15});
 
     % Create binary vectors for sleep stages
@@ -231,14 +231,16 @@ function [wake_woMA_binary_vector_cut, sws_binary_vector_cut, REM_binary_vector_
     SWS_before_MA_periods = findPeriodsBeforeTransition(transition_sws_MA, NREM_sec_before_transition, totalDuration);
     SWS_before_wake_periods = findPeriodsBeforeTransition(transition_sws_wake, NREM_sec_before_transition, totalDuration);
     SWS_before_REM_periods = findPeriodsBeforeTransition(transition_sws_REM, REM_sec_before_transition, totalDuration);
-    REM_before_arousal_periods = findPeriodsBeforeTransition(transition_REM_arousal, NREM_sec_before_transition, totalDuration);
+    REM_before_MA_periods = findPeriodsBeforeTransition(transition_REM_MA, REM_sec_before_transition, totalDuration);
+    REM_before_wake_periods = findPeriodsBeforeTransition(transition_REM_wake, REM_sec_before_transition, totalDuration);
+
     
     % Filter the identified periods to ensure they are within actual SWS periods
     SWS_before_MA_filtered = filterSWSPeriods(SWS_before_MA_periods, NREMinclMA_periods_cut);
     SWS_before_wake_filtered = filterSWSPeriods(SWS_before_wake_periods, NREMinclMA_periods_cut);
     SWS_before_REM_filtered = filterSWSPeriods(SWS_before_REM_periods, NREMinclMA_periods_cut);
-    REM_before_arousal_filtered = filterSWSPeriods(REM_before_arousal_periods, REM_periods_cut);
-    
+    REM_before_MA_filtered = filterSWSPeriods(REM_before_MA_periods, REM_periods_cut);
+    REM_before_wake_filtered = filterSWSPeriods(REM_before_wake_periods, REM_periods_cut);
 
 
 

@@ -1,4 +1,4 @@
-function [resampled_RR_pchip, new_time_vector, new_fs] = GetRRIntervals(mouse, EMG, sec_signal_EMG, EEG_fs)
+function [resampled_RR_pchip, new_time_vector, new_fs] = GetRRIntervals(mouse, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
 % Determine HR and movement peaks - current version
 
 % Initialize selected peaks storage
@@ -10,7 +10,7 @@ mean_EMG = mean(EMG);
 sd_EMG = std(EMG);
 
 % Set threshold as mean + 3.5 * SD for movement detection
-threshold = mean_EMG + 3.5 * sd_EMG;
+threshold = mean_EMG + move_thresh * sd_EMG;
 
 % Find movement peaks in the filtered EMG signal using the predefined threshold
 [movement, movement_locs] = findpeaks(EMG, 'MinPeakHeight', threshold);
@@ -55,7 +55,7 @@ if ~isempty(valid_data) && length(valid_data) >= 3
     sd_EMG_window = std(valid_data);
     
     % Calculate the dynamic threshold for peak detection
-    dynamic_threshold = mean_EMG_window + 1.5*sd_EMG_window;
+    dynamic_threshold = mean_EMG_window + peak_thresh*sd_EMG_window;
     
     % Check if any data point exceeds the dynamic threshold
     if any(valid_data > dynamic_threshold)
@@ -147,7 +147,7 @@ mean_EMG = mean(EMG);
 sd_EMG = std(EMG);
 
 % Set threshold as mean + 3.5 * SD for movement detection
-threshold = mean_EMG + 3.5 * sd_EMG;
+threshold = mean_EMG + move_thresh * sd_EMG;
 % Plotting peaks
 figure;
 
@@ -157,8 +157,8 @@ plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_times, quality_selected_pe
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
-xlabel('sec\_signal\_EMG');
-ylabel('Filtered EMG');
+xlabel('Time (s)');
+ylabel('EMG (V)');
 title('Original EMG Data w. peaks corrected v2');
 grid on;
 
@@ -174,6 +174,8 @@ title('EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
 set(gcf,'color','white')
 grid on;
 
+sgtitle(sprintf('Mouse %s', mouse{3}))
+
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
 linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
@@ -181,8 +183,8 @@ linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
 % Make RR intervals & Remove selected peaks + RR's within movement chunks
 
 % Find the time between selected peaks ('RR') and record the timestamp of the first peak for each RR observation ('RR_time')
-RR = diff(quality_selected_peak_locs); % Time between selected peaks in seconds
-RR_time = quality_selected_peak_locs(1:end-1); % Timestamp of the first peak for each RR observation
+RR = diff(sec_signal_EMG(quality_selected_peak_locs)); % Time between selected peaks in seconds
+RR_time = sec_signal_EMG(quality_selected_peak_locs(1:end-1)); % Timestamp of the first peak for each RR observation
 
 % Define minimum time between two movement peaks (in seconds)
 minimum_time_between_movement = 1.5;
@@ -212,19 +214,17 @@ end
 % Remove RR outliers
 %Outlier detection
 
-% Calculate heart rate in beats per minute (bpm)
-heart_rate = 60 ./ RR;
-
-% Define the thresholds for filtering
-upper_threshold = 800; % Maximum allowed heart rate in bpm
-lower_threshold = 400; % Minimum allowed heart rate in bpm
+% Define the thresholds for filtering in seconds
+upper_threshold = 60 / 400; % Maximum allowed heart rate in seconds (corresponding to 400 BPM)
+lower_threshold = 60 / 800; % Minimum allowed heart rate in seconds (corresponding to 800 BPM)
 
 % Find indices of RR intervals that meet the criteria
-valid_indices = find(heart_rate <= upper_threshold & heart_rate >= lower_threshold);
+valid_indices = find(RR <= upper_threshold & RR >= lower_threshold);
 
 % Filter RR and RR_time based on the valid indices
 filtered_RR = RR(valid_indices);
 filtered_RR_time = RR_time(valid_indices);
+
 
 % Smooth the filtered RR's for plotting
 % Choose the window size for the moving average
