@@ -1,7 +1,4 @@
-%PLEASE NOTE
-%You need to place the FP file in a folder ending in the 3-digit animal id
-%(e.g. 'Mouse_xxx' or 'Mxxx' or simply just the 3-digit animal ID).
-%Otherwise the code will not run appropriately
+%% Load your data
 
 % M399 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', '');
 % M392 = preprocess_sleep_data('', '', 'BuBo', 'V_Bo', 'Pu2_', (100:7000), 'save_path', ''); 
@@ -32,11 +29,11 @@
 % 484_YFP	    1
 
 %build-up
-%name = {'file_destination_FP' 'file_destination_EEG' 'channel_name_blue_1' 'channel_name_violet_1' 'channel_name_red_1' 'channel_name_blue_2' 'channel_name_violet_2' 'channel_name_red_2' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' };
+%name = {'file_destination_FP' 'file_destination_EEG' 'animal number' 'time correction if needed' '' 'NE data' 'FP control' '' 'EEG channel name' 'EEG channel name' 'EMG channel name 1' 'synchronization pulse name FP rig' 'synchronization pulse name EEG rig'  'time period for fitting' 'sleep data'};
 %For viewpoint files, load in .exp file in the 2nd place
 %Animal muner is now in the 3rd place and time correction in the 4th
 
-%M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
+M387 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_Arch_NOR_2021-03-12_11-52-27-496.exp' '387' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
 %M399 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_Arch_NOR_2021-03-12_14-46-42-245.exp' '399' '2' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\399_arch\399_Arch_NOR\399_NOR_sleepscore.xlsx'};
 %M392 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\392_arch\392_Arch_NOR\392_Arch_NOR_2021-03-10_10-31-55-535.exp' '392' '4' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
 %M403 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\403_arch\403_Arch_NOR\403_Arch_NOR_2021-03-12_08-56-13-288.exp' '403' '3' '' 'BuBo', 'V_Bo' '' '' '' '' 'Pu2_' 'Pu2_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\opto_NOR\387_arch\387_Arch_NOR\387_NOR_sleepscore.xlsx'};
@@ -51,49 +48,65 @@ M420 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_
 
 %saline
 %M015 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\20221013_ACh_DPH_15_21' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\15_ACh_sal\15_ACh_sal_2022-10-13_10-34-10-557.exp' '015' '4' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\15_sal\15_ACh_sal\15_ACh_sal_sleepscore.xlsx'};
-%M084 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\20210716_EEGFP_484_sal' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_2021-07-16_09-25-48-573.exp' '084' '0' '' 'BuBo' 'V_Bo' '' '' '' '' 'PtC0' 'PtC0'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_sleepscore_1s.xlsx'}; %Renamed to not be the same as the other one
+M084 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\20210716_EEGFP_484_sal' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_2021-07-16_09-25-48-573.exp' '084' '0' '' 'BuBo' 'V_Bo' '' '' '' '' 'PtC0' 'PtC0'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\484_sal\484_sal\484_sal_sleepscore_1s.xlsx'}; %Renamed to not be the same as the other one
 %M569 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\20220807_DPH_580_569' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\569_sal\569_sal_2022-08-07_10-34-40-287.exp' '569' '1' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\569_sal\569_sal\569_sal_sleepscore.xlsx'};
 %M578 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\20220807_DPH_578_584' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\578_sal\578_sal_2022-08-07_06-48-50-071.exp' '578' '2' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\578_sal\578_sal\578_sleepscore.xlsx'};
 M580 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\20220810_DPH_580_569' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\580_sal\580_sal_2022-08-10_10-24-28-685.exp' '580' '4' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\580_sal\580_sal\850_sal_sleepcsore.xlsx'}; %sleepscore file named incorreclty in drive
 M588 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\20220809_DPH_588_592' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\588_sal\588_sal_2022-08-09_10-31-22-994.exp' '588' '1' '' 'x465A', 'x405A' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\588_sal\588_sal\588_sal_sleepscore.xlsx'}; 
 %M592 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\20220806_diphenH_588_592' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\592_sal\592_sal_2022-08-06_10-37-48-796.exp' '592' '1' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\592_sal\592_sal\592_sal_sleepscore.xlsx'};
-%M600 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\20220806_diphenH_602_600' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600\600_2022-08-06_06-52-56-321.exp' '600' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600_sal\600_sal_sleepscore.xlsx'};
-%M602 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\20220809_DPH_600_602' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_2022-08-09_06-54-24-717.exp' '602' '2' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_sleepscore.xlsx'};
+M600 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\20220806_diphenH_602_600' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600\600_2022-08-06_06-52-56-321.exp' '600' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\600_sal\600_sal\600_sal_sleepscore.xlsx'};
+M602 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\20220809_DPH_600_602' 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_2022-08-09_06-54-24-717.exp' '602' '2' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_'  (1:15000) 'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_newdata\saline injection\602_sal\602_sal\602_sal_sleepscore.xlsx'};
 
 %Acetylecholine extra files
 %M007 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220228_007_ACh_1_NE_2_take3' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/20220228_007_EEG_EMG_take2_2022-02-28_14-45-39-008.exp' '007' '2' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (1000:12000) 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/007_sleepscore.xlsx' };
 %M003 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220304_003_final_ACh_1' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/20220304_003_final_2022-03-04_09-34-05-362.exp' '003' '5' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (500:750)  'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/003_sleepscore.xlsx'}; %cut FP 94 s
-M015 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220523_015_1_ACh_f' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220523_015_box3_scored/20220523_015_box3_2022-05-23_10-08-39-331.exp'  '015' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored/015_sleepscore.xlsx'};
-M017 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220602_017_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220602_017_EEG_EMG_scored/20220602_017_EEG_EMG_2022-06-02_14-00-09-032.exp' '017' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored/017_ACh_sleepscore.xlsx' }; 
-M019 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220602_019_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220602_019_EEG_EMG_scored/20220602_019_EEG_EMG_2022-06-02_10-14-19-397.exp' '019' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored/019_sleepscore.xlsx' }; %use deltafit4
-M021 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220523_021_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220523_021_EEG_TTL_scored/20220523_021_EEG_TTL_2022-05-23_14-15-14-291.exp' '021' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored/021_sleepscore.xlsx' }; 
-M023 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220603_023_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220603_023_EEG_EMG_scored/20220603_023_EEG_EMG_2022-06-03_11-12-03-064.exp' '023' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored/023_sleepscore.xlsx'}; 
-M025 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP/20220601_025_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG/20220601_025_EEG_EMG_scored_4h/20220601_025_EEG_EMG_2022-06-01_10-08-18-249.exp' '025' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h/025_sleepscore.xlsx'}; 
+%M015 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220523_015_1_ACh_f' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored\20220523_015_box3_2022-05-23_10-08-39-331.exp'  '015' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored/015_sleepscore.xlsx'};
+%M017 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220602_017_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored\20220602_017_EEG_EMG_2022-06-02_14-00-09-032.exp' '017' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored/017_ACh_sleepscore.xlsx' }; 
+%M019 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220602_019_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored\20220602_019_EEG_EMG_2022-06-02_10-14-19-397.exp' '019' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored/019_sleepscore.xlsx' }; %use deltafit4
+%M021 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220523_021_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored\20220523_021_EEG_TTL_2022-05-23_14-15-14-291.exp' '021' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored/021_sleepscore.xlsx' }; 
+%M023 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220603_023_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored\20220603_023_EEG_EMG_2022-06-03_11-12-03-064.exp' '023' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored/023_sleepscore.xlsx'}; 
+M025 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220601_025_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h\20220601_025_EEG_EMG_2022-06-01_10-08-18-249_SJ.exp' '025' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h/025_sleepscore_2024.xlsx'}; 
+
+%Dopamine extra files
+%no TTL pulse (cut FP trace by 130), DA and NE good (NE needs to be normalized to median)
+%M003 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\FP\20220920_1_DA_2_NE_003' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\EEG\20220920_DA_003_scored/20220920_DA_003_2022-09-20_13-36-33-425.exp' '003' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' (200:1800) 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\EEG\20220920_DA_003_scored/003_sleepscore.xlsx'}; %cut 130 s from the beginning
+%DA (oscillates with high amplitude) and NE oscillate nicely, but NE needs to be normalized to median
+%M005 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\FP\20220922_1_DA_2_NE_005_take2' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\EEG\20220921_DA_005_take2_scored/20220921_DA_005_take2_2022-09-22_14-02-12-395.exp' '005' '0' '' 'x465A' 'x405A' '' '' '' '' 'PtC0' 'PtC0' (200:1400) 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\DA_group5\sleep\EEG\20220921_DA_005_take2_scored/005_sleepscore.xlsx'}; 
+
+%Histamine extra files
+M026 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220714_His_025' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\His_group4\sleep\EEG\20220714_His_025_scored\20220714_His_025_2022-07-14_13-08-20-709.exp' '026' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' 0 (10:2000) 'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/EEG/20220714_His_025/His_025_xlsx.xlsx'}; %cut 250 s from the beginning
+M015 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220712_His_015' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\His_group4\sleep\EEG\20220712_His_015_scored_no_REM/20220712_His_015_2022-07-12_13-40-09-809.exp' '015' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' 0 (10:2000)}; 
+%M017 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220711_His_017' 'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/EEG/20220709_his_017_scored/20220709_his_015_2022-07-11_09-15-36-124.exp' '017' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' 0 (10:2000)}; %cut 380 s from the beggining
+%M021 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220713_His_021' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\His_group4\sleep\EEG\20220713_His_021_scored\20220713_His_021_2022-07-13_12-47-12-647.exp' '021' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' 0 (10:2000)}; 
+%M023 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220713_His_023' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\His_group4\sleep\EEG\20220712_His_023_scored\20220712_His_023_2022-07-12_17-45-11-892.exp' '023' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' 0 (10:2000)}; 
 
 %Anestesias mice
 %M071 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' '071' '' '' 'x465A' 'x405A' '' 'EEGw' 1 'EMG1' '' '' (1:18000) ''};
 %M073 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\071_073_5am_sleep' '073' '' '' 'x465C' 'x405C' '' 'EEGw' 2 'EMG2' '' '' (1:18000) ''};
 
 
-%M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
+%M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' '' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 %M124 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '124' '' '' 'Dv4C' 'Dv5C' 'red' 'EEGw' 2 'EMG2' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_124\124_sleep\6h FP and EEG\Score_124.xlsx'};
 %M168 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168' '168' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\mouse_168\168_sleep_data.xlsx'};
 %M147 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147' '147' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_147\147_sleep_data.xlsx'};
 %M149 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149' '149' '' '' 'x465C' 'x405C' 'red' 'EEGw' 2 'EMG2' '' '' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\147_149_5_51_am_sleep_rec\mouse_149\149_sleep_data.xlsx'};
+M100 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara' '100' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara\M100_sleep.xlsx'};
 
-%mice_TTL = {M124, M117};
 %mice_saline = {M015, M084, M569, M578, M580, M588, M592, M600, M602};
-%mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
-%mice_without_TTL = {M168, M147, M149, M071, M073};
-%viewpoint_mice = {'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
-%synapse_mice = {M168, M147, M149, M117, M124, M071, M073};
+mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
+mice_without_TTL = {M168, M147, M149, M071, M073, M100};
+mice_TTL = {M124, M117};
+viewpoint_mice = {'M017', 'M026', 'M003', 'M005', 'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
+synapse_mice = {M168, M147, M149, M117, M124, M071, M073};
+mice_without_TTL = {M100};
 %RR_mice_sal_yfp = {M420, M580, M588};
 %v = {M071, M073}; 
+%mice_without_TTL = {};
 
-viewpoint_mice = {'M019', 'M021', 'M023', 'M025','M420', 'M015', 'M580', 'M588'};
+viewpoint_mice = {'M026', 'M015', 'M025','M420', 'M580', 'M588'};
 
-o = {M019, M017, M015, M021, M023, M025}; %M021, M021,
-
+o = {M025, M026, M420, M580, M588};
+o = {M100};
 % Create a matrix of mice pairs where the first column is the mouse without EEG data
 % and the second column is the mouse with EEG data
 
@@ -112,6 +125,14 @@ for idx = 1:length(mice_without_TTL)
     mice_without_TTL_IDs{end+1} = ID; % Correctly append ID to the cell array
 end
 
+mice_with_TTL_IDs = {};
+
+%Extract names of the mice withoutTTL for later use
+for idx = 1:length(mice_TTL)
+    t = mice_TTL{idx}; % Assuming mouse is a cell array with relevant data
+    ID = sprintf('M%s', t{3}); % Extract the ID as intended
+    mice_with_TTL_IDs{end+1} = ID; % Correctly append ID to the cell array
+end
 
 %% Load FP and EEG data for all mice
 
@@ -180,7 +201,7 @@ for idx = 1:length(o)
         partnerIdx = find(strcmp(mice_pairs(:,1), mouseID));
         if isempty(partnerIdx)
             % This mouse has its own EEG data
-            partnerData = eval(sprintf('data_EEGrig_%s', mouse{1}(end-2:end)));
+            partnerData = eval(sprintf('data_EEGrig_%s', mouse{3}));
         else
             % This mouse needs to use its partner's EEG data
             partnerID = mice_pairs{partnerIdx, 2};
@@ -207,8 +228,8 @@ end
 
 %% QC - Check all traces are there
 
-for idx = 1:length(v)
-    mouse = v{idx};
+for idx = 1:length(o)
+    mouse = o{idx};
     uniqueId = mouse{3}; % Extract unique identifier
     
     % Creating one figure per mouse
@@ -252,141 +273,38 @@ end
 
 %% Downsample FP and filter EEG
     % Normalize fluorescence traces
-MeanFilterOrder = 2000; % for smoothing
-MeanFilter = ones(MeanFilterOrder,1)/MeanFilterOrder;
+MeanFilterOrder = 2000; % Order for smoothing
+MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
+ds_factor_FP = 100; % Downsample factor
 
-% Smoothing traces for trough detection
-delta465_filt_2_117_smooth = filtfilt(MeanFilter,1,delta465_filt_2_117);
-delta465_filt_2_124_smooth = filtfilt(MeanFilter,1,delta465_filt_2_124);
-delta465_filt_2_168_smooth = filtfilt(MeanFilter,1,delta465_filt_2_168);
-delta465_filt_2_147_smooth = filtfilt(MeanFilter,1,delta465_filt_2_147);
-delta465_filt_2_149_smooth = filtfilt(MeanFilter,1,delta465_filt_2_149);
-delta465_filt_2_387_smooth = filtfilt(MeanFilter,1,delta465_filt_2_387);
-delta465_filt_2_468_smooth = filtfilt(MeanFilter,1,delta465_filt_2_468);
-delta465_filt_2_420_smooth = filtfilt(MeanFilter,1,delta465_filt_2_420);
-delta465_filt_2_392_smooth = filtfilt(MeanFilter,1,delta465_filt_2_392);
-delta465_filt_2_403_smooth = filtfilt(MeanFilter,1,delta465_filt_2_403);
-delta465_filt_2_412_smooth = filtfilt(MeanFilter,1,delta465_filt_2_412);
-delta465_filt_2_414_smooth = filtfilt(MeanFilter,1,delta465_filt_2_414);
-delta465_filt_2_416_smooth = filtfilt(MeanFilter,1,delta465_filt_2_416);
-delta465_filt_2_418_smooth = filtfilt(MeanFilter,1,delta465_filt_2_418);
-delta465_filt_2_484_smooth = filtfilt(MeanFilter,1,delta465_filt_2_484);
-delta465_filt_2_477_smooth = filtfilt(MeanFilter,1,delta465_filt_2_477);
-delta465_filt_2_015_smooth = filtfilt(MeanFilter,1,delta465_filt_2_015);
-delta465_filt_2_084_smooth = filtfilt(MeanFilter,1,delta465_filt_2_084);
-delta465_filt_2_569_smooth = filtfilt(MeanFilter,1,delta465_filt_2_569);
-delta465_filt_2_578_smooth = filtfilt(MeanFilter,1,delta465_filt_2_578);
-delta465_filt_2_580_smooth = filtfilt(MeanFilter,1,delta465_filt_2_580);
-delta465_filt_2_588_smooth = filtfilt(MeanFilter,1,delta465_filt_2_588);
-delta465_filt_2_592_smooth = filtfilt(MeanFilter,1,delta465_filt_2_592);
-delta465_filt_2_600_smooth = filtfilt(MeanFilter,1,delta465_filt_2_600);
-delta465_filt_2_602_smooth = filtfilt(MeanFilter,1,delta465_filt_2_602);
-delta465_filt_2_073_smooth = filtfilt(MeanFilter,1,delta465_filt_2_073);
-delta465_filt_2_015_smooth = filtfilt(MeanFilter,1,delta465_filt_2_015);
-delta465_filt_2_017_smooth = filtfilt(MeanFilter,1,delta465_filt_2_017);
-delta465_filt_2_021_smooth = filtfilt(MeanFilter,1,delta465_filt_2_021);
-delta465_filt_2_019_smooth = filtfilt(MeanFilter,1,delta465_filt_2_019);
-delta465_filt_2_073_smooth = filtfilt(MeanFilter,1,delta465_filt_2_073);
-% downsampling traces for plotting
-ds_factor_FP = 100; % also used for plotting later (section 9b)
+% Loop through each mouse entry in the 'mice' cell array
+for idx = 1:length(o)
+    mouse = o{idx}; % Current mouse
+    uniqueId = mouse{3}; % Extract unique identifier from the third index
 
-ds_delta465_filt_2_403 = downsample(delta465_filt_2_403, ds_factor_FP);
-ds_sec_signal_2_403 = downsample(sec_signal_2_403, ds_factor_FP); % for plotting
+    % Generate variable names based on uniqueId
+    delta465_var_name = sprintf('delta465_filt_2_%s', uniqueId);
+    sec_signal_var_name = sprintf('sec_signal_2_%s', uniqueId);
+    
+    % Assuming delta465_filt_2 and sec_signal_2 data are loaded in the workspace
+    delta465_filt_2 = eval(delta465_var_name);
+    sec_signal_2 = eval(sec_signal_var_name);
 
-ds_delta465_filt_2_412 = downsample(delta465_filt_2_412, ds_factor_FP);
-ds_sec_signal_2_412 = downsample(sec_signal_2_412, ds_factor_FP); % for plotting
+    % Smooth the delta465_filt_2 signal
+    smooth_var_name = sprintf('delta465_filt_2_%s_smooth', uniqueId);
+    norm_var_name = sprintf('delta465_filt_2_%s', uniqueId);
 
-ds_delta465_filt_2_414 = downsample(delta465_filt_2_414, ds_factor_FP);
-ds_sec_signal_2_414 = downsample(sec_signal_2_414, ds_factor_FP); % for plotting
+    eval([smooth_var_name ' = filtfilt(MeanFilter, 1, delta465_filt_2);']);
 
-ds_delta465_filt_2_420 = downsample(delta465_filt_2_420, ds_factor_FP);
-ds_sec_signal_2_420 = downsample(sec_signal_2_420, ds_factor_FP); % for plotting
+    % Downsample the smoothed signal and the corresponding secondary signal
+    ds_delta465_var_name_smooth = sprintf('ds_%s', smooth_var_name);
+    ds_delta465_var_name = sprintf('ds_%s', norm_var_name);
+    ds_sec_signal_var_name = sprintf('ds_%s', sec_signal_var_name);
 
-ds_delta465_filt_2_416 = downsample(delta465_filt_2_416, ds_factor_FP);
-ds_sec_signal_2_416 = downsample(sec_signal_2_416, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_418 = downsample(delta465_filt_2_418, ds_factor_FP);
-ds_sec_signal_2_418 = downsample(sec_signal_2_418, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_468 = downsample(delta465_filt_2_468, ds_factor_FP);
-ds_sec_signal_2_468 = downsample(sec_signal_2_468, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_117 = downsample(delta465_filt_2_117, ds_factor_FP);
-ds_sec_signal_2_117 = downsample(sec_signal_2_117, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_124 = downsample(delta465_filt_2_124, ds_factor_FP);
-ds_sec_signal_2_124 = downsample(sec_signal_2_124, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_168 = downsample(delta465_filt_2_168, ds_factor_FP);
-ds_sec_signal_2_168 = downsample(sec_signal_2_168, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_147 = downsample(delta465_filt_2_147, ds_factor_FP);
-ds_sec_signal_2_147 = downsample(sec_signal_2_147, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_149 = downsample(delta465_filt_2_149, ds_factor_FP);
-ds_sec_signal_2_149 = downsample(sec_signal_2_149, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_387 = downsample(delta465_filt_2_387, ds_factor_FP);
-ds_sec_signal_2_387 = downsample(sec_signal_2_387, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_392 = downsample(delta465_filt_2_392, ds_factor_FP);
-ds_sec_signal_2_392 = downsample(sec_signal_2_392, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_484 = downsample(delta465_filt_2_484, ds_factor_FP);
-ds_sec_signal_2_484 = downsample(sec_signal_2_484, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_477 = downsample(delta465_filt_2_477, ds_factor_FP);
-ds_sec_signal_2_477 = downsample(sec_signal_2_477, ds_factor_FP); % for plotting
-
-ds_delta465_filt_2_073 = downsample(delta465_filt_2_073, ds_factor_FP);
-ds_sec_signal_2_073 = downsample(sec_signal_2_073, ds_factor_FP); % for plotti
-
-ds_delta465_filt_2_015 = downsample(delta465_filt_2_015, ds_factor_FP);
-ds_sec_signal_2_015 = downsample(sec_signal_2_015, ds_factor_FP); % for plotting
-ds_delta465_filt_2_084 = downsample(delta465_filt_2_084, ds_factor_FP);
-ds_sec_signal_2_084 = downsample(sec_signal_2_084, ds_factor_FP); % for plotting
-ds_delta465_filt_2_569 = downsample(delta465_filt_2_569, ds_factor_FP);
-ds_sec_signal_2_569 = downsample(sec_signal_2_569, ds_factor_FP); % for plotting
-ds_delta465_filt_2_578 = downsample(delta465_filt_2_578, ds_factor_FP);
-ds_sec_signal_2_578 = downsample(sec_signal_2_578, ds_factor_FP); % for plotting
-ds_delta465_filt_2_580 = downsample(delta465_filt_2_580, ds_factor_FP);
-ds_sec_signal_2_580 = downsample(sec_signal_2_580, ds_factor_FP); % for plotting
-ds_delta465_filt_2_588 = downsample(delta465_filt_2_588, ds_factor_FP);
-ds_sec_signal_2_588 = downsample(sec_signal_2_588, ds_factor_FP); % for plotting
-ds_delta465_filt_2_592 = downsample(delta465_filt_2_592, ds_factor_FP);
-ds_sec_signal_2_592 = downsample(sec_signal_2_592, ds_factor_FP); % for plotting
-ds_delta465_filt_2_600 = downsample(delta465_filt_2_600, ds_factor_FP);
-ds_sec_signal_2_600 = downsample(sec_signal_2_600, ds_factor_FP); % for plotting
-ds_delta465_filt_2_602 = downsample(delta465_filt_2_602, ds_factor_FP);
-ds_sec_signal_2_602 = downsample(sec_signal_2_477, ds_factor_FP); % for plotting
-
-
-ds_delta465_filt_2_117_smooth = downsample(delta465_filt_2_117_smooth, ds_factor_FP);
-ds_delta465_filt_2_124_smooth = downsample(delta465_filt_2_124_smooth, ds_factor_FP);
-ds_delta465_filt_2_168_smooth = downsample(delta465_filt_2_168_smooth, ds_factor_FP);
-ds_delta465_filt_2_147_smooth = downsample(delta465_filt_2_147_smooth, ds_factor_FP);
-ds_delta465_filt_2_149_smooth = downsample(delta465_filt_2_149_smooth, ds_factor_FP);
-ds_delta465_filt_2_420_smooth = downsample(delta465_filt_2_420_smooth, ds_factor_FP);
-ds_delta465_filt_2_468_smooth = downsample(delta465_filt_2_468_smooth, ds_factor_FP);
-ds_delta465_filt_2_387_smooth = downsample(delta465_filt_2_387_smooth, ds_factor_FP);
-ds_delta465_filt_2_392_smooth = downsample(delta465_filt_2_392_smooth, ds_factor_FP);
-ds_delta465_filt_2_403_smooth = downsample(delta465_filt_2_403_smooth, ds_factor_FP);
-ds_delta465_filt_2_412_smooth = downsample(delta465_filt_2_412_smooth, ds_factor_FP);
-ds_delta465_filt_2_414_smooth = downsample(delta465_filt_2_414_smooth, ds_factor_FP);
-ds_delta465_filt_2_416_smooth = downsample(delta465_filt_2_416_smooth, ds_factor_FP);
-ds_delta465_filt_2_418_smooth = downsample(delta465_filt_2_418_smooth, ds_factor_FP);
-ds_delta465_filt_2_484_smooth = downsample(delta465_filt_2_484_smooth, ds_factor_FP);
-ds_delta465_filt_2_477_smooth = downsample(delta465_filt_2_477_smooth, ds_factor_FP);
-ds_delta465_filt_2_015_smooth = downsample(delta465_filt_2_015_smooth, ds_factor_FP);
-ds_delta465_filt_2_084_smooth = downsample(delta465_filt_2_084_smooth, ds_factor_FP);
-ds_delta465_filt_2_569_smooth = downsample(delta465_filt_2_569_smooth, ds_factor_FP);
-ds_delta465_filt_2_578_smooth = downsample(delta465_filt_2_578_smooth, ds_factor_FP);
-ds_delta465_filt_2_580_smooth = downsample(delta465_filt_2_580_smooth, ds_factor_FP);
-ds_delta465_filt_2_588_smooth = downsample(delta465_filt_2_588_smooth, ds_factor_FP);
-ds_delta465_filt_2_592_smooth = downsample(delta465_filt_2_592_smooth, ds_factor_FP);
-ds_delta465_filt_2_600_smooth = downsample(delta465_filt_2_600_smooth, ds_factor_FP);
-ds_delta465_filt_2_602_smooth = downsample(delta465_filt_2_602_smooth, ds_factor_FP);
-ds_delta465_filt_2_073_smooth = downsample(delta465_filt_2_073_smooth, ds_factor_FP);
+    eval([ds_delta465_var_name_smooth ' = downsample(' smooth_var_name ', ds_factor_FP);']);
+    eval([ds_delta465_var_name ' = downsample(' norm_var_name ', ds_factor_FP);']);
+    eval([ds_sec_signal_var_name ' = downsample(' sec_signal_var_name ', ds_factor_FP);']);
+end
 
 % Design a bandpass filter
 % bpFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
@@ -404,32 +322,80 @@ ds_delta465_filt_2_073_smooth = downsample(delta465_filt_2_073_smooth, ds_factor
 %% Run sleep analysis
 %function will give you the variables needed for plotting, further sleep
 %periods, NREM without MA and 
-[wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_MA_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 15);
-[wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_MA_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 15);
-[wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_MA_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 15);
-[wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147, MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_MA_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 15);
-[wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149, MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_MA_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 15);
-[wake_woMA_binary_vector_073, sws_binary_vector_073, REM_binary_vector_073, MA_binary_vector_073, NREMinclMA_periods_073, NREMexclMA_periods_073, wake_periods_073, REM_periods_073, MA_periods_073, SWS_before_MA_filtered_073, SWS_before_wake_filtered_073, SWS_before_REM_filtered_073, REM_before_MA_filtered_073, REM_before_wake_filtered_073] = SleepProcess_without_TTL(M073, sec_signal_EEG_073, 20, 20, 15);
 
-[wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_MA_filtered_387, REM_before_wake_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
-[wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_MA_filtered_392, REM_before_wake_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
+% Assuming mice is the master list of all mice
+for idx = 1:length(o)
+    mouse = o{idx}; % mouse is the current mouse cell array
+    mouseID = mouse{3}; % Extract the unique ID from the third index
+    disp(['Processing mouse ID: ', mouseID]);
+    ID = sprintf('M%s', mouseID);
 
+    % Format the variable names for EEG and other signals
+    sec_signal_EEG_var_name = sprintf('sec_signal_EEG_%s', mouseID);
+    EEG_fs_var_name = sprintf('EEG_fs_%s', mouseID);
+    onset_FP_EEG_var_name = sprintf('onset_FP_EEG_%s', mouseID);
 
-[wake_woMA_binary_vector_403, sws_binary_vector_403, REM_binary_vector_403, MA_binary_vector_403, NREMinclMA_periods_403, NREMexclMA_periods_403, wake_periods_403, REM_periods_403, MA_periods_403, SWS_before_MA_filtered_403, SWS_before_wake_filtered_403, SWS_before_REM_filtered_403, REM_before_MA_filtered_403, REM_before_wake_filtered_403] = SleepProcess_viewpoint(M403, sec_signal_EEG_403, onset_FP_EEG_403, EEG_fs_403, 20, 20, 15);
-[wake_woMA_binary_vector_412, sws_binary_vector_412, REM_binary_vector_412, MA_binary_vector_412, NREMinclMA_periods_412, NREMexclMA_periods_412, wake_periods_412, REM_periods_412, MA_periods_412, SWS_before_MA_filtered_412, SWS_before_wake_filtered_412, SWS_before_REM_filtered_412, REM_before_MA_filtered_412, REM_before_wake_filtered_412] = SleepProcess_viewpoint(M412, sec_signal_EEG_412, onset_FP_EEG_412, EEG_fs_412, 20, 20, 15);
-[wake_woMA_binary_vector_414, sws_binary_vector_414, REM_binary_vector_414, MA_binary_vector_414, NREMinclMA_periods_414, NREMexclMA_periods_414, wake_periods_414, REM_periods_414, MA_periods_414, SWS_before_MA_filtered_414, SWS_before_wake_filtered_414, SWS_before_REM_filtered_414, REM_before_MA_filtered_414, REM_before_wake_filtered_414] = SleepProcess_viewpoint(M414, sec_signal_EEG_414, onset_FP_EEG_414, EEG_fs_414, 20, 20, 15);
-[wake_woMA_binary_vector_416, sws_binary_vector_416, REM_binary_vector_416, MA_binary_vector_416, NREMinclMA_periods_416, NREMexclMA_periods_416, wake_periods_416, REM_periods_416, MA_periods_416, SWS_before_MA_filtered_416, SWS_before_wake_filtered_416, SWS_before_REM_filtered_416, REM_before_MA_filtered_416, REM_before_wake_filtered_416] = SleepProcess_viewpoint(M416, sec_signal_EEG_416, onset_FP_EEG_416, EEG_fs_416, 20, 20, 15);
-[wake_woMA_binary_vector_418, sws_binary_vector_418, REM_binary_vector_418, MA_binary_vector_418, NREMinclMA_periods_418, NREMexclMA_periods_418, wake_periods_418, REM_periods_418, MA_periods_418, SWS_before_MA_filtered_418, SWS_before_wake_filtered_418, SWS_before_REM_filtered_418, REM_before_MA_filtered_418, REM_before_wake_filtered_418] = SleepProcess_viewpoint(M418, sec_signal_EEG_418, onset_FP_EEG_418, EEG_fs_418, 20, 20, 15);
-[wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420, NREMinclMA_periods_420, NREMexclMA_periods_420, wake_periods_420, REM_periods_420, MA_periods_420, SWS_before_MA_filtered_420, SWS_before_wake_filtered_420, SWS_before_REM_filtered_420, REM_before_MA_filtered_420, REM_before_wake_filtered_420] = SleepProcess_viewpoint(M420, sec_signal_EEG_420, onset_FP_EEG_420, EEG_fs_420, 20, 20, 15);
-[wake_woMA_binary_vector_468, sws_binary_vector_468, REM_binary_vector_468, MA_binary_vector_468, NREMinclMA_periods_468, NREMexclMA_periods_468, wake_periods_468, REM_periods_468, MA_periods_468, SWS_before_MA_filtered_468, SWS_before_wake_filtered_468, SWS_before_REM_filtered_468, REM_before_MA_filtered_468, REM_before_wake_filtered_468] = SleepProcess_viewpoint(M468, sec_signal_EEG_468, onset_FP_EEG_468, EEG_fs_468, 20, 20, 15);
+    % Call the appropriate processing function based on group membership
+    if ismember(ID, mice_without_TTL_IDs)
+        % Call the SleepProcess_without_TTL function
+        [wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector, ...
+         NREMinclMA_periods, NREMexclMA_periods, wake_periods, REM_periods, MA_periods, ...
+         SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, ...
+         REM_before_MA_filtered, REM_before_wake_filtered] = SleepProcess_without_TTL(mouse, eval(sec_signal_EEG_var_name), 20, 20, 25);
+    elseif ismember(ID, mice_with_TTL_IDs)
+        % Call the SleepProcess_TTL function
+        [wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector, ...
+         NREMinclMA_periods, NREMexclMA_periods, wake_periods, REM_periods, MA_periods, ...
+         SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, ...
+         REM_before_MA_filtered, REM_before_wake_filtered] = SleepProcess_TTL(mouse, eval(sec_signal_EEG_var_name), eval(EEG_fs_var_name), eval(onset_FP_EEG_var_name), 20, 20, 25);
+    elseif ismember(ID, viewpoint_mice)
+        % Call the SleepProcess_viewpoint function
+        [wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector, ...
+         NREMinclMA_periods, NREMexclMA_periods, wake_periods, REM_periods, MA_periods, ...
+         SWS_before_MA_filtered, SWS_before_wake_filtered, SWS_before_REM_filtered, ...
+         REM_before_MA_filtered, REM_before_wake_filtered] = SleepProcess_viewpoint(mouse, eval(sec_signal_EEG_var_name), eval(onset_FP_EEG_var_name), eval(EEG_fs_var_name), 20, 20, 25);
+    else
+        disp(['Mouse ID ' mouseID ' does not belong to any known group']);
+    end
 
-[wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580, NREMinclMA_periods_580, NREMexclMA_periods_580, wake_periods_580, REM_periods_580, MA_periods_580, SWS_before_MA_filtered_580, SWS_before_wake_filtered_580, SWS_before_REM_filtered_580, REM_before_MA_filtered_580, REM_before_wake_filtered_580] = SleepProcess_viewpoint(M580, sec_signal_EEG_580, onset_FP_EEG_580, EEG_fs_580, 20, 20, 15);
-[wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588, NREMinclMA_periods_588, NREMexclMA_periods_588, wake_periods_588, REM_periods_588, MA_periods_588, SWS_before_MA_filtered_588, SWS_before_wake_filtered_588, SWS_before_REM_filtered_588, REM_before_MA_filtered_588, REM_before_wake_filtered_588] = SleepProcess_viewpoint(M588, sec_signal_EEG_588, onset_FP_EEG_588, EEG_fs_588, 20, 20, 15);
+    % Store the results in dynamically named variables
+    vars_to_save = {'wake_woMA_binary_vector', 'sws_binary_vector', 'REM_binary_vector', 'MA_binary_vector', ...
+                    'NREMinclMA_periods', 'NREMexclMA_periods', 'wake_periods', 'REM_periods', 'MA_periods', ...
+                    'SWS_before_MA_filtered', 'SWS_before_wake_filtered', 'SWS_before_REM_filtered', ...
+                    'REM_before_MA_filtered', 'REM_before_wake_filtered'};
+    for v = vars_to_save
+        eval(sprintf('%s_%s = %s;', v{1}, mouseID, v{1}));
+    end
+end
+
+% [wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117, NREMinclMA_periods_117, NREMexclMA_periods_117, wake_periods_117, REM_periods_117, MA_periods_117, SWS_before_MA_filtered_117, SWS_before_wake_filtered_117, SWS_before_REM_filtered_117, REM_before_MA_filtered_117, REM_before_wake_filtered_117] = SleepProcess_TTL(M117, sec_signal_EEG_117, EEG_fs_117, onset_FP_EEG_117, 20, 20, 15);
+% [wake_woMA_binary_vector_124, sws_binary_vector_124, REM_binary_vector_124, MA_binary_vector_124, NREMinclMA_periods_124, NREMexclMA_periods_124, wake_periods_124, REM_periods_124, MA_periods_124, SWS_before_MA_filtered_124, SWS_before_wake_filtered_124, SWS_before_REM_filtered_124, REM_before_MA_filtered_124, REM_before_wake_filtered_124] = SleepProcess_TTL(M124, sec_signal_EEG_124, EEG_fs_124, onset_FP_EEG_124, 20, 20, 15);
+% [wake_woMA_binary_vector_168, sws_binary_vector_168, REM_binary_vector_168, MA_binary_vector_168, NREMinclMA_periods_168, NREMexclMA_periods_168, wake_periods_168, REM_periods_168, MA_periods_168, SWS_before_MA_filtered_168, SWS_before_wake_filtered_168, SWS_before_REM_filtered_168, REM_before_MA_filtered_168, REM_before_wake_filtered_168] = SleepProcess_without_TTL(M168, sec_signal_EEG_168, 20, 20, 15);
+% [wake_woMA_binary_vector_147, sws_binary_vector_147, REM_binary_vector_147, MA_binary_vector_147, NREMinclMA_periods_147, NREMexclMA_periods_147, wake_periods_147, REM_periods_147, MA_periods_147, SWS_before_MA_filtered_147, SWS_before_wake_filtered_147, SWS_before_REM_filtered_147, REM_before_MA_filtered_147, REM_before_wake_filtered_147] = SleepProcess_without_TTL(M147, sec_signal_EEG_147, 20, 20, 15);
+% [wake_woMA_binary_vector_149, sws_binary_vector_149, REM_binary_vector_149, MA_binary_vector_149, NREMinclMA_periods_149, NREMexclMA_periods_149, wake_periods_149, REM_periods_149, MA_periods_149, SWS_before_MA_filtered_149, SWS_before_wake_filtered_149, SWS_before_REM_filtered_149, REM_before_MA_filtered_149, REM_before_wake_filtered_149] = SleepProcess_without_TTL(M149, sec_signal_EEG_149, 20, 20, 15);
+% [wake_woMA_binary_vector_073, sws_binary_vector_073, REM_binary_vector_073, MA_binary_vector_073, NREMinclMA_periods_073, NREMexclMA_periods_073, wake_periods_073, REM_periods_073, MA_periods_073, SWS_before_MA_filtered_073, SWS_before_wake_filtered_073, SWS_before_REM_filtered_073, REM_before_MA_filtered_073, REM_before_wake_filtered_073] = SleepProcess_without_TTL(M073, sec_signal_EEG_073, 20, 20, 15);
+% 
+% [wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_MA_filtered_387, REM_before_wake_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
+% [wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_MA_filtered_392, REM_before_wake_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
+% 
+% 
+% [wake_woMA_binary_vector_403, sws_binary_vector_403, REM_binary_vector_403, MA_binary_vector_403, NREMinclMA_periods_403, NREMexclMA_periods_403, wake_periods_403, REM_periods_403, MA_periods_403, SWS_before_MA_filtered_403, SWS_before_wake_filtered_403, SWS_before_REM_filtered_403, REM_before_MA_filtered_403, REM_before_wake_filtered_403] = SleepProcess_viewpoint(M403, sec_signal_EEG_403, onset_FP_EEG_403, EEG_fs_403, 20, 20, 15);
+% [wake_woMA_binary_vector_412, sws_binary_vector_412, REM_binary_vector_412, MA_binary_vector_412, NREMinclMA_periods_412, NREMexclMA_periods_412, wake_periods_412, REM_periods_412, MA_periods_412, SWS_before_MA_filtered_412, SWS_before_wake_filtered_412, SWS_before_REM_filtered_412, REM_before_MA_filtered_412, REM_before_wake_filtered_412] = SleepProcess_viewpoint(M412, sec_signal_EEG_412, onset_FP_EEG_412, EEG_fs_412, 20, 20, 15);
+% [wake_woMA_binary_vector_414, sws_binary_vector_414, REM_binary_vector_414, MA_binary_vector_414, NREMinclMA_periods_414, NREMexclMA_periods_414, wake_periods_414, REM_periods_414, MA_periods_414, SWS_before_MA_filtered_414, SWS_before_wake_filtered_414, SWS_before_REM_filtered_414, REM_before_MA_filtered_414, REM_before_wake_filtered_414] = SleepProcess_viewpoint(M414, sec_signal_EEG_414, onset_FP_EEG_414, EEG_fs_414, 20, 20, 15);
+% [wake_woMA_binary_vector_416, sws_binary_vector_416, REM_binary_vector_416, MA_binary_vector_416, NREMinclMA_periods_416, NREMexclMA_periods_416, wake_periods_416, REM_periods_416, MA_periods_416, SWS_before_MA_filtered_416, SWS_before_wake_filtered_416, SWS_before_REM_filtered_416, REM_before_MA_filtered_416, REM_before_wake_filtered_416] = SleepProcess_viewpoint(M416, sec_signal_EEG_416, onset_FP_EEG_416, EEG_fs_416, 20, 20, 15);
+% [wake_woMA_binary_vector_418, sws_binary_vector_418, REM_binary_vector_418, MA_binary_vector_418, NREMinclMA_periods_418, NREMexclMA_periods_418, wake_periods_418, REM_periods_418, MA_periods_418, SWS_before_MA_filtered_418, SWS_before_wake_filtered_418, SWS_before_REM_filtered_418, REM_before_MA_filtered_418, REM_before_wake_filtered_418] = SleepProcess_viewpoint(M418, sec_signal_EEG_418, onset_FP_EEG_418, EEG_fs_418, 20, 20, 15);
+% [wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420, NREMinclMA_periods_420, NREMexclMA_periods_420, wake_periods_420, REM_periods_420, MA_periods_420, SWS_before_MA_filtered_420, SWS_before_wake_filtered_420, SWS_before_REM_filtered_420, REM_before_MA_filtered_420, REM_before_wake_filtered_420] = SleepProcess_viewpoint(M420, sec_signal_EEG_420, onset_FP_EEG_420, EEG_fs_420, 20, 20, 15);
+% [wake_woMA_binary_vector_468, sws_binary_vector_468, REM_binary_vector_468, MA_binary_vector_468, NREMinclMA_periods_468, NREMexclMA_periods_468, wake_periods_468, REM_periods_468, MA_periods_468, SWS_before_MA_filtered_468, SWS_before_wake_filtered_468, SWS_before_REM_filtered_468, REM_before_MA_filtered_468, REM_before_wake_filtered_468] = SleepProcess_viewpoint(M468, sec_signal_EEG_468, onset_FP_EEG_468, EEG_fs_468, 20, 20, 15);
+% 
+% [wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580, NREMinclMA_periods_580, NREMexclMA_periods_580, wake_periods_580, REM_periods_580, MA_periods_580, SWS_before_MA_filtered_580, SWS_before_wake_filtered_580, SWS_before_REM_filtered_580, REM_before_MA_filtered_580, REM_before_wake_filtered_580] = SleepProcess_viewpoint(M580, sec_signal_EEG_580, onset_FP_EEG_580, EEG_fs_580, 20, 20, 15);
+% [wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588, NREMinclMA_periods_588, NREMexclMA_periods_588, wake_periods_588, REM_periods_588, MA_periods_588, SWS_before_MA_filtered_588, SWS_before_wake_filtered_588, SWS_before_REM_filtered_588, REM_before_MA_filtered_588, REM_before_wake_filtered_588] = SleepProcess_viewpoint(M588, sec_signal_EEG_588, onset_FP_EEG_588, EEG_fs_588, 20, 20, 15);
+% [wake_woMA_binary_vector_025, sws_binary_vector_025, REM_binary_vector_025, MA_binary_vector_025, NREMinclMA_periods_025, NREMexclMA_periods_025, wake_periods_025, REM_periods_025, MA_periods_025, SWS_before_MA_filtered_025, SWS_before_wake_filtered_025, SWS_before_REM_filtered_025, REM_before_MA_filtered_025, REM_before_wake_filtered_025] = SleepProcess_viewpoint(M025, sec_signal_EEG_025, onset_FP_EEG_025, EEG_fs_025, 20, 20, 15);
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
-for idx = 1:length(RR_mice_sal_yfp)
-    mouse = RR_mice_sal_yfp{idx};
+for idx = 1:length(o)
+    mouse = o{idx};
+    disp(mouse{3})
     uniqueId = mouse{3}; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
@@ -457,8 +423,17 @@ for idx = 1:length(RR_mice_sal_yfp)
     sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
     uniqueIdStr = string(uniqueId);
 
+        % Append zeros if the mouse ID is '015'
+    % Append zeros if the mouse ID is '015'
+    if strcmp(uniqueId, '015')  % Correct comparison for strings
+        sws_binary_vector = [sws_binary_vector, zeros(1, 3)];  % Append zeros horizontally
+        REM_binary_vector = [REM_binary_vector, zeros(1, 3)];  % Append zeros horizontally
+    end
+
     % Plot for the current mouse
     figure;
+    sgtitle(sprintf('Mouse %s', uniqueId)); % Set the figure title with the mouse ID
+
     a = subplot(3, 1, 1);
         plot_sleep(ds_sec_signal_2, ds_delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
         title(['Norepinephrine']);
@@ -492,7 +467,7 @@ end
 %[RR_414, RR_time_414, RR_fs_414] = GetRRIntervals(M414, EMG_414, sec_signal_EEG_414, EEG_fs_414);
 [RR_416, RR_time_416, RR_fs_416] = GetRRIntervals(M416, -EMG_416, sec_signal_EEG_416, EEG_fs_416, 1, 2.5);
 %[RR_418, RR_time_418, RR_fs_418] = GetRRIntervals(M418, EMG_418, sec_signal_EEG_418, EEG_fs_418, 2.5);
-[RR_420, RR_time_420, RR_fs_420] = GetRRIntervals(M420, -EMG_420, sec_signal_EEG_420, EEG_fs_420, 6.3, 2.5);
+[RR_420, RR_time_420, RR_fs_420, Rpeaks_420, Rpeaks_time_420] = GetRRIntervals(M420, -EMG_420, sec_signal_EEG_420, EEG_fs_420, 6.3, 2.5);
 [RR_468, RR_time_468, RR_fs_468] = GetRRIntervals(M468, -EMG_468, sec_signal_EEG_468, EEG_fs_468, 2.5, 2.3); %Parts are good, others are messy
 %[RR_484, RR_time_484, RR_fs_484] = GetRRIntervals(M484, EMG_484, sec_signal_EEG_484, EEG_fs_484, 2.5);
 %[RR_477, RR_time_477, RR_fs_477] = GetRRIntervals(M477, -EMG_477, sec_signal_EEG_477, EEG_fs_477, 3.5);
@@ -500,16 +475,21 @@ end
 [RR_084, RR_time_084, RR_fs_084] = GetRRIntervals(M084, -EMG_084, sec_signal_EEG_084, EEG_fs_084, 2.5, 2.5); %Acceptable but not great
 %[RR_569, RR_time_569, RR_fs_569] = GetRRIntervals(M569, EMG_569, sec_signal_EEG_569, EEG_fs_569, 2.5); 
 %[RR_578, RR_time_578, RR_fs_578] = GetRRIntervals(M578, -EMG_578, sec_signal_EEG_578, EEG_fs_578, 2.5);
-[RR_580, RR_time_580, RR_fs_580] = GetRRIntervals(M580, -EMG_580, sec_signal_EEG_580, EEG_fs_580, 2.3, 2.3); 
-[RR_588, RR_time_588, RR_fs_588] = GetRRIntervals(M588, -EMG_588, sec_signal_EEG_588, EEG_fs_588, 2.5, 2.5); %Best one!!!
+[RR_580, RR_time_580, RR_fs_580, Rpeaks_580, Rpeaks_time_580] = GetRRIntervals(M580, -EMG_580, sec_signal_EEG_580, EEG_fs_580, 2.3, 2.3); 
+[RR_588, RR_time_588, RR_fs_588, Rpeaks_588, Rpeaks_time_588] = GetRRIntervals(M588, -EMG_588, sec_signal_EEG_588, EEG_fs_588, 2.5, 2.5); %Best one!!!
 %[RR_592, RR_time_592, RR_fs_592] = GetRRIntervals(M592, -EMG_592, sec_signal_EEG_592, EEG_fs_592, 2.5, 2.5); 
 %[RR_600, RR_time_600, RR_fs_600] = GetRRIntervals(M600, -EMG_600, sec_signal_EEG_600, EEG_fs_600, 2.5, 2.5); 
 %[RR_602, RR_time_602, RR_fs_602] = GetRRIntervals(M602, -EMG_602, sec_signal_EEG_602, EEG_fs_602, 2.5, 2.5); 
-[RR_073, RR_time_073, RR_fs_073] = GetRRIntervals(M073, EMG_073, sec_signal_EEG_073, EEG_fs_073, 2.5, 2.5); 
+%[RR_073, RR_time_073, RR_fs_073] = GetRRIntervals(M073, EMG_073, sec_signal_EEG_073, EEG_fs_073, 2.5, 2.5); 
 
-%015, 084, 569, 578, 580, 588, 592, 600, 602
+%[RR_017, RR_time_017, RR_fs_017] = GetRRIntervals(M017, EMG_017, sec_signal_EEG_017, EEG_fs_017, 2.5, 2.5); 
+%[RR_019, RR_time_019, RR_fs_019] = GetRRIntervals(M019, EMG_019, sec_signal_EEG_019, EEG_fs_019, 2.5, 2.5); 
+%[RR_021, RR_time_021, RR_fs_021] = GetRRIntervals(M021, EMG_021, sec_signal_EEG_021, EEG_fs_021, 2.5, 2.5); 
+[RR_023, RR_time_023, RR_fs_023] = GetRRIntervals(M023, -EMG_023, sec_signal_EEG_023, EEG_fs_023, 3.5, 2.2); %Could be used but not great 
+[RR_025, RR_time_025, RR_fs_025, Rpeaks_025, Rpeaks_time_025] = GetRRIntervals(M025, EMG_025, sec_signal_EEG_025, EEG_fs_025, 2.3, 2.0); 
+[RR_026, RR_time_026, RR_fs_026, Rpeaks_026, Rpeaks_time_026] = GetRRIntervals(M026, EMG_026, sec_signal_EEG_026, EEG_fs_026, 3, 2); 
+%[RR_015, RR_time_015, RR_fs_015] = GetRRIntervals(M015, -EMG_015, sec_signal_EEG_015, EEG_fs_015, 1.1, 2.3); %This is Tessa's hist files
 
-%387, 392, 403, 412, 414, 416, 418, 486, 420
 
 %% Get HRB
 [HRB_124, HRB_time_124] = findHRB(RR_time_124, RR_124);
@@ -518,6 +498,9 @@ end
 [HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
 [HRB_580, HRB_time_580] = findHRB(RR_time_580, RR_580);
 [HRB_588, HRB_time_588] = findHRB(RR_time_588, RR_588);
+[HRB_026, HRB_time_026] = findHRB(RR_time_026, RR_026);
+%[HRB_015, HRB_time_015] = findHRB(RR_time_015, RR_015);
+[HRB_025, HRB_time_025] = findHRB(RR_time_025, RR_025);
 
 % sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
 % 
@@ -534,6 +517,9 @@ end
     sleepscore_time_420 = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
     sleepscore_time_580 = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
     sleepscore_time_588 = 0:length(wake_woMA_binary_vector_588)-1; % Assuming all vectors are the same length
+    sleepscore_time_026 = 0:length(wake_woMA_binary_vector_026)-1; % Assuming all vectors are the same length
+    sleepscore_time_015 = 0:length(wake_woMA_binary_vector_015)-1; % Assuming all vectors are the same length
+    sleepscore_time_025 = 0:length(wake_woMA_binary_vector_025)-1; % Assuming all vectors are the same length
 
     figure;
     a = subplot(3, 1, 1);
@@ -556,6 +542,7 @@ end
         title('HRV p-chip (M580)');
         grid on;
 
+
     c = subplot(3, 1, 3);
         plot_sleep(RR_time_588, RR_588, sleepscore_time_588, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
         hold on;
@@ -568,6 +555,116 @@ end
 
     % Linking axes for synchronized zooming
     linkaxes([a, b, c], 'x');
+
+% % Determine if sws_binary_vector_015 is a row or column vector and append zeros accordingly
+% if isrow(sws_binary_vector_015)
+%     sws_binary_vector_015 = [sws_binary_vector_015, zeros(1, 3)]; % Append zeros horizontally
+% else
+%     sws_binary_vector_015 = [sws_binary_vector_015; zeros(3, 1)]; % Append zeros vertically
+% end
+% 
+% % Determine if REM_binary_vector_015 is a row or column vector and append zeros accordingly
+% if isrow(REM_binary_vector_015)
+%     REM_binary_vector_015 = [REM_binary_vector_015, zeros(1, 3)]; % Append zeros horizontally
+% else
+%     REM_binary_vector_015 = [REM_binary_vector_015; zeros(3, 1)]; % Append zeros vertically
+% end
+%% QC - plot sleep w. NE, HR peak and HRB
+% Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
+for idx = 1:length(o)
+    mouse = o{idx};
+    disp(mouse{3})
+    uniqueId = mouse{3}; % Extract mouse ID as a string
+
+    % Dynamically generate variable names based on the mouse ID
+    wake_woMA_varName = sprintf('wake_woMA_binary_vector_%s', uniqueId);
+    sws_varName = sprintf('sws_binary_vector_%s', uniqueId);
+    REM_varName = sprintf('REM_binary_vector_%s', uniqueId);
+    MA_varName = sprintf('MA_binary_vector_%s', uniqueId);
+    ds_sec_signal_2_varName = sprintf('ds_sec_signal_2_%s', uniqueId);
+    ds_delta465_filt_2_varName = sprintf('ds_delta465_filt_2_%s_smooth', uniqueId);
+    sec_signal_EEG_varName = sprintf('sec_signal_EEG_%s', uniqueId);
+    EEG_varName = sprintf('EEG_%s', uniqueId);
+    EMG_varName = sprintf('EMG_%s', uniqueId);
+    RR_varName = sprintf('RR_%s', uniqueId);
+    RR_time_varName = sprintf('RR_time_%s', uniqueId);
+    Rpeaks_varName = sprintf('Rpeaks_%s', uniqueId);
+    Rpeaks_time_varName = sprintf('Rpeaks_time_%s', uniqueId);    
+    HRB_varName = sprintf('HRB_%s', uniqueId);
+    HRB_time_varName = sprintf('HRB_time_%s', uniqueId);
+    NREMexclMA_periods_pklocs_varName = sprintf('NREMexclMA_periods_pklocs_%s', uniqueId);
+    SWS_before_MA_pklocs_varName = sprintf('SWS_before_MA_pklocs_%s', uniqueId);
+    SWS_before_wake_pklocs_varName = sprintf('SWS_before_wake_pklocs_%s', uniqueId);
+    REM_before_MA_pklocs_varName = sprintf('REM_before_MA_pklocs_%s', uniqueId);
+    REM_before_wake_pklocs_varName = sprintf('REM_before_wake_pklocs_%s', uniqueId);
+    signal_fs_varName = sprintf('signal_fs_%s', uniqueId);
+
+    % Access the variables dynamically
+    wake_woMA_binary_vector = eval(wake_woMA_varName);
+    sws_binary_vector = eval(sws_varName);
+    REM_binary_vector = eval(REM_varName);
+    MA_binary_vector = eval(MA_varName);
+    ds_sec_signal_2 = eval(ds_sec_signal_2_varName);
+    ds_delta465_filt_2_smooth = eval(ds_delta465_filt_2_varName);
+    sec_signal_EEG = eval(sec_signal_EEG_varName);
+    EEG = eval(EEG_varName);
+    EMG = eval(EMG_varName);
+    RR = eval(RR_varName);
+    RR_time = eval(RR_time_varName);
+    Rpeaks = eval(Rpeaks_varName);
+    Rpeaks_time = eval(Rpeaks_time_varName);
+    HRB = eval(HRB_varName);
+    HRB_time = eval(HRB_time_varName);
+    NREMexclMA_periods_pklocs = eval(NREMexclMA_periods_pklocs_varName);
+    SWS_before_MA_pklocs = eval(SWS_before_MA_pklocs_varName);
+    SWS_before_wake_pklocs = eval(SWS_before_wake_pklocs_varName);
+    REM_before_MA_pklocs = eval(REM_before_MA_pklocs_varName);
+    REM_before_wake_pklocs = eval(REM_before_wake_pklocs_varName);
+    signal_fs = eval(signal_fs_varName);
+
+
+    sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
+    uniqueIdStr = string(uniqueId);
+
+    % Plot for the current mouse
+    figure;
+    sgtitle(sprintf('Mouse %s', uniqueId)); % Set the figure title with the mouse ID
+
+    a = subplot(3, 1, 1);
+        plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+        hold on
+        plot(NREMexclMA_periods_pklocs, ds_delta465_filt_2_smooth(round(NREMexclMA_periods_pklocs*signal_fs)), 'r*')
+        plot(SWS_before_MA_pklocs, ds_delta465_filt_2_smooth(round(SWS_before_MA_pklocs*signal_fs)), 'b*')
+        plot(SWS_before_wake_pklocs, ds_delta465_filt_2_smooth(round(SWS_before_wake_pklocs*signal_fs)), 'g*')
+        plot(REM_before_MA_pklocs, ds_delta465_filt_2_smooth(round(REM_before_MA_pklocs*signal_fs)), 'y*')
+        plot(REM_before_wake_pklocs, ds_delta465_filt_2_smooth(round(REM_before_wake_pklocs*signal_fs)), 'r*')
+        hold off
+        title('Norepinephrine');
+        xlabel('Time (s)');
+        ylabel('NE (df/f)');
+        grid on;
+
+    b = subplot(3, 1, 2);
+        plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_times, quality_selected_peaks, 'ro');    
+        xlabel('Time (s)');
+        ylabel('EMG (V)');
+        title('Original EMG Data w. peaks');
+        grid on;
+
+    c = subplot(3, 1, 3);
+        plot_sleep(RR_time, RR, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+        hold on;
+        scatter(HRB_time, HRB, 'bo'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip');
+        grid on;
+
+    % Linking axes for synchronized zooming
+    linkaxes([a, b, c], 'x');
+end
+
 %% Power analysis on EEG
 power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
 frw = 0:0.2:30;
@@ -575,6 +672,12 @@ window_in_sec = 1; % sec. 1 for 30 sec
 
 %[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
+[mean_spectrogram_420, time_spectrogram_zero_420, F_420, band_powers_420, EEG_bands_fs_420] = PowerAnalysisEEG(EEG_420, EEG_fs_420, frw, window_in_sec, power_bands);
+[mean_spectrogram_580, time_spectrogram_zero_580, F_580, band_powers_580, EEG_bands_fs_580] = PowerAnalysisEEG(EEG_580, EEG_fs_580, frw, window_in_sec, power_bands);
+[mean_spectrogram_588, time_spectrogram_zero_588, F_588, band_powers_588, EEG_bands_fs_588] = PowerAnalysisEEG(EEG_588, EEG_fs_588, frw, window_in_sec, power_bands);
+[mean_spectrogram_025, time_spectrogram_zero_025, F_025, band_powers_025, EEG_bands_fs_025] = PowerAnalysisEEG(EEG_025, EEG_fs_025, frw, window_in_sec, power_bands);
+[mean_spectrogram_026, time_spectrogram_zero_026, F_026, band_powers_026, EEG_bands_fs_026] = PowerAnalysisEEG(EEG_026, EEG_fs_026, frw, window_in_sec, power_bands);
+
 %% Find NE troughs in sleep transitions and NREM
 SWS_before_MA_pklocs_117 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, MA_periods_117, 15, 15, 1.2);
 NREMexclMA_periods_pklocs_117 = find_NE_troughs(NREMexclMA_periods_117, signal_fs_117, delta465_filt_2_117_smooth, sec_signal_2_117, 3); % Change SD multiplyer to 1 for more selective troughs
@@ -592,19 +695,31 @@ NREMexclMA_periods_pklocs_420 = find_NE_troughs(NREMexclMA_periods_420, signal_f
 SWS_before_MA_pklocs_420 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, MA_periods_420, 15, 15, 0.3);
 SWS_before_wake_pklocs_420 = findPeaksBeforeTransition(SWS_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0.1, mean(delta465_filt_2_420)-5, 15, 15);
 REM_before_MA_pklocs_420 = findPeaksBeforeTransition(REM_before_MA_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0, 0, 0, 0);
-REM_before_wake_pklocs_420 = findPeaksBeforeTransition(REM_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_124, 0, 0, 0, 0);
+REM_before_wake_pklocs_420 = findPeaksBeforeTransition(REM_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0, 0, 0, 0);
 
 NREMexclMA_periods_pklocs_580 = find_NE_troughs(NREMexclMA_periods_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0.7); % Lower value = more peaks
-SWS_before_MA_pklocs_580 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, MA_periods_580, 15, 15, 1.2);
+SWS_before_MA_pklocs_580 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, MA_periods_580, 15, 15, 0.3);
 SWS_before_wake_pklocs_580 = findPeaksBeforeTransition(SWS_before_wake_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0.1, mean(delta465_filt_2_580)-5, 15, 15);
 REM_before_MA_pklocs_580 = findPeaksBeforeTransition(REM_before_MA_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0, 0, 0, 0);
-REM_before_wake_pklocs_580 = findPeaksBeforeTransition(REM_before_wake_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_124, 0, 0, 0, 0);
+REM_before_wake_pklocs_580 = findPeaksBeforeTransition(REM_before_wake_filtered_580, signal_fs_580, delta465_filt_2_580_smooth, sec_signal_2_580, 0, 0, 0, 0);
 
 NREMexclMA_periods_pklocs_588 = find_NE_troughs(NREMexclMA_periods_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0.7); % Lower value = more peaks
-SWS_before_MA_pklocs_588 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, MA_periods_588, 15, 15, 1.2);
+SWS_before_MA_pklocs_588 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, MA_periods_588, 15, 15, 0.3);
 SWS_before_wake_pklocs_588 = findPeaksBeforeTransition(SWS_before_wake_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0.1, mean(delta465_filt_2_588)-5, 15, 15);
 REM_before_MA_pklocs_588 = findPeaksBeforeTransition(REM_before_MA_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0, 0, 0, 0);
-REM_before_wake_pklocs_588 = findPeaksBeforeTransition(REM_before_wake_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_124, 0, 0, 0, 0);
+REM_before_wake_pklocs_588 = findPeaksBeforeTransition(REM_before_wake_filtered_588, signal_fs_588, delta465_filt_2_588_smooth, sec_signal_2_588, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_025 = find_NE_troughs(NREMexclMA_periods_025, signal_fs_025, delta465_filt_2_025_smooth, sec_signal_2_025, 1.2); % Lower value = more peaks
+SWS_before_MA_pklocs_025 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_025, signal_fs_025, delta465_filt_2_025_smooth, sec_signal_2_025, MA_periods_025, 15, 15, 0.3);
+SWS_before_wake_pklocs_025 = findPeaksBeforeTransition(SWS_before_wake_filtered_025, signal_fs_025, delta465_filt_2_025_smooth, sec_signal_2_025, 0.1, mean(delta465_filt_2_025)-5, 15, 15);
+REM_before_MA_pklocs_025 = findPeaksBeforeTransition(REM_before_MA_filtered_025, signal_fs_025, delta465_filt_2_025_smooth, sec_signal_2_025, 0, 0, 0, 0);
+REM_before_wake_pklocs_025 = findPeaksBeforeTransition(REM_before_wake_filtered_025, signal_fs_025, delta465_filt_2_025_smooth, sec_signal_2_025, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_026 = find_NE_troughs(NREMexclMA_periods_026, signal_fs_026, delta465_filt_2_026_smooth, sec_signal_2_026, 0.7); % Lower value = more peaks
+SWS_before_MA_pklocs_026 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_026, signal_fs_026, delta465_filt_2_026_smooth, sec_signal_2_026, MA_periods_026, 15, 15, 0.3);
+SWS_before_wake_pklocs_026 = findPeaksBeforeTransition(SWS_before_wake_filtered_026, signal_fs_026, delta465_filt_2_026_smooth, sec_signal_2_026, 0.1, mean(delta465_filt_2_026)-5, 15, 15);
+REM_before_MA_pklocs_026 = findPeaksBeforeTransition(REM_before_MA_filtered_026, signal_fs_026, delta465_filt_2_026_smooth, sec_signal_2_026, 0, 0, 0, 0);
+REM_before_wake_pklocs_026 = findPeaksBeforeTransition(REM_before_wake_filtered_026, signal_fs_026, delta465_filt_2_026_smooth, sec_signal_2_026, 0, 0, 0, 0);
 
 % Logical condition for values not in the ranges 18950 to 19000 and 5400 to 5450
 not_in_range_124 = ~(REM_before_wake_pklocs_124 > 18950 & REM_before_wake_pklocs_124 < 19000) & ~(REM_before_wake_pklocs_124 > 5400 & REM_before_wake_pklocs_124 < 5450);
@@ -613,20 +728,75 @@ REM_before_wake_pklocs_124 = REM_before_wake_pklocs_124(not_in_range_124);
 not_in_range_588_NREMexclMA = ~(NREMexclMA_periods_pklocs_588 > 4400 & NREMexclMA_periods_pklocs_588 < 4450) & ~(NREMexclMA_periods_pklocs_588 > 7325 & NREMexclMA_periods_pklocs_588 < 7350)& ~(NREMexclMA_periods_pklocs_588 > 9705 & NREMexclMA_periods_pklocs_588 < 9710) & ~(NREMexclMA_periods_pklocs_588 > 10060 & NREMexclMA_periods_pklocs_588 < 10065) & ~(NREMexclMA_periods_pklocs_588 > 12035 & NREMexclMA_periods_pklocs_588 < 12045);
 NREMexclMA_periods_pklocs_588 = NREMexclMA_periods_pklocs_588(not_in_range_588_NREMexclMA);
 
-not_in_range_420_sws_to_MA =~(SWS_before_MA_pklocs_420 > 5780 & SWS_before_MA_pklocs_420 < 5790) &  ~(SWS_before_MA_pklocs_420 > 4980 & SWS_before_MA_pklocs_420 < 5100) &  ~(SWS_before_MA_pklocs_420 > 7090 & SWS_before_MA_pklocs_420 < 7100);
+not_in_range_420_sws_to_MA =~(SWS_before_MA_pklocs_420 > 5780 & SWS_before_MA_pklocs_420 < 5790) &  ~(SWS_before_MA_pklocs_420 > 4980 & SWS_before_MA_pklocs_420 < 5100) &  ~(SWS_before_MA_pklocs_420 > 7090 & SWS_before_MA_pklocs_420 < 7100)&  ~(SWS_before_MA_pklocs_420 > 3590 & SWS_before_MA_pklocs_420 < 3600);
 SWS_before_MA_pklocs_420 = SWS_before_MA_pklocs_420(not_in_range_420_sws_to_MA);
+
+not_in_range_588_sws_to_MA =~(SWS_before_MA_pklocs_588 > 4750 & SWS_before_MA_pklocs_588 < 4800) &  ~(SWS_before_MA_pklocs_588 > 9000 & SWS_before_MA_pklocs_588 < 9050);
+SWS_before_MA_pklocs_588 = SWS_before_MA_pklocs_588(not_in_range_588_sws_to_MA);
+
+not_in_range_588_REM_to_MA =~(REM_before_MA_pklocs_588 > 9300 & REM_before_MA_pklocs_588 < 9350);
+REM_before_MA_pklocs_588 = REM_before_MA_pklocs_588(not_in_range_588_REM_to_MA);
+
+not_in_range_580_sws_to_MA =~(SWS_before_MA_pklocs_580 > 8210 & SWS_before_MA_pklocs_580 < 8220);
+SWS_before_MA_pklocs_580 = SWS_before_MA_pklocs_580(not_in_range_580_sws_to_MA);
+
+not_in_range_025_NREMexclMA = ~(NREMexclMA_periods_pklocs_025 > 4615 & NREMexclMA_periods_pklocs_025 < 4620) & ~(NREMexclMA_periods_pklocs_025 > 5960 & NREMexclMA_periods_pklocs_025 < 5965)& ~(NREMexclMA_periods_pklocs_025 > 10900 & NREMexclMA_periods_pklocs_025 < 10905);
+NREMexclMA_periods_pklocs_025 = NREMexclMA_periods_pklocs_025(not_in_range_025_NREMexclMA);
+
+not_in_range_025_sws_to_MA =~(SWS_before_MA_pklocs_025 > 1000 & SWS_before_MA_pklocs_025 < 1600) &  ~(SWS_before_MA_pklocs_025 > 2210 & SWS_before_MA_pklocs_025 < 2220)&  ~(SWS_before_MA_pklocs_025 > 7200 & SWS_before_MA_pklocs_025 < 7310)&  ~(SWS_before_MA_pklocs_025 > 8100 & SWS_before_MA_pklocs_025 < 8200)&  ~(SWS_before_MA_pklocs_025 > 8900 & SWS_before_MA_pklocs_025 < 10000)&  ~(SWS_before_MA_pklocs_025 > 10350 & SWS_before_MA_pklocs_025 < 10400)&  ~(SWS_before_MA_pklocs_025 > 11975 & SWS_before_MA_pklocs_025 < 11985)&  ~(SWS_before_MA_pklocs_025 > 15540 & SWS_before_MA_pklocs_025 < 15550)&  ~(SWS_before_MA_pklocs_025 > 16381 & SWS_before_MA_pklocs_025 < 16386)&  ~(SWS_before_MA_pklocs_025 > 17540 & SWS_before_MA_pklocs_025 < 17860);
+SWS_before_MA_pklocs_025 = SWS_before_MA_pklocs_025(not_in_range_025_sws_to_MA);
+
+not_in_range_025_sws_to_wake = ~(SWS_before_wake_pklocs_025 > 900 & SWS_before_wake_pklocs_025 < 1400) & ~(SWS_before_wake_pklocs_025 > 14800 & SWS_before_wake_pklocs_025 < 14850);
+SWS_before_wake_pklocs_025 = SWS_before_wake_pklocs_025(not_in_range_025_sws_to_wake);
+
+not_in_range_025_REM_to_MA = ~(REM_before_MA_pklocs_025 > 9700 & REM_before_MA_pklocs_025 < 9750);
+REM_before_MA_pklocs_025 = REM_before_MA_pklocs_025(not_in_range_025_REM_to_MA);
+
+not_in_range_025 = ~(REM_before_wake_pklocs_025 > 2000 & REM_before_wake_pklocs_025 < 2100);
+REM_before_wake_pklocs_025 = REM_before_wake_pklocs_025(not_in_range_025);
+
+not_in_range_026_NREMexclMA = ~(NREMexclMA_periods_pklocs_026 > 7180 & NREMexclMA_periods_pklocs_026 < 7200) & ~(NREMexclMA_periods_pklocs_026 > 7815 & NREMexclMA_periods_pklocs_026 < 7825)& ~(NREMexclMA_periods_pklocs_026 > 9215 & NREMexclMA_periods_pklocs_026 < 9225) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 11605 & NREMexclMA_periods_pklocs_026 < 11615) & ~(NREMexclMA_periods_pklocs_026 > 12040 & NREMexclMA_periods_pklocs_026 < 12046)  & ~(NREMexclMA_periods_pklocs_026 > 13120 & NREMexclMA_periods_pklocs_026 < 13320);
+NREMexclMA_periods_pklocs_026 = NREMexclMA_periods_pklocs_026(not_in_range_026_NREMexclMA);
+
+not_in_range_026_sws_to_MA =~(SWS_before_MA_pklocs_026 > 1000 & SWS_before_MA_pklocs_026 < 1750) &  ~(SWS_before_MA_pklocs_026 > 1800 & SWS_before_MA_pklocs_026 < 2950)&  ~(SWS_before_MA_pklocs_026 > 3050 & SWS_before_MA_pklocs_026 < 3300)&  ~(SWS_before_MA_pklocs_026 > 3800 & SWS_before_MA_pklocs_026 < 3900)&  ~(SWS_before_MA_pklocs_026 > 4500 & SWS_before_MA_pklocs_026 < 4700)&  ~(SWS_before_MA_pklocs_026 > 5300 & SWS_before_MA_pklocs_026 < 5700)&  ~(SWS_before_MA_pklocs_026 > 6100 & SWS_before_MA_pklocs_026 < 6200)&  ~(SWS_before_MA_pklocs_026 > 6500 & SWS_before_MA_pklocs_026 < 6900)&  ~(SWS_before_MA_pklocs_026 > 7200 & SWS_before_MA_pklocs_026 < 7900)&  ~(SWS_before_MA_pklocs_026 > 7950 & SWS_before_MA_pklocs_026 < 8050)&  ~(SWS_before_MA_pklocs_026 > 8300 & SWS_before_MA_pklocs_026 < 8400)&  ~(SWS_before_MA_pklocs_026 > 9300 & SWS_before_MA_pklocs_026 < 9350)&  ~(SWS_before_MA_pklocs_026 > 9650 & SWS_before_MA_pklocs_026 < 9700)&  ~(SWS_before_MA_pklocs_026 > 9900 & SWS_before_MA_pklocs_026 < 9950)&  ~(SWS_before_MA_pklocs_026 > 10250 & SWS_before_MA_pklocs_026 < 10300)&  ~(SWS_before_MA_pklocs_026 > 10500 & SWS_before_MA_pklocs_026 < 10600)&  ~(SWS_before_MA_pklocs_026 > 11550 & SWS_before_MA_pklocs_026 < 12450)&  ~(SWS_before_MA_pklocs_026 > 13050 & SWS_before_MA_pklocs_026 < 13250)&  ~(SWS_before_MA_pklocs_026 > 13500 & SWS_before_MA_pklocs_026 < 13600);
+SWS_before_MA_pklocs_026 = SWS_before_MA_pklocs_026(not_in_range_026_sws_to_MA);
+
+not_in_range_026_sws_to_wake = ~(SWS_before_wake_pklocs_026 > 1300 & SWS_before_wake_pklocs_026 < 2600) & ~(SWS_before_wake_pklocs_026 > 3600 & SWS_before_wake_pklocs_026 < 7000) & ~(SWS_before_wake_pklocs_026 > 8200 & SWS_before_wake_pklocs_026 < 12600);
+SWS_before_wake_pklocs_026 = SWS_before_wake_pklocs_026(not_in_range_026_sws_to_wake);
+
+not_in_range_026_REM_to_MA = ~(REM_before_MA_pklocs_026 > 9700 & REM_before_MA_pklocs_026 < 10000);
+REM_before_MA_pklocs_026 = REM_before_MA_pklocs_026(not_in_range_026_REM_to_MA);
+
+not_in_range_026 = ~(REM_before_wake_pklocs_026 > 4000 & REM_before_wake_pklocs_026 < 5200) & ~(REM_before_wake_pklocs_026 > 7600 & REM_before_wake_pklocs_026 < 7700);
+REM_before_wake_pklocs_026 = REM_before_wake_pklocs_026(not_in_range_026);
 
 % Apply logical indexing to keep only values not in the specified ranges
 SWS_before_MA_pklocs_124 = SWS_before_MA_pklocs_124';
 NREMexclMA_periods_pklocs_124 = NREMexclMA_periods_pklocs_124';
 
 %% visualize calculated troughs
+    sleepscore_time = 0:length(wake_woMA_binary_vector_025)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_025, ds_delta465_filt_2_025_smooth, sleepscore_time, wake_woMA_binary_vector_025, sws_binary_vector_025, REM_binary_vector_025, MA_binary_vector_025);
+hold on
+plot(NREMexclMA_periods_pklocs_025, delta465_filt_2_025_smooth(round(NREMexclMA_periods_pklocs_025*signal_fs)), 'r*')
+title('NE with selected peaks');
+
+    sleepscore_time = 0:length(wake_woMA_binary_vector_026)-1; % Assuming all vectors are the same length
+
+figure
+plot_sleep(ds_sec_signal_2_026, ds_delta465_filt_2_026_smooth, sleepscore_time, wake_woMA_binary_vector_026, sws_binary_vector_026, REM_binary_vector_026, MA_binary_vector_026);
+hold on
+plot(REM_before_wake_pklocs_026, delta465_filt_2_026_smooth(round(REM_before_wake_pklocs_026*signal_fs)), 'r*')
+title('NE with selected peaks');
+
     sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
 
 figure
 plot_sleep(ds_sec_signal_2_420, ds_delta465_filt_2_420_smooth, sleepscore_time, wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420);
 hold on
-plot(SWS_before_MA_pklocs_420, delta465_filt_2_420_smooth(round(SWS_before_MA_pklocs_420*signal_fs)), 'r*')
+plot(REM_before_wake_pklocs_420, delta465_filt_2_420_smooth(round(REM_before_wake_pklocs_420*signal_fs)), 'r*')
 title('NE with selected peaks');
 
     sleepscore_time = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
@@ -634,7 +804,7 @@ title('NE with selected peaks');
 figure
 plot_sleep(ds_sec_signal_2_580, ds_delta465_filt_2_580_smooth, sleepscore_time, wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580);
 hold on
-plot(NREMexclMA_periods_pklocs_580, delta465_filt_2_580_smooth(round(NREMexclMA_periods_pklocs_580*signal_fs)), 'r*')
+plot(REM_before_wake_pklocs_580, delta465_filt_2_580_smooth(round(REM_before_wake_pklocs_580*signal_fs)), 'r*')
 title('NE with selected peaks');
 
     sleepscore_time = 0:length(wake_woMA_binary_vector_588)-1; % Assuming all vectors are the same length
@@ -642,7 +812,7 @@ title('NE with selected peaks');
 figure
 plot_sleep(ds_sec_signal_2_588, ds_delta465_filt_2_588_smooth, sleepscore_time, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
 hold on
-plot(NREMexclMA_periods_pklocs_588, delta465_filt_2_588_smooth(round(NREMexclMA_periods_pklocs_588*signal_fs)), 'r*')
+plot(REM_before_MA_pklocs_588, delta465_filt_2_588_smooth(round(REM_before_MA_pklocs_588*signal_fs)), 'r*')
 title('NE with selected peaks');
 
 %%% for next animal
@@ -856,11 +1026,11 @@ hold off;
 
 %% Generate the main plot
 
-event_var = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124};
+event_var = {NREMexclMA_periods_pklocs_420, SWS_before_MA_pklocs_420, SWS_before_wake_pklocs_420, REM_before_wake_pklocs_420};
 titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake/MA Transition'};
-main_title = 'Averaged Activity During NE Trough (M124)';
+main_title = 'Averaged Activity During NE Trough (M420)';
 
-MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, resampled_RR_pchip_124, new_time_vector_124, new_fs_RR_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
+MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_420_smooth, sec_signal_2_420, signal_fs_420, RR_420, RR_420, RR_fs_420,  mean_spectrogram_420, F_420, EEG_bands_fs_420)
 
 %% Generate the main plot for HRB associated NE vs HRB not associated NE vs HRB not associated with NE
 
@@ -1836,5 +2006,411 @@ plotNREMDataWithShading_30min(percent_NREM_30min, 'Mean NREM Bout Duration per H
 plotIndividualAnimalData(percent_NREM_30min, 'Percent NREM per Hour', 'PercentNREMinclMA', '% NREM', true, false);
 plotIndividualAnimalData(percent_NREM_30min, 'NREM Bout Count per Hour', 'NREM_bout_n', 'Bout Count', false, false);
 plotIndividualAnimalData(percent_NREM_30min, 'NREM Bout Duration per Hour', 'NREM_bout_duration', 'Mean Bout Duration (sec)', false, false);
+%% New Main Plot with all data
+
+
+event_var_blank = {'NREMexclMA_periods_pklocs', 'SWS_before_MA_pklocs', 'SWS_before_wake_pklocs', 'REM_before_MA_pklocs', 'REM_before_wake_pklocs'};
+var_lenght = length(event_var_blank)*length(o);
+
+epoc_start = 30;
+epoc_end = 60;
+
+iteration_counter = 0;
+
+% Initialize collector arrays
+NE_peak_all = cell(var_lenght, 2);
+RR_all = cell(var_lenght, 2);
+SO_all = cell(var_lenght, 2);
+Delta_all = cell(var_lenght, 2);
+Theta_all = cell(var_lenght, 2);
+Sigma_all = cell(var_lenght, 2);
+Beta_all = cell(var_lenght, 2);
+
+% Initialize mean collector arrays
+NE_peak_mean_all = cell(var_lenght, 2);
+RR_mean_all = cell(var_lenght, 2);
+SO_mean_all = cell(var_lenght, 2);
+Delta_mean_all = cell(var_lenght, 2);
+Theta_mean_all = cell(var_lenght, 2);
+Sigma_mean_all = cell(var_lenght, 2);
+Beta_mean_all = cell(var_lenght, 2);
+
+for idx = 1:length(o)
+    mouse = o{idx};
+    % Since mouse{3} contains the ID for all mice, directly use it to create the mouseID
+    mouseID = mouse{3}; % Extract the unique ID from the third index
+    disp(['Processing mouse ID: ', mouseID]);
+    ID = sprintf('M%s', mouseID);
+
+        % Create a new cell array for storing the renamed variables
+    event_var = cell(size(event_var_blank));
+    for i = 1:length(event_var_blank)
+        event_var{i} = sprintf('%s_%s', event_var_blank{i}, mouseID);
+    end
+
+    % Format the variable names for EEG and other signals
+    sec_signal_2 = sprintf('sec_signal_2_%s', mouseID);
+    NE_fs = sprintf('signal_fs_%s', mouseID);
+    delta465_filt_2 = sprintf('delta465_filt_2_%s', mouseID);
+    RR = sprintf('RR_%s', mouseID);
+    RR_time = sprintf('RR_time_%s', mouseID);
+    RR_fs = sprintf('RR_fs_%s', mouseID);
+    mean_spectrogram = sprintf('mean_spectrogram_%s', mouseID);
+    F = sprintf('F_%s', mouseID);
+    EEG_bands_fs = sprintf('EEG_bands_fs_%s', mouseID);
+
+        % Access the variables dynamically
+    sec_signal_2 = eval(sec_signal_2);
+    NE_fs = eval(NE_fs);
+    delta465_filt_2 = eval(delta465_filt_2);
+    RR = eval(RR);
+    RR_time = eval(RR_time);
+    RR_fs = eval(RR_fs);
+    mean_spectrogram = eval(mean_spectrogram);
+    F = eval(F);
+    EEG_bands_fs = eval(EEG_bands_fs);
+  
+   % mid_point = ceil(epoc_start * RR_fs);  % This should be the index of the event time
+    %max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+    %total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+    power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
+    
+    %Add in the time variable for plotting
+   % epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
+   % epoc_FPtime_EEG_bands = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * EEG_bands_fs));
+   % epoc_FPtime_RR = linspace(-epoc_start, epoc_end, max_epoch_length);
+    
+        % Initialize variables to store maximum and minimum values for each type of subplot
+
+    % Iterate over each sleep stage and its NE trough variables
+    for stage_idx = 1:length(event_var)
+        event_type = event_var{stage_idx}; % Select the current event type
+        num_events = length(event_type); % Number of events for the current sleep stage
+        iteration_counter = iteration_counter + 1;  % Increment the counter each time the loop runs
+
+
+        % Resetting collectors for each sleep stage
+        NE_peak_epoc_collector = [];
+        RR_collector = [];
+        SO_collector = [];
+        Delta_collector = [];
+        Theta_collector = [];
+        Sigma_collector = [];
+        Beta_collector = [];
+
+            % Extract power for specified bands
+        band_powers = cell(1, length(power_bands));
+        for b = 1:length(power_bands)
+            freq_range = power_bands{b};
+            band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
+        end
+
+        % Extract NE and EEG band epochs for the current sleep stage
+        for i = 1:length(event_type)
+            NEpk_i = event_type(i);
+            if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
+                continue;
+            end
+
+            % Extract NE epochs
+            NEpk_epoc_i = delta465_filt_2((NEpk_i - epoc_start) * NE_fs : (NEpk_i + epoc_end) * NE_fs);
+            NE_peak_epoc_collector = [NE_peak_epoc_collector; NEpk_epoc_i];
+
+            HRB_i = event_type(i);
+            if HRB_i < RR_time(1) + epoc_start || HRB_i > RR_time(end) - epoc_end
+                disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
+                continue;  % Skip this event
+            end
+
+            [~, event_idx] = min(abs(RR_time - HRB_i));  % Find the event index in filtered_RR_time
+
+            epoch_start_idx = max(event_idx - mid_point + 1, 1);
+            epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
+
+            if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
+                RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
+            end
+
+
+            % Extract epochs for EEG bands
+            for b = 1:length(band_powers)
+                EEG_band_epoc_i = band_powers{b}(:, (NEpk_i - epoc_start)*EEG_bands_fs:(NEpk_i + epoc_end)*EEG_bands_fs);
+            switch b
+                case 1
+                    SO_collector = [SO_collector; EEG_band_epoc_i];
+                case 2
+                    Delta_collector = [Delta_collector; EEG_band_epoc_i];
+                case 3
+                    Theta_collector = [Theta_collector; EEG_band_epoc_i];
+                case 4
+                    Sigma_collector = [Sigma_collector; EEG_band_epoc_i];
+                case 5
+                    Beta_collector = [Beta_collector; EEG_band_epoc_i];
+                end
+            end
+        end      
+        % Append the collected data to the corresponding all array
+        NE_peak_all{iteration_counter, 1} = event_var{stage_idx};
+        NE_peak_all{iteration_counter, 2} = NE_peak_epoc_collector;
+        RR_all{iteration_counter, 1} = event_var{stage_idx};
+        RR_all{iteration_counter, 2} = RR_collector;
+        SO_all{iteration_counter, 1} = event_var{stage_idx};
+        SO_all{iteration_counter, 2} = SO_collector;
+        Delta_all{iteration_counter, 1} = event_var{stage_idx};
+        Delta_all{iteration_counter, 2} = Delta_collector;
+        Theta_all{iteration_counter, 1} = event_var{stage_idx};
+        Theta_all{iteration_counter, 2} = Theta_collector;
+        Sigma_all{iteration_counter, 1} = event_var{stage_idx};
+        Sigma_all{iteration_counter, 2} = Sigma_collector;
+        Beta_all{iteration_counter, 1} = event_var{stage_idx};
+        Beta_all{iteration_counter, 2} = Beta_collector;
+
+                
+        % Calculate means and append
+        NE_peak_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        NE_peak_mean_all{iteration_counter, 2} = [nanmean(NE_peak_epoc_collector, 1)];
+        RR_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        RR_mean_all{iteration_counter, 2} = [nanmean(RR_collector, 2)];
+        SO_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        SO_mean_all{iteration_counter, 2} = [nanmean(SO_collector, 1)];
+        Delta_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        Delta_mean_all{iteration_counter, 2} = [nanmean(Delta_collector, 1)];
+        Theta_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        Theta_mean_all{iteration_counter, 2} = [nanmean(Theta_collector, 1)];
+        Sigma_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        Sigma_mean_all{iteration_counter, 2} = [nanmean(Sigma_collector, 1)];
+        Beta_mean_all{iteration_counter, 1} = event_var{stage_idx};
+        Beta_mean_all{iteration_counter, 2} = [nanmean(Beta_collector, 1)];
+    end
+end
+%% 
+warning('off','all')
+warning
+% Define the list of all event types for ease of access
+event_types = {'NE_peak', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta'};
+
+summary_stats = struct();
+
+% Process each event type
+for k = 1:length(event_types)
+    event_key = event_types{k};
+    mean_all = eval([event_key '_mean_all']);  % dynamically access the mean_all arrays
+
+    % Step 1: Modify the first column to remove the last four characters
+    for i = 1:size(mean_all, 1)
+        if length(mean_all{i, 1}) > 4
+            mean_all{i, 1} = mean_all{i, 1}(1:end-4);
+        end
+    end
+
+    % Step 2: Aggregate data by the modified first column entries
+    unique_events = unique(mean_all(:, 1));  % find unique event types
+
+    % Calculate mean and SE for each unique event
+    for j = 1:length(unique_events)
+        event_name = unique_events{j};
+        idx = strcmp(mean_all(:, 1), event_name);  % find all rows with this event
+        data_list = mean_all(idx, 2);  % fetch the data for these indices
+
+        % Special handling for 'RR' data if it's transposed
+        if strcmp(event_key, 'RR')
+            for row = 1:length(data_list)
+                data_list{row, 1} = data_list{row, 1}';
+            end
+        end
+        data_matrix = vertcat(data_list{:});  % concatenate all data arrays vertically
+        
+
+        % Check for consistent lengths
+        row_lengths = cellfun(@(x) length(x), data_list);
+        if ~all(row_lengths == row_lengths(1))
+            error('Mismatch in data dimensions, expected all rows to be the same length for event %s', event_name);
+        end
+
+        % Calculate the mean and SE across each time point (column-wise)
+        mean_values = nanmean(data_matrix, 1);  % Row vector of means at each time point
+        se_values = nanstd(data_matrix, 0, 1) / sqrt(size(data_matrix, 1));  % SE at each time point
+
+        % Store in a structured way
+        summary_stats.(event_name).(event_key).mean = mean_values;
+        summary_stats.(event_name).(event_key).SE = se_values;
+    end
+end
+
+% Now, summary_stats contains the mean and SE for each event type for each data category
+% Each .mean and .SE fields will contain an array corresponding to each time point of the respective event length
+%% 
+% Event groups and custom legends
+first_group = {'NREMexclMA_periods_pklocs', 'SWS_before_MA_pklocs', 'SWS_before_wake_pklocs'};
+first_group_legends = {'NREM', 'NREM to MA', 'NREM to Wake'};
+second_group = {'REM_before_MA_pklocs', 'REM_before_wake_pklocs'};
+second_group_legends = {'REM to MA', 'REM to Wake'};
+
+% Custom colors for each group
+first_group_colors = [0.3010 0.7450 0.9330; 0 0.4470 0.7410; 0 0 0.5]; % Light blue, blue, dark blue
+second_group_colors = [0.4660 0.6740 0.1880; 0 0.5 0]; % Light green, green
+
+% Preparing the time axes based on sampling frequency
+time_axes = struct();
+time_axes.NE_peak = linspace(-30, 60, 91553); % Length for NE_peak
+time_axes.RR = linspace(-30, 60, 5760);       % Length for RR
+time_axes.SO = linspace(-30, 60, 180);        % Length for SO and Delta
+
+% Define subplots based on data types and their frequencies
+data_types = {'NE_peak', 'RR', 'SO', 'Delta'};
+
+for i = 1:2  % There are two rows
+    for j = 1:3  % There are three columns
+        index = (i - 1) * 3 + j;  % Calculate the subplot index
+        subplot(2, 3, index);
+        hold on;
+
+        % Determine the correct event group based on row index
+        if i == 1
+            group = first_group;
+            legends = first_group_legends;
+            group_colors = first_group_colors;
+        else
+            group = second_group;
+            legends = second_group_legends;
+            group_colors = second_group_colors;
+        end
+
+        % Determine the data type based on column index
+        data_type = data_types{j};
+
+        % Fetch the correct time axis
+        time_points = time_axes.(data_type);
+
+        % Plot data for each event type within the group
+        for k = 1:length(group)
+            event_stats = summary_stats.(group{k}).(data_type);
+            lineProps = {'Color', group_colors(k,:), 'LineWidth', 2};
+            shadedErrorBar(time_points, event_stats.mean, event_stats.SE, lineProps, 1);
+        end
+
+        % Correctly assigning title based on group using MATLAB's if-else structure
+        if i == 1
+            group_title = 'NREM';
+        else
+            group_title = 'REM';
+        end
+
+        % Formatting the plot
+        if strcmp(data_type, 'NE_peak')
+            title(['NE - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('df/f');
+                    % Formatting the plot
+        elseif strcmp(data_type, 'RR')
+            title(['RR - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('RR Interval (s)');
+        elseif strcmp(data_type, 'SO')
+            title(['Slow Oscillations - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('mV');
+        elseif strcmp(data_type, 'Delta')
+            title(['Delta Oscillations - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('mV');
+        else
+        title([data_type ' - ' group_title]);
+        ylabel([data_type ' Measurements']);
+        end
+        xlabel('Time (s)');
+        legend(legends, 'Location', 'NorthEast');  % Adjusted legend position to 'NorthEast'
+        grid on;
+    end
+end
+
+% Enhance figure appearance
+set(gcf, 'Color', 'w'); % Set figure background to white
+sgtitle('Event Type Analysis Across Stages'); % Super title for the figure
+
+
+%% 
+% Event groups and custom legends
+first_group = {'NREMexclMA_periods_pklocs', 'SWS_before_MA_pklocs', 'SWS_before_wake_pklocs'};
+first_group_legends = {'NREM', 'NREM to MA', 'NREM to Wake'};
+second_group = {'REM_before_MA_pklocs', 'REM_before_wake_pklocs'};
+second_group_legends = {'REM to MA', 'REM to Wake'};
+
+% Custom colors for each group
+first_group_colors = [0.3010 0.7450 0.9330; 0 0.4470 0.7410; 0 0 0.5]; % Light blue, blue, dark blue
+second_group_colors = [0.4660 0.6740 0.1880; 0 0.5 0]; % Light green, green
+
+% Preparing the time axes based on sampling frequency
+time_axes = struct();
+time_axes.NE_peak = linspace(-30, 60, 91553); % Length for NE_peak
+time_axes.RR = linspace(-30, 60, 5760);       % Length for RR
+time_axes.SO = linspace(-30, 60, 180);        % Length for SO and Delta
+
+% Define subplots based on data types and their frequencies
+data_types = {'NE_peak', 'RR', 'SO', 'Delta'};
+for i = 1:2  % There are two rows
+    for j = 1:3  % There are three columns
+        subplot(2, 3, (i - 1) * 3 + j);
+        hold on;
+
+        % Determine the correct event group based on row index using MATLAB if-else
+        if i == 1
+            group = first_group;
+            group_colors = first_group_colors;
+            legends = first_group_legends;
+        else
+            group = second_group;
+            group_colors = second_group_colors;
+            legends = second_group_legends;
+        end
+
+        % Determine the data type based on column index
+        data_type = data_types{j};
+
+        % Fetch the correct time axis
+        time_points = time_axes.(data_type);
+
+        % Plot data for each event type within the group
+        handles = [];  % Initialize handles array for legend entries
+        for k = 1:length(group)
+            event_stats = summary_stats.(group{k}).(data_type);
+            lineProps = {'Color', group_colors(k,:), 'LineWidth', 2};
+            H = shadedErrorBar(time_points, event_stats.mean, event_stats.SE, lineProps, 1);
+            handles(k) = H.mainLine;  % Store the main line handle for the legend
+        end
+
+        % Formatting the plot
+        if strcmp(data_type, 'NE_peak')
+            title(['NE - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('df/f');
+                    % Formatting the plot
+        elseif strcmp(data_type, 'RR')
+            title(['RR - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('RR Interval (s)');
+        elseif strcmp(data_type, 'SO')
+            title(['Slow Oscillations - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('mV');
+        elseif strcmp(data_type, 'Delta')
+            title(['Delta Oscillations - ' group_title]);  % Simplified title for 'NE_peak'
+            ylabel('mV');
+        else
+        title([data_type ' - ' group_title]);
+        ylabel([data_type ' Measurements']);
+        end
+        xlabel('Time (s)');
+        legend(legends, 'Location', 'NorthEast');  % Adjusted legend position to 'NorthEast'
+        grid on;
+    end
+end
+
+% Enhance figure appearance
+set(gcf, 'Color', 'w'); % Set figure background to white
+sgtitle('Event Type Analysis Across Stages'); % Super title for the figure
+
+
+
+
+
+
+
+
+
+
 
 

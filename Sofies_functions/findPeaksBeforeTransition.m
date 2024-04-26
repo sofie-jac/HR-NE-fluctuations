@@ -3,6 +3,7 @@ function pklocs_all = findPeaksBeforeTransition(SWS_before_MA_filtered, signal_f
 
    % Initialize variables for storing results
     pklocs_all = []; % Stores all the peak (trough) locations
+    pklocs_time = [];
     last_period_onset = -Inf; % Initialize with a value that will not affect the first comparison
     temp_pklocs_all = []; % Temporary storage for peak locations before final filtering
     

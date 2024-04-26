@@ -1,4 +1,4 @@
-function [resampled_RR_pchip, new_time_vector, new_fs] = GetRRIntervals(mouse, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
+function [resampled_RR_pchip, new_time_vector, new_fs, quality_selected_peaks, quality_selected_peak_times] = GetRRIntervals(mouse, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
 % Determine HR and movement peaks - current version
 
 % Initialize selected peaks storage

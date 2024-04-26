@@ -580,8 +580,17 @@ linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
 %% 
 save('EMG_124.mat', 'EMG_124');
 save('EMG_117.mat', 'EMG_117');
-save('EMG_387.mat', 'EMG_387');
+save('EGG_588.mat', 'EEG_588');
+save('EMG_600.mat', 'EMG_600');
+save('EMG_602.mat', 'EMG_602');
+save('EMG_084.mat', 'EMG_084');
+save('EMG_023.mat', 'EMG_023');
 
+save('NE_588_new.mat', 'delta465_filt_2_588');
+save('wake_588.mat', 'wake_woMA_binary_vector_588');
+save('NREM_588.mat', 'sws_binary_vector_588');
+save('REM_588.mat', 'REM_binary_vector_588');
+save('micro_arousal_588.mat', 'MA_binary_vector_588');
 
 %% Get clean sections for machine learning training
 % Your provided variables and code for movement detection

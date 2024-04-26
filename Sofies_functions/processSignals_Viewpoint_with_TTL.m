@@ -24,7 +24,8 @@ function [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EE
         onset_EEG = onset_EEG(find(onset_EEG_time_diff>5)+1);
     end
     
-    TTL_EEG_onset = onset_EEG/EEG_fs+mouse{4}; %mouse{4} has the time correction
+    TTL_EEG_onset = onset_EEG/EEG_fs;
+    % this used to be added to the line above: +mouse{4}; %mouse{4} has the time correction
     
     %Cutting EEG/EMG traces leading up to first TTL 
     % Removing first seconds of EEG and EMG raw traces to align with FP trace
@@ -41,10 +42,10 @@ function [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EE
     % For FP
     TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
     first_TTL = TTL_FP(1)*signal_fs;
-    onset_FP = max(first_TTL, 1);
+    %onset_FP = max(first_TTL, 1);
 
-    signal_465_2 = signal_465_2(round(TTL_EEG_onset*signal_fs):end);
-    signal_405_2 = signal_405_2(round(TTL_EEG_onset*signal_fs):end);
+    signal_465_2 = signal_465_2(round(first_TTL):end);
+    signal_405_2 = signal_405_2(round(first_TTL):end);
 
     % Time signal
     fs_signal_2 = 1:length(signal_465_2);

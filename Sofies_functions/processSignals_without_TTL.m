@@ -9,17 +9,32 @@ function [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EE
     EEG = EEG_all(mouse{10},:); %add channel (1 or 2)
     EMG = data_EEGrig.streams.(mouse{11}).data; %EMG 
 
-    % Calculate the number of samples to remove (equivalent to 1 second)
+    TTL_FP = data_FPrig.epocs.(mouse{12}).onset;
+    first_TTL = TTL_FP(1)*signal_fs;
+    onset_FP = max(first_TTL, 1);
+
+    % For EEG
+    first_TTL_EEG = TTL_FP(1)*EEG_fs;
+    onset_FP_EEG = max(first_TTL_EEG, 1);
+
+    signal_465_2 = signal_465_2(onset_FP:end);
+    signal_405_2 = signal_405_2(onset_FP:end);
+
+    EEG = EEG(onset_FP_EEG:end);
+    EMG = EMG(onset_FP_EEG:end);
+       % Calculate the number of samples to remove (equivalent to 1 second)
+
     samplesToRemove_EEG_EMG = EEG_fs; % Number of samples in 1 second for EEG and EMG
     samplesToRemove_FP = signal_fs; % Number of samples in 1 second for photometry signals
-    
+
     % Directly trim the first second from EEG and EMG
     EEG = EEG(samplesToRemove_EEG_EMG:end);
     EMG = EMG(samplesToRemove_EEG_EMG:end);
-    
+
     % Directly trim the first second from signal_405_2 and signal_465_2
     signal_405_2 = signal_405_2(samplesToRemove_FP:end);
     signal_465_2 = signal_465_2(samplesToRemove_FP:end);
+    % Calculate the number of samples to remove (equivalent to 1 second)
 
     % Time signal
     fs_signal_2 = 1:length(signal_465_2);
