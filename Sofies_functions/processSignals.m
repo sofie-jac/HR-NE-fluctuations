@@ -51,7 +51,7 @@ function [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EE
     % Smoothing traces
     delta465_filt_2 = filtfilt(MeanFilter,1,double(delta_465_2));
 
-    uniqueId = mouse{1}(end-2:end); % Extract unique identifier based on your naming convention
+    uniqueId = mouse{3}; % Extract unique identifier based on your naming convention
 
     figure
     sgtitle(sprintf('Delta465 Filt 2 - Mouse %s', uniqueId));
