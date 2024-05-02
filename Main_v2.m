@@ -104,13 +104,14 @@ mice_without_TTL = {M168, M147, M149, M071, M073, M100};
 mice_TTL = {M124, M117, M101, M102, M103, M104};
 viewpoint_mice = {'M017', 'M026', 'M003', 'M005', 'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
 synapse_mice = {M168, M147, M149, M117, M124, M071, M073};
-mice_without_TTL = {M100};
+mice_without_TTL = {};
 %RR_mice_sal_yfp = {M420, M580, M588};
 %mice_without_TTL = {};
 
 viewpoint_mice = {'M026', 'M015', 'M025','M420', 'M580', 'M588'};
 
 o = {M025, M026, M420, M580, M588};
+o = {M420, M588, M117, M124};
 o = {M124};
 % Create a matrix of mice pairs where the first column is the mouse without EEG data
 % and the second column is the mouse with EEG data
@@ -538,7 +539,11 @@ end
 %[RR_015, RR_time_015, RR_fs_015] = GetRRIntervals(M015, -EMG_015, sec_signal_EEG_015, EEG_fs_015, 1.1, 2.3); %This is Tessa's hist files
 
 figure;
-plot(sec_signal_EEG_588, -EMG_588,  Rpeaks_time_588, Rpeaks_588, 'o', 'color', [0.5 0.5 0.5], 'MarkerEdgeColor', 'k');
+    a = subplot(2, 1, 1);
+    plot(sec_signal_EEG_588, -EMG_588,  Rpeaks_time_588, Rpeaks_588, 'o', 'color', [0.5 0.5 0.5], 'MarkerEdgeColor', 'k');
+    b = subplot(2, 1, 2);
+    plot(RR_time_588, RR_588,  Rpeaks_time_588, Rpeaks_588, 'color', 'k');
+    linkaxes([a, b], 'x');
 
 %% Get HRB
 [HRB_124, HRB_time_124] = findHRB(RR_time_124, RR_124);
@@ -1030,7 +1035,7 @@ all_trough_times = sort([NREMexclMA_periods_pklocs_124; SWS_before_MA_pklocs_124
 
 resultsTable = NETroughToHRBAssociation(trough_variables, all_trough_times, HRB_time);
 
-%% 
+%% Plot NE trough to HRB association
 
 [NE_associated_HRB_time, HRB_times_no_troughs] = separateHRBAssociatedTroughs(trough_variables, all_trough_times, HRB_time);
 
@@ -1129,11 +1134,11 @@ hold off;
 
 %% Generate the main plot
 
-event_var = {NREMexclMA_periods_pklocs_420, SWS_before_MA_pklocs_420, SWS_before_wake_pklocs_420, REM_before_wake_pklocs_420};
+event_var = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124};
 titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake/MA Transition'};
-main_title = 'Averaged Activity During NE Trough (M420)';
+main_title = 'Averaged Activity During NE Trough (M124)';
 
-MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_420_smooth, sec_signal_2_420, signal_fs_420, RR_420, RR_420, RR_fs_420,  mean_spectrogram_420, F_420, EEG_bands_fs_420)
+MainPlot(event_var, 30, 60, titles, main_title, delta465_filt_2_124_smooth, sec_signal_2_124, signal_fs_124, RR_124, RR_124, RR_fs_124,  mean_spectrogram_124, F_124, EEG_bands_fs_124)
 
 %% Generate the main plot for HRB associated NE vs HRB not associated NE vs HRB not associated with NE
 
@@ -2615,7 +2620,7 @@ sec_signal_cross_124 = (1:length(delta465_cross_124))/fs_new;
 % [C, lags] = xcorr(delta465_resampled, RR, 'coeff');
 % plot(lags / fs_new, C);  % This plots the cross-correlation coefficient as a function of time lags in seconds
 %% Collect data for cross correlation
-event_var_blank = {'NREMexclMA_periods_pklocs', 'SWS_before_MA_pklocs', 'SWS_before_wake_pklocs', 'REM_before_MA_pklocs', 'REM_before_wake_pklocs'};
+event_var_blank = {'NREMexclMA_periods_pklocs', 'SWS_before_MA_pklocs', 'SWS_before_wake_pklocs', 'REM_before_wake_pklocs'};
 var_lenght = length(event_var_blank)*length(o);
 
 epoc_start = 30;
@@ -2659,7 +2664,8 @@ for idx = 1:length(o)
 
     % Iterate over each sleep stage and its NE trough variables
     for stage_idx = 1:length(event_var)
-        event_type = event_var{stage_idx}; % Select the current event type
+        event_type_name = event_var{stage_idx}; % Select the current event type
+        event_type = eval(event_type_name); %Extract the actual data
         num_events = length(event_type); % Number of events for the current sleep stage
         iteration_counter = iteration_counter + 1;  % Increment the counter each time the loop runs
 
@@ -2668,11 +2674,15 @@ for idx = 1:length(o)
         NE_peak_epoc_collector = [];
         RR_collector = [];
 
+        mid_point = ceil(epoc_start * RR_fs);  % This should be the index of the event time
+        total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+
 
         % Extract NE and EEG band epochs for the current sleep stage
         for i = 1:length(event_type)
             NEpk_i = event_type(i);
             if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
+                disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
                 continue;
             end
 
@@ -2722,15 +2732,14 @@ for idx = 1:length(o)
     end
 end
 
-%% Mie's crosscorelation
+%% Calculate crosscorelation
 SamplingRate = RR_fs_124; % Hz (assuming that it is the same as before)
 event_n = length(RR_cross);
-disp(event_n)
 
 cross_corr = cell(event_n, 4); % Fixed name here from cross_cor to cross_corr to match further usage
 
 for stage = 1:event_n
-    period_name = summary_index(stage); % Make sure 'summary_index' is defined and has the same length as 'event_n'
+    % period_name = summary_index(stage); % Make sure 'summary_index' is defined and has the same length as 'event_n'
     NE = NE_cross{stage, 2};
     RR = RR_cross{stage, 2};
 
@@ -2758,10 +2767,10 @@ for stage = 1:event_n
         SEM = [];
     end
 
-    cross_corr{stage, 1} = RR_cross{stage, 1};
+    cross_corr{stage, 1} = RR_cross{stage, 1}; %Get the event title
     cross_corr{stage, 2} = mean_correlations;
-    cross_corr{stage, 3} = SEM; % Store the standard error in the fourth column
-    cross_corr{stage, 4} = lags; % Adjust 'lags' to be in seconds
+    cross_corr{stage, 3} = SEM; % Store the standard error in the 3rd column
+    cross_corr{stage, 4} = lags; 
 end
 
 
@@ -2772,61 +2781,402 @@ subplot_titles = {'NREM', 'NREM to MA', 'NREM to Wake', 'REM to Wake'};
 % Define the overall title and figure setup
 figure;
 sgtitle('Cross Correlation Between NE and RR'); % Super title for the whole figure
+set(gcf,'color','white')
 
 % Initialize variables to store global min and max
-global_min = Inf;
-global_max = -Inf;
-
-% First pass: Determine the global min and max across all subplots
-for i = 1:4
-    mean_correlations = cross_corr{i, 2};
-    SEM = cross_corr{i, 4};
-    temp_min = min(mean_correlations - SEM);
-    temp_max = max(mean_correlations + SEM);
-
-    if temp_min < global_min
-        global_min = temp_min;
-    end
-    if temp_max > global_max
-        global_max = temp_max;
-    end
-end
+% global_min = Inf;
+% global_max = -Inf;
+% 
+% % First pass: Determine the global min and max across all subplots
+% for i = 1:4
+%     mean_correlations = cross_corr{i, 2};
+%     SEM = cross_corr{i, 4};
+%     temp_min = min(mean_correlations - SEM);
+%     temp_max = max(mean_correlations + SEM);
+% 
+%     if temp_min < global_min
+%         global_min = temp_min;
+%     end
+%     if temp_max > global_max
+%         global_max = temp_max;
+%     end
+% end
 
 % Loop through each row in cross_corr to create subplots
 for i = 1:4
     % Access the data for the current subplot
     mean_correlations = cross_corr{i, 2};
-    lags = cross_corr{i, 3};
-    SEM = cross_corr{i, 4};
+    SEM = cross_corr{i, 3};
+    event_name = subplot_titles{i}; % Current event name for titles
+    disp(mean(mean_correlations));
 
     % Create the time vector for the plot, assuming the lags are centered at 0 and evenly spaced
-    total_time = 90; % Total time from -30 to 60 seconds
-    dt = total_time / length(mean_correlations); % Time step per data point
     time_vector = linspace(-30, 60, length(mean_correlations)); % Time vector from -30 to 60 seconds
 
     % Create subplot
     subplot(2, 2, i);
     hold on;
-    
+
     % Plot mean with a blue line
-    plot(time_vector, mean_correlations, 'b', 'LineWidth', 1.5);
-    
+    plot(time_vector, -mean_correlations, 'b', 'LineWidth', 1.5);
+
     % Add shaded error bar (SE)
-    fill([time_vector, fliplr(time_vector)], ...
-         [mean_correlations + SEM, fliplr(mean_correlations - SEM)], ...
-         'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-    
+    shadedErrorBar(time_vector, -mean_correlations, -SEM);
+
     % Add vertical dashed line at x=0
-    plot([0 0], [global_min, global_max], '--', 'Color', [0.8 0.8 0.8]);
-    
+    %y_limits = ylim([global_min global_max]);  % This should correctly set the y-limits before plotting the line
+   % plot([0 0], y_limits, '--', 'Color', [0.8 0.8 0.8]);
+    plot([0 0], '--', 'Color', [0.8 0.8 0.8]);
+
     % Formatting the subplot
     xlabel('Time (s)');
-    ylabel('Correlation');
-    title(subplot_titles{i});
+    ylabel('R');
+    title(event_name);
     grid on;
     hold off;
-    
-    % Set the y-axis limits to the global min and max
-    ylim([global_min global_max]);
-end
 
+    % Set the y-axis limits to the global min and max after all plot commands
+   % ylim('limits', [global_min global_max]);
+
+end
+%% Main plot w. cross correlation
+event_var = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124};
+titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition', 'REM to MA Transition'};
+main_title = 'Averaged Activity During NE Trough (M124)';
+epoc_start = 30;
+epoc_end = 60;
+delta465_filt_2 = delta465_filt_2_124;
+sec_signal_2 = sec_signal_2_124;
+NE_fs = signal_fs_124;
+RR = RR_124;
+RR_time = RR_time_124;
+RR_fs = RR_fs_124; 
+EEG_bands_fs = EEG_bands_fs_124;
+mean_spectrogram = mean_spectrogram_124;
+F = F_124;
+cross_corr = cross_corr;
+
+    mid_point = ceil(epoc_start * RR_fs);  % This should be the index of the event time
+    max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+    total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
+    power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
+    
+    %Add in the time variable for plotting
+    epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
+    epoc_FPtime_EEG_bands = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * EEG_bands_fs));
+    epoc_FPtime_RR = linspace(-epoc_start, epoc_end, max_epoch_length);
+    
+    global_max_RR = -inf;
+    global_min_RR = inf;
+    global_max_delta_465_2 = -inf;
+    global_min_delta_465_2 = inf;
+    global_max_EEG_bands = -inf;
+    global_min_EEG_bands = inf;
+    global_max_corr = -inf;
+    golbal_min_corr = inf;
+
+        % Initialize variables to store maximum and minimum values for each type of subplot
+
+    % First pass: Loop to find global min/max
+    for stage_idx = 1:length(event_var)
+        event_type = event_var{stage_idx}; % Select the current event type
+        event_name = titles{stage_idx}; % Current event name for titles
+        num_events = length(event_type); % Number of events for the current sleep stage
+        
+        % Resetting collectors for each sleep stage
+        NE_peak_epoc_collector = [];
+        RR_collector = [];
+        SO_collector = [];
+        Delta_collector = [];
+        Theta_collector = [];
+        Sigma_collector = [];
+        Beta_collector = [];
+
+        mean_correlations = cross_corr{stage_idx, 2};
+        SEM = cross_corr{stage_idx, 3};
+        temp_min = min(min(mean_correlations - SEM));
+        temp_max = max(max(mean_correlations + SEM));
+    
+        if temp_min < golbal_min_corr
+            golbal_min_corr = temp_min;
+        end
+        if temp_max > global_max_corr
+            global_max_corr = temp_max;
+        end
+    
+            % Extract power for specified bands
+        band_powers = cell(1, length(power_bands));
+        for b = 1:length(power_bands)
+            freq_range = power_bands{b};
+            band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
+        end
+    
+        % Extract NE and EEG band epochs for the current sleep stage
+        for i = 1:length(event_type)
+            NEpk_i = event_type(i);
+            % Skip events too close to the start of the recording
+            if NEpk_i < epoc_start
+                disp(['Event ', num2str(i), ' skipped due to being too close to the start of the recording']);
+                continue;  % Skip to the next iteration of the loop
+            end
+            if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
+                continue;
+            end
+            
+            % Extract NE epochs
+            NEpk_epoc_i = delta465_filt_2((NEpk_i - epoc_start) * NE_fs : (NEpk_i + epoc_end) * NE_fs);
+            NE_peak_epoc_collector = [NE_peak_epoc_collector; NEpk_epoc_i];
+    
+            HRB_i = event_type(i);
+            if HRB_i < RR_time(1) + epoc_start || HRB_i > RR_time(end) - epoc_end
+                disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
+                continue;  % Skip this event
+            end
+    
+            [~, event_idx] = min(abs(RR_time - HRB_i));  % Find the event index in filtered_RR_time
+    
+            epoch_start_idx = max(event_idx - mid_point + 1, 1);
+            epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
+    
+            if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
+                RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
+            end
+    
+            
+            % Extract epochs for EEG bands
+            for b = 1:length(band_powers)
+                EEG_band_epoc_i = band_powers{b}(:, (NEpk_i - epoc_start)*EEG_bands_fs:(NEpk_i + epoc_end)*EEG_bands_fs);
+            switch b
+                case 1
+                    SO_collector = [SO_collector; EEG_band_epoc_i];
+                case 2
+                    Delta_collector = [Delta_collector; EEG_band_epoc_i];
+                case 3
+                    Theta_collector = [Theta_collector; EEG_band_epoc_i];
+                case 4
+                    Sigma_collector = [Sigma_collector; EEG_band_epoc_i];
+                case 5
+                    Beta_collector = [Beta_collector; EEG_band_epoc_i];
+                end
+            end
+        end
+        
+    
+        % Calculate mean of epochs for NE and EEG bands
+        mean_NEpk_epocs = nanmean(NE_peak_epoc_collector, 1);
+        mean_filtered_RR_epocs = nanmean(RR_collector, 2);
+        mean_SO_pk_epocs = nanmean(SO_collector, 1);
+        mean_Delta_pk_epocs = nanmean(Delta_collector, 1);
+        mean_Theta_pk_epocs = nanmean(Theta_collector, 1);
+        mean_Sigma_pk_epocs = nanmean(Sigma_collector, 1);
+        mean_Beta_pk_epocs = nanmean(Beta_collector, 1);
+
+        global_max_RR = max(global_max_RR, max(mean_filtered_RR_epocs));
+        global_min_RR = min(global_min_RR, min(mean_filtered_RR_epocs));
+
+        global_max_delta_465_2 = max(global_max_delta_465_2, max(mean_NEpk_epocs));
+        global_min_delta_465_2 = min(global_min_delta_465_2, min(mean_NEpk_epocs));
+
+        global_max_EEG_bands = max(global_max_EEG_bands, max([mean_SO_pk_epocs, mean_Delta_pk_epocs, mean_Theta_pk_epocs, mean_Sigma_pk_epocs, mean_Beta_pk_epocs]));
+        global_min_EEG_bands = min(global_min_EEG_bands, min([mean_SO_pk_epocs, mean_Delta_pk_epocs, mean_Theta_pk_epocs, mean_Sigma_pk_epocs, mean_Beta_pk_epocs]));
+    end
+        global_max_corr = global_max_corr + 0.05; %add a little bit here to have some air in the plot
+
+    % Initialize the figure
+    figure;
+    
+    % Iterate over each sleep stage and its NE trough variables
+    for stage_idx = 1:length(event_var)
+        event_type = event_var{stage_idx}; % Select the current event type
+        event_name = titles{stage_idx}; % Current event name for titles
+        num_events = length(event_type); % Number of events for the current sleep stage
+        
+        % Resetting collectors for each sleep stage
+        NE_peak_epoc_collector = [];
+        RR_collector = [];
+        SO_collector = [];
+        Delta_collector = [];
+        Theta_collector = [];
+        Sigma_collector = [];
+        Beta_collector = [];
+    
+            % Extract power for specified bands
+        band_powers = cell(1, length(power_bands));
+        for b = 1:length(power_bands)
+            freq_range = power_bands{b};
+            band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
+        end
+    
+        % Extract NE and EEG band epochs for the current sleep stage
+        for i = 1:length(event_type)
+            NEpk_i = event_type(i);
+            if NEpk_i > sec_signal_2(end) - epoc_end % Skip if event is too close to end of recording
+                continue;
+            end
+            
+            % Extract NE epochs
+            NEpk_epoc_i = delta465_filt_2((NEpk_i - epoc_start) * NE_fs : (NEpk_i + epoc_end) * NE_fs);
+            NE_peak_epoc_collector = [NE_peak_epoc_collector; NEpk_epoc_i];
+    
+            HRB_i = event_type(i);
+            if HRB_i < RR_time(1) + epoc_start || HRB_i > RR_time(end) - epoc_end
+                disp(['Event ', num2str(i), ' skipped due to proximity to start/end of recording']);
+                continue;  % Skip this event
+            end
+    
+            [~, event_idx] = min(abs(RR_time - HRB_i));  % Find the event index in filtered_RR_time
+    
+            epoch_start_idx = max(event_idx - mid_point + 1, 1);
+            epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
+    
+            if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
+                RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
+            end
+    
+            
+            % Extract epochs for EEG bands
+            for b = 1:length(band_powers)
+                EEG_band_epoc_i = band_powers{b}(:, (NEpk_i - epoc_start)*EEG_bands_fs:(NEpk_i + epoc_end)*EEG_bands_fs);
+            switch b
+                case 1
+                    SO_collector = [SO_collector; EEG_band_epoc_i];
+                case 2
+                    Delta_collector = [Delta_collector; EEG_band_epoc_i];
+                case 3
+                    Theta_collector = [Theta_collector; EEG_band_epoc_i];
+                case 4
+                    Sigma_collector = [Sigma_collector; EEG_band_epoc_i];
+                case 5
+                    Beta_collector = [Beta_collector; EEG_band_epoc_i];
+                end
+            end
+        end
+       
+    
+        % Calculate mean of epochs for NE and EEG bands
+        mean_NEpk_epocs = nanmean(NE_peak_epoc_collector, 1);
+        mean_filtered_RR_epocs = nanmean(RR_collector, 2);
+        mean_SO_pk_epocs = nanmean(SO_collector, 1);
+        mean_Delta_pk_epocs = nanmean(Delta_collector, 1);
+        mean_Theta_pk_epocs = nanmean(Theta_collector, 1);
+        mean_Sigma_pk_epocs = nanmean(Sigma_collector, 1);
+        mean_Beta_pk_epocs = nanmean(Beta_collector, 1);
+
+        % After calculating max and min for each type, set consistent y-axis limits and y-ticks
+        y_tick_interval_RR = (global_max_RR - global_min_RR) / 5; % Example for dividing into 5 parts
+        ytick_values_RR = global_min_RR:y_tick_interval_RR:global_max_RR;
+        
+        y_tick_interval_delta_465_2 = (global_max_delta_465_2 - global_min_delta_465_2) / 5;
+        ytick_values_delta_465_2 = global_min_delta_465_2:y_tick_interval_delta_465_2:global_max_delta_465_2;
+        
+        y_tick_interval_EEG_bands = (global_max_EEG_bands - global_min_EEG_bands) / 5;
+        ytick_values_EEG_bands = global_min_EEG_bands:y_tick_interval_EEG_bands:global_max_EEG_bands;
+
+        % Plotting NE data
+        subplot_position_ne = (stage_idx-1)*4 + 1;
+        subplot(4, 4, subplot_position_ne);
+        
+        % Plot the red line first to ensure it appears behind the data
+        hold on;  % Keeps the plot active for subsequent data plotting
+        plot([0 0], [global_min_delta_465_2, global_max_delta_465_2], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--', 'HandleVisibility', 'off'); % Dashed maroon line behind
+        
+        % Plot the NE data with a specific color (e.g., light blue)
+        plot(epoc_FPtime_NE, mean_NEpk_epocs, 'Color', [0 0.4470 0.7410]);  % Light blue
+        hold off;  % No more plots will be added
+        
+        title([event_name ' NE (' num2str(num_events) ' Events)']); % Including number of events in the title
+        ylabel('NE Activity');
+        xlim([-30, 60]);
+        ylim([global_min_delta_465_2, global_max_delta_465_2]);
+        yticks(ytick_values_delta_465_2);
+        grid on
+
+
+
+
+        subplot_idx_RR = subplot_position_ne + 1;  % Position for RR subplot
+        subplot(4, 4, subplot_idx_RR);
+        
+        % Plot the red line first to ensure it appears behind the data
+        hold on;  % Keeps the plot active for subsequent data plotting
+        plot([0 0], [global_min_RR, global_max_RR], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');  % Dashed maroon line
+        
+        % Now plot the RR interval data, ensuring it's on top of the red line
+        plot(epoc_FPtime_RR, mean_filtered_RR_epocs, 'Color', [0.8500 0.3250 0.0980]);
+        hold off;  % No more plots will be added
+        
+        title([event_name ' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
+        ylabel('RR interval');
+        xlim([-30, 60]);
+        ylim([global_min_RR, global_max_RR]);
+        yticks(ytick_values_RR);  % Apply custom y-tick values based on the global min/max for RR intervals
+        grid on
+
+            % Access the data for the current subplot
+    mean_correlations = cross_corr{stage_idx, 2};
+    SEM = cross_corr{stage_idx, 3};
+    % Create the time vector for the plot, assuming the lags are centered at 0 and evenly spaced
+    time_vector = linspace(-30, 60, length(mean_correlations)); % Time vector from -30 to 60 seconds
+
+    subplot_idx_xcorr = subplot_position_ne + 2;  % Position for RR subplot
+
+    % Create subplot
+    subplot(4, 4, subplot_idx_xcorr);
+    hold on;
+    plot([0 0], [golbal_min_corr, global_max_corr], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--', 'HandleVisibility', 'off'); % Dashed gray line behind
+
+    % Plot mean with a blue line
+    plot(time_vector, -mean_correlations, 'b', 'LineWidth', 1.5);
+
+    % Add shaded error bar (SE)
+    shadedErrorBar(time_vector, -mean_correlations, -SEM);
+
+    % Formatting the subplot
+    ylabel('Correlation strenght (R)');
+    xlim([-30, 60]);
+    ylim([golbal_min_corr, global_max_corr]);
+    title([event_name ' NE-RR Cross Correlation (' num2str(length(event_type)) ' Events)']);
+    grid on;
+    hold off;
+
+        % Plotting EEG bands data
+        subplot_position_eeg = subplot_position_ne + 3;
+        subplot(4, 4, subplot_position_eeg);
+        
+        % Plot the red line first to ensure it appears behind the data
+        hold on;  % Keeps the plot active for subsequent data plotting
+        plot([0 0], [global_min_EEG_bands, global_max_EEG_bands], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--', 'HandleVisibility', 'off'); % Dashed maroon line
+        
+        % Now plot the EEG band data with handles for the legend
+        hSO = plot(epoc_FPtime_EEG_bands, mean_SO_pk_epocs, 'DisplayName', 'SO');
+        hDelta = plot(epoc_FPtime_EEG_bands, mean_Delta_pk_epocs, 'DisplayName', 'Delta');
+        hTheta = plot(epoc_FPtime_EEG_bands, mean_Theta_pk_epocs, 'DisplayName', 'Theta');
+        hSigma = plot(epoc_FPtime_EEG_bands, mean_Sigma_pk_epocs, 'DisplayName', 'Sigma');
+        hBeta = plot(epoc_FPtime_EEG_bands, mean_Beta_pk_epocs, 'DisplayName', 'Beta');
+        hold off;  % No more plots will be added
+        
+        % Use the handles to specify which plots to include in the legend
+        legend([hSO, hDelta, hTheta, hSigma, hBeta], {'SO', 'Delta', 'Theta', 'Sigma', 'Beta'}, 'Location', 'southeast');
+        
+        title([event_name ' EEG Bands (' num2str(length(event_type)) ' Events)']);
+        ylabel('Power');
+        xlim([-30, 60]);
+        ylim([global_min_EEG_bands, global_max_EEG_bands]);
+        yticks(ytick_values_EEG_bands);
+        grid on
+
+
+
+
+        set(gcf,'color','white')
+        
+        % % Adjusting the subplot index for column placement
+        % if stage_idx == 2 % After plotting the second sleep stage, switch to second column
+        %     subplot_base = 4; % Adjusting base for second column
+        % else
+        %     subplot_base = 0; % Keep base at 0 for first column
+        % end
+    end
+    
+    % Adjust overall plot settings
+    sgtitle(main_title);
