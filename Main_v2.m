@@ -2723,63 +2723,110 @@ for idx = 1:length(o)
 end
 
 %% Mie's crosscorelation
-corr_periods = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124, REM_before_MA_pklocs_124};
-summary_index = {'NREMexclMA_periods_pklocs_124', 'SWS_before_MA_pklocs_124', 'SWS_before_wake_pklocs_124', 'REM_before_wake_pklocs_124', 'REM_before_MA_pklocs_124'};
-SamplingRate = fs_new; % Hz (assuming that it is the same as before)
-TimeLag = 30; %s +/- time lag for cross-correlation
-TimeLagInSamples = TimeLag * SamplingRate;
-ds_factor = 40;
+SamplingRate = RR_fs_124; % Hz (assuming that it is the same as before)
+event_n = length(RR_cross);
+disp(event_n)
 
-for stage = 1:lenght(corr_periods)
-    period_name = summary_index(stage);
-    NE = NE_peak_all{stage,2};
-    RR = RR_all{stage,2};
- 
+cross_corr = cell(event_n, 4); % Fixed name here from cross_cor to cross_corr to match further usage
+
+for stage = 1:event_n
+    period_name = summary_index(stage); % Make sure 'summary_index' is defined and has the same length as 'event_n'
+    NE = NE_cross{stage, 2};
+    RR = RR_cross{stage, 2};
+
     correlation_collector = [];
- 
-    for i = 1: length(NE)
-        period_i = period_fs(i,:); 
-        period_i_FP_on = period_fs(i,1);
-        period_i_FP_off = period_fs(i,2);
-        trace_465_i = delta465_filt(period_i(1):period_i(2));
-        trace_560_i = delta560_filt(period_i(1):period_i(2));
- 
-        RR_period = RR(i,:);
-        NE_period =  NE(i,:);
- 
-        [cc1,lags] = xcorr(unity(detrend(corr_trace)), unity(detrend(ref_trace)),round(TimeLagInSamples),'unbiased');
+
+    % Ensure NE and RR have the same number of epochs recorded to prevent indexing errors
+    min_epochs = min(size(NE, 1), size(RR, 1));
+    for i = 1:min_epochs
+        NE_period = NE(i, :);
+        RR_period = RR(i, :);
+
+        [cc1, lags] = xcorr(NE_period, RR_period, 'coeff'); % 'coeff' normalizes the correlation
         correlation_collector = [correlation_collector, cc1'];
     end
- 
-    % calculate the mean of all correlations in the correlation collector.
-    mean_correlations = mean(correlation_collector,2);
-    weighted_mean = sum(period_incl_dur'.*correlation_collector,2)/sum(period_incl_dur); %period duration is used as weights
- 
-    lag_axis = lags/signal_fs;
- 
-    figure('Name','xcorrs');
-    subplot(2,1,1);
-        plot(lag_axis,correlation_collector);
-        ylabel('corr. coef.');
-        xlabel('time lag (s)');
-        hold on;
-        plot([0,0],[-1,1],'k'); plot(xlim,[0,0],'k');
-        ylim([-1,1]);xlim([-TimeLag,TimeLag]);
-        title('cross correlation');
-    subplot(2,1,2);
-        plot(lag_axis, weighted_mean);
-        ylabel('corr. coef.');
-        xlabel('time lag (s)');
-        hold on;
-        plot([0,0],[-1,1],'k'); plot(xlim,[0,0],'k');
-        ylim([-0.5,0.5]);xlim([-TimeLag,TimeLag])
-        title('cross correlation');
-    collect_corr(:,corr_state) = downsample(weighted_mean, ds_factor);
+
+    % Calculate the mean of all correlations in the correlation collector if non-empty
+    if ~isempty(correlation_collector)
+        mean_correlations = mean(correlation_collector, 2);
+        % Calculate standard error of the mean (SEM)
+        N = size(correlation_collector, 2); % Number of observations is the number of columns
+        std_dev = std(correlation_collector, 0, 2); % Standard deviation across columns
+        SEM = std_dev / sqrt(N); % Standard error of the mean
+    else
+        mean_correlations = [];
+        SEM = [];
+    end
+
+    cross_corr{stage, 1} = RR_cross{stage, 1};
+    cross_corr{stage, 2} = mean_correlations;
+    cross_corr{stage, 3} = SEM; % Store the standard error in the fourth column
+    cross_corr{stage, 4} = lags; % Adjust 'lags' to be in seconds
 end
-collect_corr_lags(:,1) = downsample((1:1:length(cc1))/signal_fs - TimeLag, ds_factor);
 
 
+%% Cross correlation plot
+% Define the titles for each subplot
+subplot_titles = {'NREM', 'NREM to MA', 'NREM to Wake', 'REM to Wake'};
 
+% Define the overall title and figure setup
+figure;
+sgtitle('Cross Correlation Between NE and RR'); % Super title for the whole figure
 
+% Initialize variables to store global min and max
+global_min = Inf;
+global_max = -Inf;
 
+% First pass: Determine the global min and max across all subplots
+for i = 1:4
+    mean_correlations = cross_corr{i, 2};
+    SEM = cross_corr{i, 4};
+    temp_min = min(mean_correlations - SEM);
+    temp_max = max(mean_correlations + SEM);
+
+    if temp_min < global_min
+        global_min = temp_min;
+    end
+    if temp_max > global_max
+        global_max = temp_max;
+    end
+end
+
+% Loop through each row in cross_corr to create subplots
+for i = 1:4
+    % Access the data for the current subplot
+    mean_correlations = cross_corr{i, 2};
+    lags = cross_corr{i, 3};
+    SEM = cross_corr{i, 4};
+
+    % Create the time vector for the plot, assuming the lags are centered at 0 and evenly spaced
+    total_time = 90; % Total time from -30 to 60 seconds
+    dt = total_time / length(mean_correlations); % Time step per data point
+    time_vector = linspace(-30, 60, length(mean_correlations)); % Time vector from -30 to 60 seconds
+
+    % Create subplot
+    subplot(2, 2, i);
+    hold on;
+    
+    % Plot mean with a blue line
+    plot(time_vector, mean_correlations, 'b', 'LineWidth', 1.5);
+    
+    % Add shaded error bar (SE)
+    fill([time_vector, fliplr(time_vector)], ...
+         [mean_correlations + SEM, fliplr(mean_correlations - SEM)], ...
+         'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+    
+    % Add vertical dashed line at x=0
+    plot([0 0], [global_min, global_max], '--', 'Color', [0.8 0.8 0.8]);
+    
+    % Formatting the subplot
+    xlabel('Time (s)');
+    ylabel('Correlation');
+    title(subplot_titles{i});
+    grid on;
+    hold off;
+    
+    % Set the y-axis limits to the global min and max
+    ylim([global_min global_max]);
+end
 
