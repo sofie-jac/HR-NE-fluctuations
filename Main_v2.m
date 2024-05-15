@@ -59,13 +59,24 @@ M602 = {'J:\CTN\NedergaardLAB\Personal_folders\VU\U19 Datacore example data\Mie_
 
 %Acetylecholine extra files
 %M007 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220228_007_ACh_1_NE_2_take3' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/20220228_007_EEG_EMG_take2_2022-02-28_14-45-39-008.exp' '007' '2' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (1000:12000) 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220228_007_EEG_EMG_take2_scored/007_sleepscore.xlsx' };
-%M003 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220304_003_final_ACh_1' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/20220304_003_final_2022-03-04_09-34-05-362.exp' '003' '5' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (500:750)  'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/003_sleepscore.xlsx'}; %cut FP 94 s
+%M003 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220304_003_final_ACh_1' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/20220304_003_final_2022-03-04_09-34-05-362.exp' '003' '0' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (500:750)  'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220304_003_final/003_sleepscore.xlsx'}; %cut FP 94 s
 %M015 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220523_015_1_ACh_f' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored\20220523_015_box3_2022-05-23_10-08-39-331.exp'  '015' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_015_box3_scored/015_sleepscore.xlsx'};
 %M017 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220602_017_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored\20220602_017_EEG_EMG_2022-06-02_14-00-09-032.exp' '017' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_017_EEG_EMG_scored/017_ACh_sleepscore.xlsx' }; 
 %M019 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220602_019_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored\20220602_019_EEG_EMG_2022-06-02_10-14-19-397.exp' '019' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220602_019_EEG_EMG_scored/019_sleepscore.xlsx' }; %use deltafit4
 %M021 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220523_021_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored\20220523_021_EEG_TTL_2022-05-23_14-15-14-291.exp' '021' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220523_021_EEG_TTL_scored/021_sleepscore.xlsx' }; 
 %M023 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220603_023_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored\20220603_023_EEG_EMG_2022-06-03_11-12-03-064.exp' '023' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220603_023_EEG_EMG_scored/023_sleepscore.xlsx'}; 
 M025 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\FP\20220601_025_1_ACh_2_NE' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h\20220601_025_EEG_EMG_2022-06-01_10-08-18-249_SJ.exp' '025' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' '''J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh_NE_albumin_group2\sleep\EEG\20220601_025_EEG_EMG_scored_4h/025_sleepscore_2024.xlsx'}; 
+M001 = {'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\FP\20220301_001_ACh_1' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\ACh3.0_group1\FP_EEG\EEG\20220301_001_box3_scored/20220301_001_box3_2022-03-01_14-31-51-637.exp' '001' '0' '' 'x65C' 'x05C' '' '' '' '' 'Pu1_' 'Pu1_' (1000:2000) 'C:\Users\fwb240\OneDrive - University of Copenhagen\Tessa_shared_folder\Biosensor_sleep\transition_files\ACh_NE/001_transitions.xlsx'}; %cut FP 30 s
+
+%Sertonine files
+M201 = {'J:\CTN\NedergaardLAB\Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220704_5HT_001' 'J:\CTN/NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/EEG/20220704_5HT_001_scored/20220704_5HT_001_2022-07-04_09-49-50-767.exp' '201' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' '' 'C:\Users\trado\OneDrive - University of Copenhagen\5HT_001_xlsx.xlsx'}; %Anastasia fit - both 1000:10000
+M203 = {'J:\CTN\NedergaardLAB\Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220705_5HT_003' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\5HT_NE_group3\sleep\EEG\20220705_5HT_003_scored\20220705_5HT_003_2022-07-05_09-16-26-962.exp' '203' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' ''}; 
+M205 = {'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220706_5HT_005' 'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/EEG/20220706_5HT_005_scored_noEEG/20220706_5HT_005_2022-07-06_09-48-35-205.exp' '205' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' ''}; %Anastasia fit - both 1000:10000
+M207 = {'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220706_5HT_007' 'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/EEG/20220706_5HT_007_scored//20220706_5HT_007_2022-07-06_13-42-17-994.exp' '207' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' ''}; %Anastasia fit - both 1000:10000
+M209 = {'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220708_5HT_009_final_take' 'J:\CTN\NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/EEG/20220707_5HT_009_scored/20220707_5HT_009_final_take_2022-07-08_13-13-29-852.exp' '209' '0' '' 'x465C' 'x405C' '' '' '' '' 'Pu1_' 'Pu1_' ''}; %Anastasia fit - both 1000:10000
+M019 = {'J:\CTN\NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/FP/20220712_His_019' 'J:\CTN\NedergaardLAB/Personal_folders/Tessa/His_group4/sleep/EEG/20220712_His_019_scored/20220712_His_019_2022-07-12_09-36-16-398.exp' '019' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' ''};
+M211 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220707_5HT_011_c' 'J:\CTN/NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/EEG/20220707_5HT_011_scored_noEEG/20220707_5HT_011_2022-07-07_13-02-42-297.exp' '211' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' ''}; %cut 38 s from the beginning
+M213 = {'J:\CTN/NedergaardLAB/Personal_folders/Tessa/5HT_NE_group3/sleep/FP/20220708_5HT_013' 'J:\CTN\NedergaardLAB\Personal_folders\Tessa\5HT_NE_group3\sleep\EEG\20220709_5HT_013_scored\20220709_5HT_013_2022-07-09_10-03-13-498.exp' '213' '0' '' 'x465C' 'x405C' '' '' '' '' 'PtC0' 'PtC0' ''}; 
 
 %Dopamine extra files
 %no TTL pulse (cut FP trace by 130), DA and NE good (NE needs to be normalized to median)
@@ -114,7 +125,9 @@ M908 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\Filter_test\70_82_20hz_low' 'J:\C
 mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
 mice_without_TTL = {M168, M147, M149, M071, M073, M100};
 mice_TTL = {M124, M117, M101, M102, M103, M104};
-viewpoint_mice = {'M017', 'M026', 'M003', 'M005', 'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
+mice_TTL = {M124, M117};
+
+viewpoint_mice = {'M201','M203','M205', 'M207','M209','M211','M213','M019','M387', 'M017', 'M026', 'M003', 'M005', 'M019', 'M021', 'M023', 'M025', 'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M420', 'M477','M484', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
 synapse_mice = {M168, M147, M149, M117, M124, M071, M073};
 mice_without_TTL = {M901, M902, M903, M904, M905, M906, M907, M908};
 mice_without_TTL = {M070, M082};
@@ -123,10 +136,10 @@ mice_without_TTL = {M070, M082};
 
 viewpoint_mice = {'M026', 'M015', 'M025','M420', 'M580', 'M588', 'M387'};
 
-o = {M025, M026, M420, M580, M588};
-o = {M070, M082};
+o = {M387};
+o = {M420, M588, M117, M124, M387};
 o = {M101, M102, M103, M104};
-o = {M901, M902, M903, M904, M905, M906, M907, M908};
+o = {M213, M201, M211};
 % Create a matrix of mice pairs where the first column is the mouse without EEG data
 % and the second column is the mouse with EEG data
 
@@ -486,8 +499,8 @@ sec_signal_EEG_100 = (1:length(EEG_100))/EEG_fs_100; % time vector for fiber pho
 
 %% QC - plot sleep
 % Assuming 'mice' is a list of mouse identifiers like {'168', '149', ...}
-for idx = 1:length(mice)
-    mouse = mice{idx};
+for idx = 1:length(o)
+    mouse = o{idx};
     disp(mouse{3})
     uniqueId = mouse{3}; % Extract mouse ID as a string
 
@@ -554,11 +567,11 @@ end
 %% Ryszard filtering
 Analyze_EMG([], 1, 511.931811511746, 1, 15, 1, 1);
 
-%% 
+%% load filtered data
 EMG_387_filtered = load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\EMG_387_filtered_lowpass.mat');
 EMG_387_filtered = EMG_387_filtered.emg_f;
 EMG_387_filtered_time = (1:length(EMG_387_filtered))/EEG_fs_387;
-%% 
+%% visualized filtered data
   figure;
     sgtitle(M387); % Set the figure title with the mouse ID
 
@@ -607,7 +620,11 @@ else
 end
 
 %% Get RR intervals
-% [RR_387, RR_time_387, RR_fs_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387);
+[RR_201, RR_time_201, RR_fs_201, Rpeaks_201, Rpeaks_time_201] = GetRRIntervals(M201, EMG_201, sec_signal_EEG_201, EEG_fs_201, 2.5, 2.2);
+[RR_213, RR_time_213, RR_fs_213, Rpeaks_213, Rpeaks_time_213] = GetRRIntervals(M213, EMG_213, sec_signal_EEG_213, EEG_fs_213, 2.5, 2);
+
+
+[RR_387, RR_time_387, RR_fs_387, Rpeaks_387, Rpeaks_time_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387, 2.5, 2.5);
 [RR_124, RR_time_124, RR_fs_124, Rpeaks_124, Rpeaks_time_124] = GetRRIntervals(M124, EMG_124, sec_signal_EEG_124, EEG_fs_124, 3.5, 2.5);
 %[RR_392, RR_time_392, RR_fs_392] = GetRRIntervals(M392, EMG_392, sec_signal_EEG_392, EEG_fs_392);
 [RR_403, RR_time_403, RR_fs_403] = GetRRIntervals(M403, EMG_403, sec_signal_EEG_403, EEG_fs_403, 2.5, 2.5); % could be used before 2730, but needs cutting prior to that
@@ -660,6 +677,10 @@ figure;
 [HRB_026, HRB_time_026] = findHRB(RR_time_026, RR_026);
 %[HRB_015, HRB_time_015] = findHRB(RR_time_015, RR_015);
 [HRB_025, HRB_time_025] = findHRB(RR_time_025, RR_025);
+[HRB_387, HRB_time_387] = findHRB(RR_time_387, RR_387);
+[HRB_201, HRB_time_201] = findHRB(RR_time_201, RR_201);
+[HRB_211, HRB_time_211] = findHRB(RR_time_211, RR_211);
+
 
 % sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
 % 
@@ -674,14 +695,43 @@ figure;
 % grid on;
 
     sleepscore_time_420 = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
-    sleepscore_time_580 = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
+   % sleepscore_time_580 = 0:length(wake_woMA_binary_vector_580)-1; % Assuming all vectors are the same length
     sleepscore_time_588 = 0:length(wake_woMA_binary_vector_588)-1; % Assuming all vectors are the same length
-    sleepscore_time_026 = 0:length(wake_woMA_binary_vector_026)-1; % Assuming all vectors are the same length
-    sleepscore_time_015 = 0:length(wake_woMA_binary_vector_015)-1; % Assuming all vectors are the same length
-    sleepscore_time_025 = 0:length(wake_woMA_binary_vector_025)-1; % Assuming all vectors are the same length
+   % sleepscore_time_026 = 0:length(wake_woMA_binary_vector_026)-1; % Assuming all vectors are the same length
+   % sleepscore_time_015 = 0:length(wake_woMA_binary_vector_015)-1; % Assuming all vectors are the same length
+    %sleepscore_time_025 = 0:length(wake_woMA_binary_vector_025)-1; % Assuming all vectors are the same length
+   % sleepscore_time_387 = 0:length(wake_woMA_binary_vector_387)-1; % Assuming all vectors are the same length
+    sleepscore_time_211 = 0:length(wake_woMA_binary_vector_211)-1; % Assuming all vectors are the same length
+    sleepscore_time_201 = 0:length(wake_woMA_binary_vector_201)-1; % Assuming all vectors are the same length
 
     figure;
-    a = subplot(3, 1, 1);
+
+        a = subplot(2, 1, 1);
+        plot_sleep(RR_time_201, RR_201, sleepscore_time_201, wake_woMA_binary_vector_201, sws_binary_vector_201, REM_binary_vector_201, MA_binary_vector_201);
+        hold on;
+        scatter(HRB_time_201, HRB_201, 'b', 'filled'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip (M201)');
+        grid on;
+
+    b = subplot(2, 1, 2);
+        plot_sleep(RR_time_211, RR_211, sleepscore_time_211, wake_woMA_binary_vector_211, sws_binary_vector_211, REM_binary_vector_211, MA_binary_vector_211);
+        hold on;
+        scatter(HRB_time_211, HRB_211, 'b', 'filled'); % Plotting HRB
+        hold off;
+        xlabel('Time (s)');
+        ylabel('RR intervals');
+        title('HRV p-chip (M211)');
+        grid on;
+            linkaxes([a, b], 'x');
+
+
+
+
+
+    a = subplot(2, 1, 1);
         plot_sleep(RR_time_420, RR_420, sleepscore_time_420, wake_woMA_binary_vector_420, sws_binary_vector_420, REM_binary_vector_420, MA_binary_vector_420);
         hold on;
         scatter(HRB_time_420, HRB_420, 'b', 'filled'); % Plotting HRB
@@ -691,29 +741,29 @@ figure;
         title('HRV p-chip (M420)');
         grid on;
 
-    b = subplot(3, 1, 2);
-        plot_sleep(RR_time_580, RR_580, sleepscore_time_580, wake_woMA_binary_vector_580, sws_binary_vector_580, REM_binary_vector_580, MA_binary_vector_580);
+    b = subplot(2, 1, 2);
+        plot_sleep(RR_time_387, RR_387, sleepscore_time_387, wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387);
         hold on;
-        scatter(HRB_time_580, HRB_580, 'b', 'filled'); % Plotting HRB
+        scatter(HRB_time_387, HRB_387, 'b', 'filled'); % Plotting HRB
         hold off;
         xlabel('Time (s)');
         ylabel('RR intervals');
-        title('HRV p-chip (M580)');
+        title('HRV p-chip (M387)');
         grid on;
 
 
-    c = subplot(3, 1, 3);
-        plot_sleep(RR_time_588, RR_588, sleepscore_time_588, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
-        hold on;
-        scatter(HRB_time_588, HRB_588, 'b', 'filled'); % Plotting HRB
-        hold off;
-        xlabel('Time (s)');
-        ylabel('RR intervals');
-        title('HRV p-chip (M588)');
-        grid on;
+    % c = subplot(3, 1, 3);
+    %     plot_sleep(RR_time_588, RR_588, sleepscore_time_588, wake_woMA_binary_vector_588, sws_binary_vector_588, REM_binary_vector_588, MA_binary_vector_588);
+    %     hold on;
+    %     scatter(HRB_time_588, HRB_588, 'b', 'filled'); % Plotting HRB
+    %     hold off;
+    %     xlabel('Time (s)');
+    %     ylabel('RR intervals');
+    %     title('HRV p-chip (M588)');
+    %     grid on;
 
     % Linking axes for synchronized zooming
-    linkaxes([a, b, c], 'x');
+    linkaxes([a, b], 'x');
 
 % % Determine if sws_binary_vector_015 is a row or column vector and append zeros accordingly
 % if isrow(sws_binary_vector_015)
@@ -825,17 +875,21 @@ for idx = 1:length(o)
 end
 
 %% Power analysis on EEG
-power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
+power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}; % define SO, delta, theta, sigma, and beta, respectively
 frw = 0:0.2:30;
 window_in_sec = 1; % sec. 1 for 30 sec
 
 %[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 [mean_spectrogram_420, time_spectrogram_zero_420, F_420, band_powers_420, EEG_bands_fs_420] = PowerAnalysisEEG(EEG_420, EEG_fs_420, frw, window_in_sec, power_bands);
+[mean_spectrogram_387, time_spectrogram_zero_387, F_387, band_powers_387, EEG_bands_fs_387] = PowerAnalysisEEG(EEG_387, EEG_fs_387, frw, window_in_sec, power_bands);
 [mean_spectrogram_580, time_spectrogram_zero_580, F_580, band_powers_580, EEG_bands_fs_580] = PowerAnalysisEEG(EEG_580, EEG_fs_580, frw, window_in_sec, power_bands);
 [mean_spectrogram_588, time_spectrogram_zero_588, F_588, band_powers_588, EEG_bands_fs_588] = PowerAnalysisEEG(EEG_588, EEG_fs_588, frw, window_in_sec, power_bands);
 [mean_spectrogram_025, time_spectrogram_zero_025, F_025, band_powers_025, EEG_bands_fs_025] = PowerAnalysisEEG(EEG_025, EEG_fs_025, frw, window_in_sec, power_bands);
 [mean_spectrogram_026, time_spectrogram_zero_026, F_026, band_powers_026, EEG_bands_fs_026] = PowerAnalysisEEG(EEG_026, EEG_fs_026, frw, window_in_sec, power_bands);
+[mean_spectrogram_201, time_spectrogram_zero_201, F_201, band_powers_201, EEG_bands_fs_201] = PowerAnalysisEEG(EEG_201, EEG_fs_201, frw, window_in_sec, power_bands);
+[mean_spectrogram_213, time_spectrogram_zero_213, F_213, band_powers_213, EEG_bands_fs_213] = PowerAnalysisEEG(EEG_213, EEG_fs_213, frw, window_in_sec, power_bands);
+
 %% Plot smoothed NE
 for idx = 1:length(o)
     mouse = o{idx};
@@ -904,6 +958,18 @@ SWS_before_wake_pklocs_124 = findPeaksBeforeTransition(SWS_before_wake_filtered_
 REM_before_MA_pklocs_124 = findPeaksBeforeTransition(REM_before_MA_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
 REM_before_wake_pklocs_124 = findPeaksBeforeTransition(REM_before_wake_filtered_124, signal_fs_124, delta465_filt_2_124_smooth, sec_signal_2_124, 0, 0, 0, 0);
 
+NREMexclMA_periods_pklocs_213 = find_NE_troughs(NREMexclMA_periods_213, signal_fs_213, delta465_filt_2_213_smooth, sec_signal_2_213, 0.8); % Change SD multiplyer to 1 for more selective troughs
+SWS_before_MA_pklocs_213 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_213, signal_fs_213, delta465_filt_2_213_smooth, sec_signal_2_213, MA_periods_213, 15, 15, 0.8);
+SWS_before_wake_pklocs_213 = findPeaksBeforeTransition(SWS_before_wake_filtered_213, signal_fs_213, delta465_filt_2_213_smooth, sec_signal_2_213, 0.4, mean(delta465_filt_2_213)-5, 15, 15);
+REM_before_MA_pklocs_213 = findPeaksBeforeTransition(REM_before_MA_filtered_213, signal_fs_213, delta465_filt_2_213_smooth, sec_signal_2_213, 0, 0, 0, 0);
+REM_before_wake_pklocs_213 = findPeaksBeforeTransition(REM_before_wake_filtered_213, signal_fs_213, delta465_filt_2_213_smooth, sec_signal_2_213, 0, 0, 0, 0);
+
+NREMexclMA_periods_pklocs_201 = find_NE_troughs(NREMexclMA_periods_201, signal_fs_201, delta465_filt_2_201_smooth, sec_signal_2_201, 0.8); % Change SD multiplyer to 1 for more selective troughs
+SWS_before_MA_pklocs_201 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_201, signal_fs_201, delta465_filt_2_201_smooth, sec_signal_2_201, MA_periods_201, 15, 15, 0.8);
+SWS_before_wake_pklocs_201 = findPeaksBeforeTransition(SWS_before_wake_filtered_201, signal_fs_201, delta465_filt_2_201_smooth, sec_signal_2_201, 0.4, mean(delta465_filt_2_201)-5, 15, 15);
+REM_before_MA_pklocs_201 = 14769.3;
+REM_before_wake_pklocs_201 = findPeaksBeforeTransition(REM_before_wake_filtered_201, signal_fs_201, delta465_filt_2_201_smooth, sec_signal_2_201, 0, 0, 0, 0);
+
 NREMexclMA_periods_pklocs_420 = find_NE_troughs(NREMexclMA_periods_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0.3); % Lower value = more peaks
 SWS_before_MA_pklocs_420 = findPeriodsBeforeTransitionMA(SWS_before_MA_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, MA_periods_420, 15, 15, 0.2);
 SWS_before_wake_pklocs_420 = findPeaksBeforeTransition(SWS_before_wake_filtered_420, signal_fs_420, delta465_filt_2_420_smooth, sec_signal_2_420, 0.1, mean(delta465_filt_2_420)-5, 15, 15);
@@ -937,6 +1003,44 @@ REM_before_wake_pklocs_026 = findPeaksBeforeTransition(REM_before_wake_filtered_
 % Logical condition for values not in the ranges 18950 to 19000 and 5400 to 5450
 not_in_range_124 = ~(REM_before_wake_pklocs_124 > 18950 & REM_before_wake_pklocs_124 < 19000) & ~(REM_before_wake_pklocs_124 > 5400 & REM_before_wake_pklocs_124 < 5450);
 REM_before_wake_pklocs_124 = REM_before_wake_pklocs_124(not_in_range_124);
+% Apply logical indexing to keep only values not in the specified ranges
+SWS_before_MA_pklocs_124 = SWS_before_MA_pklocs_124';
+NREMexclMA_periods_pklocs_124 = NREMexclMA_periods_pklocs_124';
+
+not_in_range_201_sws_to_MA =~(SWS_before_MA_pklocs_201 > 6000 & SWS_before_MA_pklocs_201 < 6010);
+SWS_before_MA_pklocs_201 = SWS_before_MA_pklocs_201(not_in_range_201_sws_to_MA);
+
+% Assuming SWS_before_wake_pklocs_201 is already defined as a 14x1 double
+new_values = [9145.8; 7193];  % Define the new values as a column vector
+SWS_before_wake_pklocs_201 = [SWS_before_wake_pklocs_201; new_values];
+
+not_in_range_213_NREMexclMA = ~(NREMexclMA_periods_pklocs_213 > 12480 & NREMexclMA_periods_pklocs_213 < 12481) & ~(NREMexclMA_periods_pklocs_213 > 6836 & NREMexclMA_periods_pklocs_213 < 6840)& ~(NREMexclMA_periods_pklocs_213 > 2253 & NREMexclMA_periods_pklocs_213 < 2256) & ~(NREMexclMA_periods_pklocs_213 > 1660 & NREMexclMA_periods_pklocs_213 < 1760);
+NREMexclMA_periods_pklocs_213 = NREMexclMA_periods_pklocs_213(not_in_range_213_NREMexclMA);
+
+not_in_range_213_sws_to_MA =~(SWS_before_MA_pklocs_213 > 7500 & SWS_before_MA_pklocs_213 < 7530) & ~(SWS_before_MA_pklocs_213 > 5980 & SWS_before_MA_pklocs_213 < 5985) & ~(SWS_before_MA_pklocs_213 > 10000 & SWS_before_MA_pklocs_213 < 10100) &  ~(SWS_before_MA_pklocs_213 > 11900 & SWS_before_MA_pklocs_213 < 12400);
+SWS_before_MA_pklocs_213 = SWS_before_MA_pklocs_213(not_in_range_213_sws_to_MA);
+
+% Assuming SWS_before_MA_pklocs_213 is a 1x36 row vector
+new_values_MA_213 = [2571.732, 6811.973, 6879.41, 9608.1, 9608.1, 10769.96];  % Define the new values as a row vector directly
+% Append the new values to the original array horizontally
+SWS_before_MA_pklocs_213 = [SWS_before_MA_pklocs_213, new_values_MA_213];
+
+not_in_range_213_sws_to_wake =~(SWS_before_wake_pklocs_213 > 3780 & SWS_before_wake_pklocs_213 < 4000) & ~(SWS_before_wake_pklocs_213 > 1000 & SWS_before_wake_pklocs_213 < 1500)& ~(SWS_before_wake_pklocs_213 > 3940 & SWS_before_wake_pklocs_213 < 3950);
+SWS_before_wake_pklocs_213 = SWS_before_wake_pklocs_213(not_in_range_213_sws_to_wake);
+
+new_values_wake_213 = [2664.03933];  % Define the new values as a column vector
+SWS_before_wake_pklocs_213 = [SWS_before_wake_pklocs_213; new_values_wake_213];
+
+%
+
+not_in_range_201_REM_to_MA =~(REM_before_wake_pklocs_201 > 5400 & REM_before_wake_pklocs_201 < 5435);
+REM_before_wake_pklocs_201 = REM_before_wake_pklocs_201(not_in_range_201_REM_to_MA);
+
+new_values_REM_201 = [5436.22; 6469.87; 10674.144];  % Define the new values as a column vector
+REM_before_wake_pklocs_201 = [REM_before_wake_pklocs_201; new_values_REM_201];
+
+not_in_range_201_sws_to_wake =~(SWS_before_wake_pklocs_201 > 3400 & SWS_before_wake_pklocs_201 < 3500) & ~(SWS_before_wake_pklocs_201 > 2600 & SWS_before_wake_pklocs_201 < 2800) & ~(SWS_before_wake_pklocs_201 > 4000 & SWS_before_wake_pklocs_201 < 4100) & ~(SWS_before_wake_pklocs_201 > 5600 & SWS_before_wake_pklocs_201 < 5700) &~(SWS_before_wake_pklocs_201 > 13000 & SWS_before_wake_pklocs_201 < 13200) & ~(SWS_before_wake_pklocs_201 > 11900 & SWS_before_wake_pklocs_201 < 12000);
+SWS_before_wake_pklocs_201 = SWS_before_wake_pklocs_201(not_in_range_201_sws_to_wake);
 
 not_in_range_588_NREMexclMA = ~(NREMexclMA_periods_pklocs_588 > 4400 & NREMexclMA_periods_pklocs_588 < 4450) & ~(NREMexclMA_periods_pklocs_588 > 7325 & NREMexclMA_periods_pklocs_588 < 7350)& ~(NREMexclMA_periods_pklocs_588 > 9705 & NREMexclMA_periods_pklocs_588 < 9710) & ~(NREMexclMA_periods_pklocs_588 > 10060 & NREMexclMA_periods_pklocs_588 < 10065) & ~(NREMexclMA_periods_pklocs_588 > 12035 & NREMexclMA_periods_pklocs_588 < 12045);
 NREMexclMA_periods_pklocs_588 = NREMexclMA_periods_pklocs_588(not_in_range_588_NREMexclMA);
@@ -950,50 +1054,17 @@ SWS_before_MA_pklocs_588 = SWS_before_MA_pklocs_588(not_in_range_588_sws_to_MA);
 not_in_range_588_REM_to_MA =~(REM_before_MA_pklocs_588 > 9300 & REM_before_MA_pklocs_588 < 9350);
 REM_before_MA_pklocs_588 = REM_before_MA_pklocs_588(not_in_range_588_REM_to_MA);
 
-not_in_range_580_sws_to_MA =~(SWS_before_MA_pklocs_580 > 8210 & SWS_before_MA_pklocs_580 < 8220);
-SWS_before_MA_pklocs_580 = SWS_before_MA_pklocs_580(not_in_range_580_sws_to_MA);
 
-not_in_range_025_NREMexclMA = ~(NREMexclMA_periods_pklocs_025 > 4615 & NREMexclMA_periods_pklocs_025 < 4620) & ~(NREMexclMA_periods_pklocs_025 > 5960 & NREMexclMA_periods_pklocs_025 < 5965)& ~(NREMexclMA_periods_pklocs_025 > 10900 & NREMexclMA_periods_pklocs_025 < 10905);
-NREMexclMA_periods_pklocs_025 = NREMexclMA_periods_pklocs_025(not_in_range_025_NREMexclMA);
 
-not_in_range_025_sws_to_MA =~(SWS_before_MA_pklocs_025 > 1000 & SWS_before_MA_pklocs_025 < 1600) &  ~(SWS_before_MA_pklocs_025 > 2210 & SWS_before_MA_pklocs_025 < 2220)&  ~(SWS_before_MA_pklocs_025 > 7200 & SWS_before_MA_pklocs_025 < 7310)&  ~(SWS_before_MA_pklocs_025 > 8100 & SWS_before_MA_pklocs_025 < 8200)&  ~(SWS_before_MA_pklocs_025 > 8900 & SWS_before_MA_pklocs_025 < 10000)&  ~(SWS_before_MA_pklocs_025 > 10350 & SWS_before_MA_pklocs_025 < 10400)&  ~(SWS_before_MA_pklocs_025 > 11975 & SWS_before_MA_pklocs_025 < 11985)&  ~(SWS_before_MA_pklocs_025 > 15540 & SWS_before_MA_pklocs_025 < 15550)&  ~(SWS_before_MA_pklocs_025 > 16381 & SWS_before_MA_pklocs_025 < 16386)&  ~(SWS_before_MA_pklocs_025 > 17540 & SWS_before_MA_pklocs_025 < 17860);
-SWS_before_MA_pklocs_025 = SWS_before_MA_pklocs_025(not_in_range_025_sws_to_MA);
 
-not_in_range_025_sws_to_wake = ~(SWS_before_wake_pklocs_025 > 900 & SWS_before_wake_pklocs_025 < 1400) & ~(SWS_before_wake_pklocs_025 > 14800 & SWS_before_wake_pklocs_025 < 14850);
-SWS_before_wake_pklocs_025 = SWS_before_wake_pklocs_025(not_in_range_025_sws_to_wake);
-
-not_in_range_025_REM_to_MA = ~(REM_before_MA_pklocs_025 > 9700 & REM_before_MA_pklocs_025 < 9750);
-REM_before_MA_pklocs_025 = REM_before_MA_pklocs_025(not_in_range_025_REM_to_MA);
-
-not_in_range_025 = ~(REM_before_wake_pklocs_025 > 2000 & REM_before_wake_pklocs_025 < 2100);
-REM_before_wake_pklocs_025 = REM_before_wake_pklocs_025(not_in_range_025);
-
-not_in_range_026_NREMexclMA = ~(NREMexclMA_periods_pklocs_026 > 7180 & NREMexclMA_periods_pklocs_026 < 7200) & ~(NREMexclMA_periods_pklocs_026 > 7815 & NREMexclMA_periods_pklocs_026 < 7825)& ~(NREMexclMA_periods_pklocs_026 > 9215 & NREMexclMA_periods_pklocs_026 < 9225) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 11605 & NREMexclMA_periods_pklocs_026 < 11615) & ~(NREMexclMA_periods_pklocs_026 > 12040 & NREMexclMA_periods_pklocs_026 < 12046)  & ~(NREMexclMA_periods_pklocs_026 > 13120 & NREMexclMA_periods_pklocs_026 < 13320);
-NREMexclMA_periods_pklocs_026 = NREMexclMA_periods_pklocs_026(not_in_range_026_NREMexclMA);
-
-not_in_range_026_sws_to_MA =~(SWS_before_MA_pklocs_026 > 1000 & SWS_before_MA_pklocs_026 < 1750) &  ~(SWS_before_MA_pklocs_026 > 1800 & SWS_before_MA_pklocs_026 < 2950)&  ~(SWS_before_MA_pklocs_026 > 3050 & SWS_before_MA_pklocs_026 < 3300)&  ~(SWS_before_MA_pklocs_026 > 3800 & SWS_before_MA_pklocs_026 < 3900)&  ~(SWS_before_MA_pklocs_026 > 4500 & SWS_before_MA_pklocs_026 < 4700)&  ~(SWS_before_MA_pklocs_026 > 5300 & SWS_before_MA_pklocs_026 < 5700)&  ~(SWS_before_MA_pklocs_026 > 6100 & SWS_before_MA_pklocs_026 < 6200)&  ~(SWS_before_MA_pklocs_026 > 6500 & SWS_before_MA_pklocs_026 < 6900)&  ~(SWS_before_MA_pklocs_026 > 7200 & SWS_before_MA_pklocs_026 < 7900)&  ~(SWS_before_MA_pklocs_026 > 7950 & SWS_before_MA_pklocs_026 < 8050)&  ~(SWS_before_MA_pklocs_026 > 8300 & SWS_before_MA_pklocs_026 < 8400)&  ~(SWS_before_MA_pklocs_026 > 9300 & SWS_before_MA_pklocs_026 < 9350)&  ~(SWS_before_MA_pklocs_026 > 9650 & SWS_before_MA_pklocs_026 < 9700)&  ~(SWS_before_MA_pklocs_026 > 9900 & SWS_before_MA_pklocs_026 < 9950)&  ~(SWS_before_MA_pklocs_026 > 10250 & SWS_before_MA_pklocs_026 < 10300)&  ~(SWS_before_MA_pklocs_026 > 10500 & SWS_before_MA_pklocs_026 < 10600)&  ~(SWS_before_MA_pklocs_026 > 11550 & SWS_before_MA_pklocs_026 < 12450)&  ~(SWS_before_MA_pklocs_026 > 13050 & SWS_before_MA_pklocs_026 < 13250)&  ~(SWS_before_MA_pklocs_026 > 13500 & SWS_before_MA_pklocs_026 < 13600);
-SWS_before_MA_pklocs_026 = SWS_before_MA_pklocs_026(not_in_range_026_sws_to_MA);
-
-not_in_range_026_sws_to_wake = ~(SWS_before_wake_pklocs_026 > 1300 & SWS_before_wake_pklocs_026 < 2600) & ~(SWS_before_wake_pklocs_026 > 3600 & SWS_before_wake_pklocs_026 < 7000) & ~(SWS_before_wake_pklocs_026 > 8200 & SWS_before_wake_pklocs_026 < 12600);
-SWS_before_wake_pklocs_026 = SWS_before_wake_pklocs_026(not_in_range_026_sws_to_wake);
-
-not_in_range_026_REM_to_MA = ~(REM_before_MA_pklocs_026 > 9700 & REM_before_MA_pklocs_026 < 10000);
-REM_before_MA_pklocs_026 = REM_before_MA_pklocs_026(not_in_range_026_REM_to_MA);
-
-not_in_range_026 = ~(REM_before_wake_pklocs_026 > 4000 & REM_before_wake_pklocs_026 < 5200) & ~(REM_before_wake_pklocs_026 > 7600 & REM_before_wake_pklocs_026 < 7700);
-REM_before_wake_pklocs_026 = REM_before_wake_pklocs_026(not_in_range_026);
-
-% Apply logical indexing to keep only values not in the specified ranges
-SWS_before_MA_pklocs_124 = SWS_before_MA_pklocs_124';
-NREMexclMA_periods_pklocs_124 = NREMexclMA_periods_pklocs_124';
 
 %% visualize calculated troughs
-    sleepscore_time = 0:length(wake_woMA_binary_vector_025)-1; % Assuming all vectors are the same length
+    sleepscore_time = 0:length(wake_woMA_binary_vector_213)-1; % Assuming all vectors are the same length
 
 figure
-plot_sleep(ds_sec_signal_2_025, ds_delta465_filt_2_025_smooth, sleepscore_time, wake_woMA_binary_vector_025, sws_binary_vector_025, REM_binary_vector_025, MA_binary_vector_025);
+plot_sleep(ds_sec_signal_2_213, ds_delta465_filt_2_213_smooth, sleepscore_time, wake_woMA_binary_vector_213, sws_binary_vector_213, REM_binary_vector_213, MA_binary_vector_213);
 hold on
-plot(NREMexclMA_periods_pklocs_025, delta465_filt_2_025_smooth(round(NREMexclMA_periods_pklocs_025*signal_fs)), 'r*')
+plot(REM_before_wake_pklocs_213, delta465_filt_2_213_smooth(round(REM_before_wake_pklocs_213*signal_fs)), 'r*')
 title('NE with selected peaks');
 
     sleepscore_time = 0:length(wake_woMA_binary_vector_026)-1; % Assuming all vectors are the same length
@@ -4656,20 +4727,20 @@ end
     sgtitle(main_title);
 
     %% Main plot w. Hajj cross correlation - single animal
-event_var = {NREMexclMA_periods_pklocs_124, SWS_before_MA_pklocs_124, SWS_before_wake_pklocs_124, REM_before_wake_pklocs_124, REM_before_MA_pklocs_124};
+event_var = {NREMexclMA_periods_pklocs_213, SWS_before_MA_pklocs_213, SWS_before_wake_pklocs_213, REM_before_wake_pklocs_213, REM_before_MA_pklocs_213};
 titles = {'NREM', 'NREM to MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition', 'REM to MA Transition'};
-main_title = 'Averaged Activity During NE Trough (M124)';
-epoc_start = 30;
+main_title = 'Averaged Activity During NE Trough (M213)';
+epoc_start = 60;
 epoc_end = 60;
-delta465_filt_2 = delta465_filt_2_124;
-sec_signal_2 = sec_signal_2_124;
-NE_fs = signal_fs_124;
-RR = RR_124;
-RR_time = RR_time_124;
-RR_fs = RR_fs_124; 
-EEG_bands_fs = EEG_bands_fs_124;
-mean_spectrogram = mean_spectrogram_124;
-F = F_124;
+delta465_filt_2 = delta465_filt_2_213;
+sec_signal_2 = sec_signal_2_213;
+NE_fs = signal_fs_213;
+RR = RR_213;
+RR_time = RR_time_213;
+RR_fs = RR_fs_213; 
+EEG_bands_fs = EEG_bands_fs_213;
+mean_spectrogram = mean_spectrogram_213;
+F = F_213;
 
 warning('off','all')
 warning
@@ -4677,7 +4748,7 @@ warning
     mid_point = ceil(epoc_start * RR_fs);  % This should be the index of the event time
     max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
     total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
-    power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30]}; % define SO, delta, theta, sigma, and beta, respectively
+    power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}; % define SO, delta, theta, sigma, and beta, respectively
     
     %Add in the time variable for plotting
     epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
@@ -4719,6 +4790,8 @@ warning
         Theta_collector = [];
         Sigma_collector = [];
         Beta_collector = [];
+        % Gamma_low_collector = [];
+        % Gamma_high_collector = [];
 
     
             % Extract power for specified bands
@@ -4788,6 +4861,8 @@ warning
         mean_Theta_pk_epocs = nanmean(Theta_collector, 1);
         mean_Sigma_pk_epocs = nanmean(Sigma_collector, 1);
         mean_Beta_pk_epocs = nanmean(Beta_collector, 1);
+        % mean_Gamma_low_pk_epocs = nanmean(Gamma_low_collector, 1);
+        % mean_Gamma_high_pk_epocs = nanmean(Gamma_high_collector, 1);
 
         cc1_all = cell(num_events, 1);
 
@@ -4813,7 +4888,7 @@ warning
                 end
                 % Display the warning message
             end
-            [cc1,lags] = xcorr(unity(detrend(RR_cross)), unity(detrend(NE_cross_corr)), (30*64),'unbiased');
+            [cc1,lags] = xcorr(unity(detrend(RR_cross)), unity(detrend(NE_cross_corr)), (60*64),'unbiased');
             cc1_all{i, 1} = cc1.';  % Store as a row vector if cc1 is initially a column vector
         end
         disp(warning_msg);
@@ -4871,6 +4946,8 @@ warning
         Theta_collector = [];
         Sigma_collector = [];
         Beta_collector = [];
+        % Gamma_low_collector = [];
+        % Gamma_high_collector = [];
 
     
             % Extract power for specified bands
@@ -4938,6 +5015,8 @@ warning
         mean_Theta_pk_epocs = nanmean(Theta_collector, 1);
         mean_Sigma_pk_epocs = nanmean(Sigma_collector, 1);
         mean_Beta_pk_epocs = nanmean(Beta_collector, 1);
+      %  mean_Gamma_low_pk_epocs = nanmean(Gamma_low_collector, 1);
+      %  mean_Gamma_high_pk_epocs = nanmean(Gamma_high_collector, 1);
 
         cc1_all = cell(num_events, 1);
         lags_all = cell(num_events, 1);
@@ -4964,7 +5043,7 @@ warning
                 end
                 % Display the warning message
             end
-            [cc1,lags] = xcorr(unity(detrend(RR_cross)), unity(detrend(NE_cross_corr)),(30*64),'unbiased');
+            [cc1,lags] = xcorr(unity(detrend(RR_cross)), unity(detrend(NE_cross_corr)),(60*64),'unbiased');
             cc1_all{i, 1} = cc1.';  % Store as a row vector if cc1 is initially a column vector
             lags_all{i, 1} = lags.';  % Store as a row vector if cc1 is initially a column vector
         end
@@ -5022,7 +5101,7 @@ warning
         
         title([event_name ' NE (' num2str(num_events) ' Events)']); % Including number of events in the title
         ylabel('Delta F/F');
-        xlim([-30, 60]);
+        xlim([-epoc_start, epoc_end]);
         ylim([global_min_delta_465_2, global_max_delta_465_2]);
         yticks(ytick_values_delta_465_2);
         grid on
@@ -5046,7 +5125,7 @@ warning
         
         title([event_name ' RR interval (' num2str(length(event_type)) ' Events)']);  % Correcting the number of events
         ylabel('RR interval (s)');
-        xlim([-30, 60]);
+        xlim([-epoc_start, epoc_end]);
         ylim([global_min_RR, global_max_RR]);
         yticks(ytick_values_RR);  % Apply custom y-tick values based on the global min/max for RR intervals
         grid on
@@ -5069,9 +5148,9 @@ warning
 
         % Formatting the subplot
         ylabel('Correlation (R)');
-        xlim([-30,30]);
+        xlim([-epoc_start,epoc_end]);
         ylim([global_min_corr, global_max_corr]);
-        title([event_name ' NE-RR Cross Correlation (' num2str(length(event_type)) ' Events)']);
+        title([event_name ' NE-RR Cross Correlation']);
         grid on;
 
         % Plotting EEG bands data
@@ -5088,6 +5167,9 @@ warning
         hTheta = plot(epoc_FPtime_EEG_bands, mean_Theta_pk_epocs, 'DisplayName', 'Theta');
         hSigma = plot(epoc_FPtime_EEG_bands, mean_Sigma_pk_epocs, 'DisplayName', 'Sigma');
         hBeta = plot(epoc_FPtime_EEG_bands, mean_Beta_pk_epocs, 'DisplayName', 'Beta');
+      %  hGamma_low = plot(epoc_FPtime_EEG_bands, mean_Gamma_low_pk_epocs, 'DisplayName', 'Gamma (Low)');
+       % hGamma_high = plot(epoc_FPtime_EEG_bands, mean_Gamma_high_pk_epocs, 'DisplayName', 'Gamma (High)');
+
         hold off;  % No more plots will be added
         
         % Use the handles to specify which plots to include in the legend
@@ -5095,7 +5177,7 @@ warning
         
         title([event_name ' EEG Bands (' num2str(length(event_type)) ' Events)']);
         ylabel('Power');
-        xlim([-30, 60]);
+        xlim([-epoc_start, epoc_end]);
         ylim([global_min_EEG_bands, global_max_EEG_bands]);
         yticks(ytick_values_EEG_bands);
         grid on
@@ -5105,3 +5187,37 @@ warning
     
     % Adjust overall plot settings
     sgtitle(main_title);
+
+    %% 
+    not_in_range_580_sws_to_MA =~(SWS_before_MA_pklocs_580 > 8210 & SWS_before_MA_pklocs_580 < 8220);
+SWS_before_MA_pklocs_580 = SWS_before_MA_pklocs_580(not_in_range_580_sws_to_MA);
+
+not_in_range_025_NREMexclMA = ~(NREMexclMA_periods_pklocs_025 > 4615 & NREMexclMA_periods_pklocs_025 < 4620) & ~(NREMexclMA_periods_pklocs_025 > 5960 & NREMexclMA_periods_pklocs_025 < 5965)& ~(NREMexclMA_periods_pklocs_025 > 10900 & NREMexclMA_periods_pklocs_025 < 10905);
+NREMexclMA_periods_pklocs_025 = NREMexclMA_periods_pklocs_025(not_in_range_025_NREMexclMA);
+
+not_in_range_025_sws_to_MA =~(SWS_before_MA_pklocs_025 > 1000 & SWS_before_MA_pklocs_025 < 1600) &  ~(SWS_before_MA_pklocs_025 > 2210 & SWS_before_MA_pklocs_025 < 2220)&  ~(SWS_before_MA_pklocs_025 > 7200 & SWS_before_MA_pklocs_025 < 7310)&  ~(SWS_before_MA_pklocs_025 > 8100 & SWS_before_MA_pklocs_025 < 8200)&  ~(SWS_before_MA_pklocs_025 > 8900 & SWS_before_MA_pklocs_025 < 10000)&  ~(SWS_before_MA_pklocs_025 > 10350 & SWS_before_MA_pklocs_025 < 10400)&  ~(SWS_before_MA_pklocs_025 > 11975 & SWS_before_MA_pklocs_025 < 11985)&  ~(SWS_before_MA_pklocs_025 > 15540 & SWS_before_MA_pklocs_025 < 15550)&  ~(SWS_before_MA_pklocs_025 > 16381 & SWS_before_MA_pklocs_025 < 16386)&  ~(SWS_before_MA_pklocs_025 > 17540 & SWS_before_MA_pklocs_025 < 17860);
+SWS_before_MA_pklocs_025 = SWS_before_MA_pklocs_025(not_in_range_025_sws_to_MA);
+
+not_in_range_025_sws_to_wake = ~(SWS_before_wake_pklocs_025 > 900 & SWS_before_wake_pklocs_025 < 1400) & ~(SWS_before_wake_pklocs_025 > 14800 & SWS_before_wake_pklocs_025 < 14850);
+SWS_before_wake_pklocs_025 = SWS_before_wake_pklocs_025(not_in_range_025_sws_to_wake);
+
+not_in_range_025_REM_to_MA = ~(REM_before_MA_pklocs_025 > 9700 & REM_before_MA_pklocs_025 < 9750);
+REM_before_MA_pklocs_025 = REM_before_MA_pklocs_025(not_in_range_025_REM_to_MA);
+
+not_in_range_025 = ~(REM_before_wake_pklocs_025 > 2000 & REM_before_wake_pklocs_025 < 2100);
+REM_before_wake_pklocs_025 = REM_before_wake_pklocs_025(not_in_range_025);
+
+not_in_range_026_NREMexclMA = ~(NREMexclMA_periods_pklocs_026 > 7180 & NREMexclMA_periods_pklocs_026 < 7200) & ~(NREMexclMA_periods_pklocs_026 > 7815 & NREMexclMA_periods_pklocs_026 < 7825)& ~(NREMexclMA_periods_pklocs_026 > 9215 & NREMexclMA_periods_pklocs_026 < 9225) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 10954 & NREMexclMA_periods_pklocs_026 < 10960) & ~(NREMexclMA_periods_pklocs_026 > 11605 & NREMexclMA_periods_pklocs_026 < 11615) & ~(NREMexclMA_periods_pklocs_026 > 12040 & NREMexclMA_periods_pklocs_026 < 12046)  & ~(NREMexclMA_periods_pklocs_026 > 13120 & NREMexclMA_periods_pklocs_026 < 13320);
+NREMexclMA_periods_pklocs_026 = NREMexclMA_periods_pklocs_026(not_in_range_026_NREMexclMA);
+
+not_in_range_026_sws_to_MA =~(SWS_before_MA_pklocs_026 > 1000 & SWS_before_MA_pklocs_026 < 1750) &  ~(SWS_before_MA_pklocs_026 > 1800 & SWS_before_MA_pklocs_026 < 2950)&  ~(SWS_before_MA_pklocs_026 > 3050 & SWS_before_MA_pklocs_026 < 3300)&  ~(SWS_before_MA_pklocs_026 > 3800 & SWS_before_MA_pklocs_026 < 3900)&  ~(SWS_before_MA_pklocs_026 > 4500 & SWS_before_MA_pklocs_026 < 4700)&  ~(SWS_before_MA_pklocs_026 > 5300 & SWS_before_MA_pklocs_026 < 5700)&  ~(SWS_before_MA_pklocs_026 > 6100 & SWS_before_MA_pklocs_026 < 6200)&  ~(SWS_before_MA_pklocs_026 > 6500 & SWS_before_MA_pklocs_026 < 6900)&  ~(SWS_before_MA_pklocs_026 > 7200 & SWS_before_MA_pklocs_026 < 7900)&  ~(SWS_before_MA_pklocs_026 > 7950 & SWS_before_MA_pklocs_026 < 8050)&  ~(SWS_before_MA_pklocs_026 > 8300 & SWS_before_MA_pklocs_026 < 8400)&  ~(SWS_before_MA_pklocs_026 > 9300 & SWS_before_MA_pklocs_026 < 9350)&  ~(SWS_before_MA_pklocs_026 > 9650 & SWS_before_MA_pklocs_026 < 9700)&  ~(SWS_before_MA_pklocs_026 > 9900 & SWS_before_MA_pklocs_026 < 9950)&  ~(SWS_before_MA_pklocs_026 > 10250 & SWS_before_MA_pklocs_026 < 10300)&  ~(SWS_before_MA_pklocs_026 > 10500 & SWS_before_MA_pklocs_026 < 10600)&  ~(SWS_before_MA_pklocs_026 > 11550 & SWS_before_MA_pklocs_026 < 12450)&  ~(SWS_before_MA_pklocs_026 > 13050 & SWS_before_MA_pklocs_026 < 13250)&  ~(SWS_before_MA_pklocs_026 > 13500 & SWS_before_MA_pklocs_026 < 13600);
+SWS_before_MA_pklocs_026 = SWS_before_MA_pklocs_026(not_in_range_026_sws_to_MA);
+
+not_in_range_026_sws_to_wake = ~(SWS_before_wake_pklocs_026 > 1300 & SWS_before_wake_pklocs_026 < 2600) & ~(SWS_before_wake_pklocs_026 > 3600 & SWS_before_wake_pklocs_026 < 7000) & ~(SWS_before_wake_pklocs_026 > 8200 & SWS_before_wake_pklocs_026 < 12600);
+SWS_before_wake_pklocs_026 = SWS_before_wake_pklocs_026(not_in_range_026_sws_to_wake);
+
+not_in_range_026_REM_to_MA = ~(REM_before_MA_pklocs_026 > 9700 & REM_before_MA_pklocs_026 < 10000);
+REM_before_MA_pklocs_026 = REM_before_MA_pklocs_026(not_in_range_026_REM_to_MA);
+
+not_in_range_026 = ~(REM_before_wake_pklocs_026 > 4000 & REM_before_wake_pklocs_026 < 5200) & ~(REM_before_wake_pklocs_026 > 7600 & REM_before_wake_pklocs_026 < 7700);
+REM_before_wake_pklocs_026 = REM_before_wake_pklocs_026(not_in_range_026);
