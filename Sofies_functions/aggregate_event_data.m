@@ -1,5 +1,5 @@
 function [results] = aggregate_event_data(saveDirectory, event_var, animals, data_types)
-    % Predefine the structure to hold the mean and SEM values for each event and data type
+    % Predefine the structure to hold the mean, SEM values, and event counts for each event and data type
     results = struct();
 
     % Iterate over each event type
@@ -40,6 +40,11 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
                 if ~ismember(data_types{d_idx}, {'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'})
                     results.(event_type_name).(data_types{d_idx}).sem = std(all_data.(data_types{d_idx}), 0, 1) / sqrt(size(all_data.(data_types{d_idx}), 1));
                 end
+
+                % Store the number of events
+                results.(event_type_name).(data_types{d_idx}).num_events = size(all_data.(data_types{d_idx}), 1);
+            else
+                results.(event_type_oame).(data_types{d_idx}).num_events = 0;
             end
         end
     end
