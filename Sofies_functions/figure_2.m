@@ -7,6 +7,8 @@ warning
     max_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
     total_epoch_length = ceil((epoc_start + epoc_end) * RR_fs);
     power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}; % define SO, delta, theta, sigma, and beta, respectively
+
+    subplot_number = size(event_var, 2);
     
     %Add in the time variable for plotting
     epoc_FPtime_NE = linspace(-epoc_start, epoc_end, ceil((epoc_start + epoc_end) * NE_fs));
@@ -22,6 +24,9 @@ warning
     global_max_corr = -inf; 
     global_min_corr = inf;
 
+    maxValues = zeros(length(event_var), 9); % Assuming you have 9 types of data max to track
+    minValues = zeros(length(event_var), 9); % Same as above for min
+
     fs_original = NE_fs;  % original sampling frequency
     fs_new = RR_fs;  
     % Calculate the greatest common divisor to find the optimal downsample factor
@@ -31,14 +36,18 @@ warning
     P = fs_new / gcd_fs;
     Q = round(fs_original) / gcd_fs;
 
-
-        % Initialize variables to store maximum and minimum values for each type of subplot
-
     % First pass: Loop to find global min/max
     for stage_idx = 1:length(event_var)
         event_type = event_var{stage_idx}; % Select the current event type
         event_name = titles{stage_idx}; % Current event name for titles
         num_events = length(event_type); % Number of events for the current sleep stage
+
+            % Skip processing if there are no events
+        if num_events == 0
+            disp(['Skipping ', event_name, ' due to no events.']);
+            continue;  % Skip the remainder of this loop iteration
+        end
+        
         
         % Resetting collectors for each sleep stage
         NE_peak_epoc_collector = [];
@@ -89,7 +98,8 @@ warning
             % if epoch_end_idx - epoch_start_idx + 1 <= total_epoch_length
             %     RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
             % end
-            RR_epoc= RR(:, (HRB_i - epoc_start)*RR_fs:(HRB_i + epoc_end)*RR_fs);
+            %RR_epoc= RR(:, (HRB_i - epoc_start)*RR_fs:(HRB_i + epoc_end)*RR_fs);
+            RR_epoc= RR(:, (find(RR_time>HRB_i,1)-(RR_fs*epoc_start):find(RR_time>HRB_i,1)+(RR_fs*epoc_end)));
             RR_collector = [RR_collector; RR_epoc];
             
             % Extract epochs for EEG bands
@@ -175,18 +185,35 @@ warning
         std_dev_corr = std(cc1_matrix, 0, 2); % Standard deviation across columns (time points)
         SEM_corr = std_dev_corr / sqrt(N); % Standard error of the mean
 
-        global_max_RR = max(global_max_RR, max(mean_filtered_RR_epocs+SEM_RR));
-        global_min_RR = min(global_min_RR, min(mean_filtered_RR_epocs-SEM_RR));
+        %disp(any(isnan(mean_filtered_RR_epocs + SEM_RR)));
+        %disp(any(isinf(mean_filtered_RR_epocs + SEM_RR)));
 
-        global_max_delta_465_2 = max(global_max_delta_465_2, max(mean_NEpk_epocs+SEM_NE));
-        global_min_delta_465_2 = min(global_min_delta_465_2, min(mean_NEpk_epocs-SEM_NE));
 
-        global_max_EEG_bands = max(global_max_EEG_bands, max([mean_SO_pk_epocs, mean_Delta_pk_epocs, mean_Theta_pk_epocs, mean_Sigma_pk_epocs, mean_Beta_pk_epocs, mean_Gamma_low_pk_epocs, mean_Gamma_high_pk_epocs]));
-        global_min_EEG_bands = min(global_min_EEG_bands, min([mean_SO_pk_epocs, mean_Delta_pk_epocs, mean_Theta_pk_epocs, mean_Sigma_pk_epocs, mean_Beta_pk_epocs, mean_Gamma_low_pk_epocs, mean_Gamma_high_pk_epocs]));
-        
-        global_max_corr = max(global_max_corr, max(mean_cc1+SEM_corr));
-        global_min_corr = min(global_min_corr, min(mean_cc1-SEM_corr));
+        %disp(global_max_RR);  % See what this prints.
 
+
+        maxValues(stage_idx, 1) = max(mean_NEpk_epocs + SEM_NE); % Assuming these are calculated in your loop
+        minValues(stage_idx, 1) = min(mean_NEpk_epocs - SEM_NE);
+        maxValues(stage_idx, 2) = max(mean_filtered_RR_epocs + SEM_RR);
+        minValues(stage_idx, 2) = min(mean_filtered_RR_epocs - SEM_RR);
+        maxValues(stage_idx, 3) = max(mean_SO_pk_epocs); % Assuming these are calculated in your loop
+        minValues(stage_idx, 3) = min(mean_SO_pk_epocs);
+        maxValues(stage_idx, 4) = max(mean_Delta_pk_epocs);
+        minValues(stage_idx, 4) = min(mean_Delta_pk_epocs);
+        maxValues(stage_idx, 5) = max(mean_Theta_pk_epocs); % Assuming these are calculated in your loop
+        minValues(stage_idx, 5) = min(mean_Theta_pk_epocs);
+        maxValues(stage_idx, 6) = max(mean_Sigma_pk_epocs);
+        minValues(stage_idx, 6) = min(mean_Sigma_pk_epocs);
+        maxValues(stage_idx, 7) = max(mean_Beta_pk_epocs); % Assuming these are calculated in your loop
+        minValues(stage_idx, 7) = min(mean_Beta_pk_epocs);
+        maxValues(stage_idx, 8) = max(mean_Gamma_low_pk_epocs);
+        minValues(stage_idx, 8) = min(mean_Gamma_low_pk_epocs);
+        maxValues(stage_idx, 9) = max(mean_Gamma_high_pk_epocs);
+        minValues(stage_idx, 9) = min(mean_Gamma_high_pk_epocs);
+        maxValues(stage_idx, 10) = max(mean_cc1 + SEM_corr);
+        minValues(stage_idx, 10) = min(mean_cc1 - SEM_corr);
+        maxValues(maxValues == 0) = NaN;
+        minValues(minValues == 0) = NaN;
     end
         % global_max_corr = global_max_corr + 0.05; %add a little bit here to have some air in the plot
         % global_min_corr = global_min_corr - 0.1; %add a little bit here to have some air in the plot
@@ -199,6 +226,11 @@ warning
         event_type = event_var{stage_idx}; % Select the current event type
         event_name = titles{stage_idx}; % Current event name for titles
         num_events = length(event_type); % Number of events for the current sleep stage
+
+         if num_events == 0
+            disp(['Skipping ', event_name, ' due to no events.']);
+            continue;  % Skip the remainder of this loop iteration
+        end
         
         % Resetting collectors for each sleep stage
         NE_peak_epoc_collector = [];
@@ -247,7 +279,7 @@ warning
             % epoch_end_idx = min(event_idx + (total_epoch_length - mid_point), length(RR));
             % 
             % RR_collector(1:(epoch_end_idx - epoch_start_idx + 1), i) = RR(epoch_start_idx:epoch_end_idx);
-            RR_epoc= RR(:, (NEpk_i - epoc_start)*RR_fs:(NEpk_i + epoc_end)*RR_fs);
+            RR_epoc= RR(:, (find(RR_time>HRB_i,1)-(RR_fs*epoc_start):find(RR_time>HRB_i,1)+(RR_fs*epoc_end)));
             RR_collector = [RR_collector; RR_epoc];
 
             % Extract epochs for EEG bands
@@ -313,7 +345,7 @@ warning
             cc1_all{i, 1} = cc1.';  % Store as a row vector if cc1 is initially a column vector
             lags_all{i, 1} = lags.';  % Store as a row vector if cc1 is initially a column vector
         end
-        disp(warning_msg);
+      %  disp(warning_msg);
 
 
         % Assuming cc1_all is already filled with cc1 vectors as described
@@ -341,12 +373,18 @@ warning
         SEM_corr = std_dev_corr / sqrt(N); % Standard error of the mean
 
         % After calculating max and min for each type, set consistent y-axis limits and y-ticks
+        global_max_RR = max(maxValues(:, 2));
+        global_min_RR = min(minValues(:, 2));
         y_tick_interval_RR = (global_max_RR - global_min_RR) / 5; % Example for dividing into 5 parts
         ytick_values_RR = global_min_RR:y_tick_interval_RR:global_max_RR;
         
+        global_max_delta_465_2 = max(maxValues(:, 1));
+        global_min_delta_465_2 = min(minValues(:, 1));
         y_tick_interval_delta_465_2 = (global_max_delta_465_2 - global_min_delta_465_2) / 5;
         ytick_values_delta_465_2 = global_min_delta_465_2:y_tick_interval_delta_465_2:global_max_delta_465_2;
         
+        global_max_EEG_bands = max(max(maxValues(:, 3:9)));
+        global_min_EEG_bands = min(min(minValues(:, 3:9)));
         y_tick_interval_EEG_bands = (global_max_EEG_bands - global_min_EEG_bands) / 5;
         ytick_values_EEG_bands = global_min_EEG_bands:y_tick_interval_EEG_bands:global_max_EEG_bands;
 
@@ -354,8 +392,9 @@ warning
 
         % Plotting NE data
         subplot_position_ne = (stage_idx-1)*4 + 1;
-        subplot(5, 4, subplot_position_ne);
-        
+        subplot(subplot_number, 4, subplot_position_ne);
+
+
         % Plot the red line first to ensure it appears behind the data
         hold on;  % Keeps the plot active for subsequent data plotting
         plot([0 0], [global_min_delta_465_2, global_max_delta_465_2], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--', 'HandleVisibility', 'off'); % Dashed maroon line behind
@@ -376,8 +415,9 @@ warning
 
 
         subplot_idx_RR = subplot_position_ne + 1;  % Position for RR subplot
-        subplot(5, 4, subplot_idx_RR);
-        
+        subplot(subplot_number, 4, subplot_idx_RR);
+
+
         % Plot the red line first to ensure it appears behind the data
         hold on;  % Keeps the plot active for subsequent data plotting
         plot([0 0], [global_min_RR, global_max_RR], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');  % Dashed maroon line
@@ -399,9 +439,11 @@ warning
         lineProps = {'Color',[0.4660 0.6740 0.1880]};  % Sets line color and width
     
         subplot_idx_xcorr = subplot_position_ne + 2;  % Position for RR subplot
+        global_max_corr = max(maxValues(:, 10));
+        global_min_corr = min(minValues(:, 10));
     
         % Create subplot
-        subplot(5, 4, subplot_idx_xcorr);
+        subplot(subplot_number, 4, subplot_idx_xcorr);
         hold on;
         plot([0 0], [global_min_corr, global_max_corr], 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--', 'HandleVisibility', 'off'); % Dashed gray line behind
         
@@ -421,7 +463,7 @@ warning
 
         % Plotting EEG bands data
         subplot_position_eeg = subplot_position_ne + 3;
-        subplot(5, 4, subplot_position_eeg);
+        subplot(subplot_number, 4, subplot_position_eeg);
         
         % Plot the red line first to ensure it appears behind the data
         hold on;  % Keeps the plot active for subsequent data plotting

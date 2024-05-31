@@ -1,4 +1,4 @@
-function [resampled_RR_pchip, new_time_vector, new_fs, quality_selected_peaks, quality_selected_peak_times] = GetRRIntervals(mouse, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
+function [resampled_RR_pchip, new_time_vector, new_fs, quality_selected_peaks, quality_selected_peak_times] = GetRRIntervals(UniqueID, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
 % Determine HR and movement peaks - current version
 
 % Initialize selected peaks storage
@@ -83,6 +83,7 @@ end
         last_movement_end = end_idx;
     end
 end
+clear last_movement_end
 % Remove selected peaks that are to quick
 % Calculate the minimum time interval between peaks based on physiological bounds
 min_interval_sec = 60 / 800; % Minimum time interval in seconds for 700 bpm
@@ -148,6 +149,7 @@ sd_EMG = std(EMG);
 
 % Set threshold as mean + 3.5 * SD for movement detection
 threshold = mean_EMG + move_thresh * sd_EMG;
+clear mean_EMG sd_EMG
 % Plotting peaks
 figure;
 
@@ -157,24 +159,35 @@ plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_times, quality_selected_pe
 hold on;
 scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
 line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+hold off
 xlabel('Time (s)');
 ylabel('EMG (V)');
 title('Original EMG Data w. peaks corrected v2');
 grid on;
 
-% Plot the filtered EMG signal with selected peaks
 subplot(2,1,2);
-plot(sec_signal_EMG, EMG, 'b-', selected_peak_times, selected_peaks, 'ro');
-hold on;
-scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
-line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+plot(sec_signal_EMG, EMG, 'b-');
 xlabel('Time (s)');
 ylabel('EMG (V)');
-title('EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+title('EMG');
 set(gcf,'color','white')
 grid on;
 
-sgtitle(sprintf('Mouse %s', mouse{3}))
+% Plot the filtered EMG signal with selected peaks
+% subplot(2,1,2);
+% plot(sec_signal_EMG, EMG, 'b-', selected_peak_times, selected_peaks, 'ro');
+% hold on;
+% scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+% line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+% xlabel('Time (s)');
+% ylabel('EMG (V)');
+% title('EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+% set(gcf,'color','white')
+% grid on;
+
+sgtitle(sprintf('Mouse %s', UniqueID))
+set(gcf, 'Color', 'w'); % Set background color to white
+
 
 legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
 
@@ -210,7 +223,7 @@ for i = 1:length(movement_sec)-1
 end
 % Plot RR's with selected/movement peaks
 
-
+clear selected_peak_locs selected_peak_locs movement_sec minimum_time_between_movement indices_between_movements_selected
 % Remove RR outliers
 %Outlier detection
 
@@ -232,6 +245,7 @@ window_size = 5;
 
 % Apply the moving average - cahnge to RR if you haven't filtered
 filtered_RR_smooth = movmean(filtered_RR, window_size);
+clear filtered_RR
 
 % filtered_RR_smooth = filtfilt(MeanFilter,1,double(filtered_RR));
 
@@ -245,7 +259,7 @@ new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
 
 % Use interpolation to resample RR intervals at these new time points
 % 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
-resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'spline');
-resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
-resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
+% resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'spline');
+% resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+% resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
 resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'pchip');

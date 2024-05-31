@@ -47,7 +47,6 @@ function figure_2_cross_animals(results, global_max, global_min, epoc_start, epo
         shadedErrorBar(epoc_FPtime_NE, results.(event_name).NE.mean, results.(event_name).NE.sem, lineProps, 1);
         plot(epoc_FPtime_NE, results.(event_name).NE.mean, 'Color', [0 0.4470 0.7410]);  % Light blue
         hold off
-        %plot_data_with_error('NE', currentTitle, epoc_FPtime_NE, results.(event_name), global_max, global_min, results.(event_name).NE.num_events);
         n_events = results.(event_name).NE.num_events; % Assuming num_events is stored correctly in data structure
         title(sprintf('NE %s (%d Events)', currentTitle, n_events));
         ylabel('Delta F/F');
@@ -63,15 +62,19 @@ function figure_2_cross_animals(results, global_max, global_min, epoc_start, epo
         shadedErrorBar(epoc_FPtime_RR, results.(event_name).RR.mean, results.(event_name).RR.sem, lineProps, 1);
         plot(epoc_FPtime_RR, results.(event_name).RR.mean, 'Color', [0.8500 0.3250 0.0980]); 
         hold off
-        %plot_data_with_error('RR', currentTitle, epoc_FPtime_RR, results.(event_name), global_max, global_min, results.(event_name).RR.num_events);
         n_events = results.(event_name).RR.num_events; % Assuming num_events is stored correctly in data structure
         title(sprintf('RR %s (%d Events)', currentTitle, n_events));
         ylabel('RR Intervals (s)');
         xlim([-epoc_start, epoc_end]);
         ylim([global_min.RR, global_max.RR]);
         grid on;
-        %plot_data_with_error('RR', currentTitle, epoc_FPtime_RR, results.(event_name), global_max, global_min, results.(event_name).RR.num_events);
 
+
+        % Find the index of the minimum x_corr value
+        [minValue, minIndex] = min(results.(event_name).x_corr.mean);
+        
+        % Get the timestamp of the minimum x_corr value
+        minTimestamp = epoc_FPtime_RR(minIndex);
         % Plot x-corr data
         subplot(numEventVars, numColumns, (i-1)*numColumns + 3);
         lineProps = {'Color',[0.4660 0.6740 0.1880]};  % Sets line color and width
@@ -81,17 +84,15 @@ function figure_2_cross_animals(results, global_max, global_min, epoc_start, epo
         plot(epoc_FPtime_RR, results.(event_name).x_corr.mean, 'Color',[0.4660 0.6740 0.1880]);  % Light green
         hold off
         %plot_data_with_error('x_corr', currentTitle, epoc_FPtime_x_corr, results.(event_name), global_max, global_min, results.(event_name).x_corr.num_events);
-        n_events = results.(event_name).x_corr.num_events; % Assuming num_events is stored correctly in data structure
-        title(sprintf('x-corr %s (%d Events)', currentTitle, n_events));
+        title(sprintf('Lowest x-corr value: %0.2f at %0.2f s', minValue, minTimestamp));
         ylabel('R');
         xlim([-epoc_start, epoc_end]);
         ylim([global_min.x_corr, global_max.x_corr]);
         grid on;
-       % plot_data_with_error('x_corr', currentTitle, epoc_FPtime_RR, results.(event_name), global_max, global_min, results.(event_name).x_corr.num_events);
+        
 
         % Plot EEG bands data
         subplot(numEventVars, numColumns, (i-1)*numColumns + 4);
-        %plot_EEG_bands(currentTitle, epoc_FPtime_EEG, results.(event_name), global_max, global_min);
             hold on;
         eeg_bands = {'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
         colors = lines(numel(eeg_bands));  % Get distinct colors for each EEG band
@@ -107,7 +108,6 @@ function figure_2_cross_animals(results, global_max, global_min, epoc_start, epo
             legend(legend_entries, 'Location', 'EastOutside');
         end
         hold off
-        %plot_data_with_error('NE', currentTitle, epoc_FPtime_NE, results.(event_name), global_max, global_min, results.(event_name).NE.num_events);
         n_events = results.(event_name).SO.num_events; % Assuming num_events is stored correctly in data structure
         title(sprintf('EEG %s (%d Events)', currentTitle, n_events));
         ylabel('Power');
