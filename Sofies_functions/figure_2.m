@@ -316,6 +316,16 @@ warning
         mean_Gamma_low_pk_epocs = nanmean(Gamma_low_collector, 1);
         mean_Gamma_high_pk_epocs = nanmean(Gamma_high_collector, 1);
 
+        length_EP = length(epoc_FPtime_EEG_bands);
+        % Trim mean variables
+        mean_SO_pk_epocs = trim_and_warn(mean_SO_pk_epocs, length_EP, 'mean_SO_pk_epocs');
+        mean_Delta_pk_epocs = trim_and_warn(mean_Delta_pk_epocs, length_EP, 'mean_Delta_pk_epocs');
+        mean_Theta_pk_epocs = trim_and_warn(mean_Theta_pk_epocs, length_EP, 'mean_Theta_pk_epocs');
+        mean_Sigma_pk_epocs = trim_and_warn(mean_Sigma_pk_epocs, length_EP, 'mean_Sigma_pk_epocs');
+        mean_Beta_pk_epocs = trim_and_warn(mean_Beta_pk_epocs, length_EP, 'mean_Beta_pk_epocs');
+        mean_Gamma_low_pk_epocs = trim_and_warn(mean_Gamma_low_pk_epocs, length_EP, 'mean_Gamma_low_pk_epocs');
+        mean_Gamma_high_pk_epocs = trim_and_warn(mean_Gamma_high_pk_epocs, length_EP, 'mean_Gamma_high_pk_epocs');
+
         cc1_all = cell(num_events, 1);
         lags_all = cell(num_events, 1);
 

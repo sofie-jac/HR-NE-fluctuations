@@ -4,6 +4,18 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
 
     % Define EEG bands
     eeg_bands = {'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
+    % Define the maximum length for EEG bands (modifiable)
+    max_length_EEG = 240;
+
+    % Helper function to trim and warn
+    function trimmed_var = trim_and_warn(variable, target_length, var_name)
+        if length(variable) > target_length
+            disp(['Warning: Trimming ', var_name, ' from ', num2str(length(variable)), ' to ', num2str(target_length)]);
+            trimmed_var = variable(1:target_length);
+        else
+            trimmed_var = variable;
+        end
+    end
 
     % Iterate over each event type
     for e_idx = 1:length(event_var)
@@ -34,8 +46,15 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
                     loaded_data = load(filename);
                     variable_name = sprintf('%s_%s_%s', data_types{d_idx}, event_type_name, uniqueId);
                     if isfield(loaded_data, variable_name)
+                        data_to_append = loaded_data.(variable_name);
+
+                        % Check if data is an EEG band and needs trimming
+                        if ismember(data_types{d_idx}, eeg_bands)
+                            data_to_append = trim_and_warn(data_to_append, max_length_EEG, variable_name);
+                        end
+
                         % Append the data for this animal to the all_data structure
-                        all_data.(data_types{d_idx}) = [all_data.(data_types{d_idx}); loaded_data.(variable_name)];
+                        all_data.(data_types{d_idx}) = [all_data.(data_types{d_idx}); data_to_append];
                     end
                 end
             end
