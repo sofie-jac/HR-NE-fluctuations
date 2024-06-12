@@ -32,7 +32,7 @@ function [HRB, HRB_time] = findHRB(new_time_vector, RR_data)
             std_RR = std(current_window_RR);
             
             % Filter criteria: mean - 1.5 * SD
-            criteria_threshold = mean_RR - 1.5 * std_RR;
+            criteria_threshold = mean_RR - 2.2 * std_RR;
             valid_trough_indices = find(troughs < criteria_threshold);
             
             if ~isempty(valid_trough_indices)

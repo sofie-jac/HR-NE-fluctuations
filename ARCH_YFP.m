@@ -145,7 +145,7 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_408, time_spectrogram_zero_408, F_408, band_powers_408, EEG_bands_fs_408] = PowerAnalysisEEG(EEG_408, EEG_fs_408, frw, window_in_sec, power_bands);
 [mean_spectrogram_420, time_spectrogram_zero_420, F_420, band_powers_420, EEG_bands_fs_420] = PowerAnalysisEEG(EEG_420, EEG_fs_420, frw, window_in_sec, power_bands);
 
-clear power_bands frw window_in_sec
+clear frw window_in_sec
 
 %% Get figure 3 single animal
 o = {'387', '403', '412', '414', '416', '408', '420'};
@@ -353,7 +353,75 @@ figure_2_cross_animals(results_arch, global_max_arch, global_min_arch, 60, 60, m
 results_yfp = aggregate_event_data(saveDirectory, event_var, yfp, data_types);
 [global_max_yfp, global_min_yfp] = compute_global_extremes(results_yfp, data_types);
 figure_2_cross_animals(results_yfp, global_max_yfp, global_min_yfp, 60, 60, main_title_yfp, titles)
+%% Get RR for 0 and 20 sec from figure 3
+% Define the suffixes for subjects
+suffixes = {'387', '403', '412', '414', '416', '408', '420'};
 
+% Define the end of the epoch in seconds
+epoch_end = 60;
+
+% Define the directory where the RR_collector files are saved
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\figure_3_data';
+
+% Call the function to extract RR intervals and create the table
+RR_table = extract_RR_intervals(suffixes, epoch_end, saveDirectory);
+
+% Define the suffixes for subjects
+suffixes = {'387', '403', '412', '414', '416', '408', '420'};
+arch = {'387', '403', '412', '414', '416'};
+yfp = {'408', '420'};
+
+% Define the event variables and labels
+event_var_onset = 'RR_laser_onset';
+event_var_during = 'RR_during_laser';
+y_lab = 'RR Values';
+main_title = 'RR Values Distribution by Group at laser onset and 20 seconds after';
+
+% Call the function to plot the violin plots
+plot_RR_violins(RR_table, arch, yfp, event_var_onset, event_var_during, y_lab, main_title);
+
+% Call the function to plot the bar plot with SEM error bars
+plot_RR_bar(RR_table, arch, yfp, event_var_onset, event_var_during, y_lab, main_title);
+
+
+%% Get AUC for time 0 to 20 for RR
+o = {'387', '403', '412', '414', '416', '408', '420'};
+event_var = {'laser_on_NREM'};
+epoc_start = 60;
+epoc_end = 60;
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\figure_3_data';
+arch = {'387', '403', '412', '414', '416'};
+yfp = {'408', '420'};
+% Assuming AUC_table is already created from the previous steps
+y_lab = 'AUC';
+main_title = 'AUC Distribution by Group 20 sec before and after laser onset';
+
+AUC_table = extract_AUC_RR_intervals(o, epoc_end, saveDirectory);
+% Call the function to plot the bar plot with SEM error bars
+plot_AUC_bar(AUC_table, arch, yfp, y_lab, main_title);
+
+%plot_HRB_arch_yfp_violins(AUC_table, arch, yfp, 'AUC', 'AUC for RR', 'AUC for RR from laser onset to 30 seconds after')
+% Call the function to plot the violins
+%plot_AUC_violins(AUC_table, arch, yfp, y_lab, main_title);
+%% Create memory table
+% Create the data
+Suffix = [387, 399, 392, 403, 412, 414, 416, 418, 486, 408, 420, 468, 477, 484]';
+sigma_power_increase = [0.056842, 0.057477, 0.047644, 0.062896, 0.064325, 0.068995, 0.080907, 0.045944, 0.051554, 0.016309, 0.041683, 0.012267, 0.03086, 0.058014]';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444]';
+
+% Create the table
+data_table = table(Suffix, sigma_power_increase, novel_familiar_ratio);
+%% Add AUC diff to memory table
+
+% Update the data_table with AUC differences
+data_table_update = update_table_with_auc_diff(AUC_table, data_table);
+
+%% Correlation plot between RR AUC diff and memory
+arch = {'387', '403', '412', '414', '416'};
+yfp = {'408', '420'};
+
+% Plot the correlation
+plot_correlation(data_table_update, arch, yfp, 'AUC_post'); % Change 'AUC_diff' to any other variable as needed
 %% RR PSD SECTION
 %% Create NREMinclMA if you don't have it
 
@@ -399,6 +467,7 @@ clear baseVariables suffixes s suffix sws_varName MA_varName sws_binary_vector M
 suffixes = {'387', '403', '412', '414', '416', '408', '420'}; % Add more suffixes as needed
 RR_data_NREM_table = process_NREM_with_laser(suffixes);
 
+
 %% RR PSD plot
     arch = {'387', '403', '412', '414', '416'};
     yfp = {'408', '420'};
@@ -411,8 +480,9 @@ find_plot_HRB(suffixes);
 %% Plot HRB values
 HRB_table = create_HRB_table(suffixes);
 plot_HRB_rate_violins(HRB_table, arch, yfp, 'HRB_Value', 'Time between R peaks for HRB events', 'HRB Value Distribution by Group and Laser Status');
-
+plot_HRB_arch_yfp_violins(HRB_table, arch, yfp, 'HRB_Value', 'Time between R peaks for HRB events', 'HRB Value Distribution by Group and Laser Status')
 %% Plot HRB Rate
 NREMinclMA_HRB_table = create_NREMinclMA_HRB_table(suffixes);
 plot_HRB_rate_violins(NREMinclMA_HRB_table, arch, yfp, 'HRB_Rate', 'HRB Rate (event pr. minute)', 'HRB Rate Distribution by Group and Laser Status');
+plot_HRB_arch_yfp_violins(NREMinclMA_HRB_table, arch, yfp, 'HRB_Rate', 'HRB Rate (event pr. minute)', 'HRB Rate Distribution by Group and Laser Status');
 

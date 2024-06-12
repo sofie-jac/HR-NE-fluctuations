@@ -139,9 +139,9 @@ synapse_mice = {'M168', 'M147', 'M149', 'M117', 'M124', 'M071', 'M073', 'M115', 
 mice_with_TTL_IDs = {'M168', 'M147', 'M149', 'M117', 'M124' 'M115', 'M122'};
 mice_without_TTL_IDs = {};
 
-o = {M387, M403, M412, M414, M416, M408};
+o = {M387, M403, M412, M414, M416, M408, M588, M420, M115, M122, M124};
 o = {M468, M477, M484};
-o = {M420};
+o = {M117};
 %% Load FP and EEG data for all mice
 
 for idx = 1:length(o)
@@ -219,12 +219,13 @@ for idx = 1:length(o)
 
     clear delta465_filt_2 sec_signal_2 signal_fs EEG EMG sec_signal_EEG EEG_fs onset_FP_EEG EEG_rig
 end
+
 %% Save potential data
 % List of base variable names
-baseVariables = {'delta465_filt_2', 'sec_signal_2', 'signal_fs', 'EEG', 'EMG', 'sec_signal_EEG', 'EEG_fs', 'onset_FP_EEG', 'laser_binary'};
+baseVariables = {'delta465_filt_2_', 'sec_signal_2_', 'signal_fs_', 'EEG_', 'EMG_', 'sec_signal_EEG_', 'EEG_fs_', 'onset_FP_EEG_'};
 
 % List of suffixes for each animal
-suffixes = {'_420'};
+suffixes = {'115', '122', '124', '201', '205', '207', '209', '213', '420', '588'};
 
 % Directory where you want to save the .mat files
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp';
@@ -378,7 +379,7 @@ MeanFilterOrder = 1000; % Order for smoothing
 MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
 ds_factor_FP = 100; % Downsample factor
 
-o = {'420'};
+o = {'117'};
 % Loop through each mouse entry in the 'mice' cell array
 for idx = 1:length(o)
     uniqueId = o{idx}; % Current mouse
@@ -721,11 +722,16 @@ EMG_207 = -emg_fhp;
 % disp({fileInfo.name});
 % EMG_019 = emg_fhp;
 
-load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\potential_data\EMG_205_filtered_high_pass.mat')
-fileInfo = whos('-file', 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\potential_data\EMG_205_filtered_high_pass.mat');
-disp({fileInfo.name});
-EMG_205 = emg_fhp;
-[RR_205, RR_time_205, RR_fs_205, Rpeaks_205, Rpeaks_time_205] = GetRRIntervals('M205', emg_fhp, sec_signal_EEG_205, EEG_fs_205, 2.5, 2); 
+load('C:\Users\trb938\Downloads\EMG_484_filtered_low_pass.mat')
+load('C:\Users\trb938\Downloads\EMG_484_filtered_high_pass.mat')
+
+sec_signal_EEG = (1:length(emg_f))/512;
+[RR_484, RR_time_484, RR_fs_484, Rpeaks_484, Rpeaks_time_484] = GetRRIntervals('M484', -emg_f, sec_signal_EEG, 512, 2, 1.5); 
+
+load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\SOFIE_control_files\EMG_477_filtered_low_pass.mat')
+sec_signal_EEG = (1:length(emg_fhp))/512;
+[RR_477, RR_time_477, RR_fs_477, Rpeaks_477, Rpeaks_time_477] = GetRRIntervals('M477', -emg_fhp, sec_signal_EEG, 512, 2.5, 2); 
+
 save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_205.mat','RR_205'); 
 save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_time_205.mat','RR_time_205');
 
@@ -745,9 +751,42 @@ EMG_209 = -emg_f;
 save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_209.mat','RR_209'); 
 save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_time_209.mat','RR_time_209');
 
+%477 - -fhp
+%484 - fhp
 
-% figure;
-% plot(sec_signal_EEG_209, -emg_f);
+
+  figure;
+    a = subplot(2, 1, 1);
+        plot(sec_signal_EEG, -emg_f);
+        title('emg_f');
+        xlabel('time (s)');
+        ylabel('V');
+        grid on;
+
+    b = subplot(2, 1, 2);
+        plot(RR_time_205, RR_205);
+        title('emg_fhp');
+        xlabel('time (s)');
+        ylabel('V');
+        grid on;
+    linkaxes([a, b], 'x');
+
+  
+  figure;
+    a = subplot(2, 1, 1);
+        plot(sec_signal_EEG, emg_f);
+        title('emg_f');
+        xlabel('time (s)');
+        ylabel('V');
+        grid on;
+
+    b = subplot(2, 1, 2);
+        plot(sec_signal_EEG, emg_fhp);
+        title('emg_fhp');
+        xlabel('time (s)');
+        ylabel('V');
+        grid on;
+    linkaxes([a, b], 'x');  
 %% load filtered data
 EMG_387_filtered = load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\EMG_387_filtered_lowpass.mat');
 EMG_387_filtered = EMG_387_filtered.emg_f;
@@ -920,23 +959,29 @@ RR_588 = load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\RR_int
 RR_time_588 = load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\RR_intervals\RR_time_588.mat');
 
 %% Get HRB
-[HRB_124, HRB_time_124] = findHRB(RR_time_124, RR_124);
-[HRB_403, HRB_time_403] = findHRB(RR_time_403, RR_403);
-[HRB_416, HRB_time_416] = findHRB(RR_time_416, RR_416);
-[HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
-[HRB_580, HRB_time_580] = findHRB(RR_time_580, RR_580);
-[HRB_588, HRB_time_588] = findHRB(RR_time_588, RR_588);
-[HRB_026, HRB_time_026] = findHRB(RR_time_026, RR_026);
-%[HRB_015, HRB_time_015] = findHRB(RR_time_015, RR_015);
-[HRB_025, HRB_time_025] = findHRB(RR_time_025, RR_025);
-[HRB_387, HRB_time_387] = findHRB(RR_time_387, RR_387);
-[HRB_201, HRB_time_201] = findHRB(RR_time_201, RR_201);
-[HRB_115, HRB_time_115] = findHRB(RR_time_115, RR_115);
+% [HRB_403, HRB_time_403] = findHRB(RR_time_403, RR_403);
+% [HRB_416, HRB_time_416] = findHRB(RR_time_416, RR_416);
+% 
+% [HRB_580, HRB_time_580] = findHRB(RR_time_580, RR_580);
+% [HRB_026, HRB_time_026] = findHRB(RR_time_026, RR_026);
+% %[HRB_015, HRB_time_015] = findHRB(RR_time_015, RR_015);
+% [HRB_025, HRB_time_025] = findHRB(RR_time_025, RR_025);
+% [HRB_387, HRB_time_387] = findHRB(RR_time_387, RR_387);
+% [HRB_201, HRB_time_201] = findHRB(RR_time_201, RR_201);
+% [HRB_122, HRB_time_122] = findHRB(RR_time_122, RR_122);
+
 [HRB_122, HRB_time_122] = findHRB(RR_time_122, RR_122);
-[HRB_213, HRB_time_213] = findHRB(RR_time_213, RR_213);
-[HRB_117, HRB_time_117] = findHRB(RR_time_124, RR_124);
+[HRB_124, HRB_time_124] = findHRB(RR_time_124, RR_124);
+[HRB_115, HRB_time_115] = findHRB(RR_time_115, RR_115);
 
 [HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
+[HRB_588, HRB_time_588] = findHRB(RR_time_588, RR_588);
+[HRB_201, HRB_time_201] = findHRB(RR_time_201, RR_201);
+[HRB_207, HRB_time_207] = findHRB(RR_time_207, RR_207);
+[HRB_209, HRB_time_209] = findHRB(RR_time_209, RR_209);
+[HRB_213, HRB_time_213] = findHRB(RR_time_213, RR_213);
+[HRB_205, HRB_time_205] = findHRB(RR_time_205, RR_205);
+
 
 sleepscore_time = 0:length(wake_woMA_binary_vector_420)-1; % Assuming all vectors are the same length
 
@@ -1112,7 +1157,7 @@ power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}
 frw = 0:0.2:100;
 window_in_sec = 1; % sec. 1 for 30 sec
 
-%[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
+[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 [mean_spectrogram_122, time_spectrogram_zero_122, F_122, band_powers_122, EEG_bands_fs_122] = PowerAnalysisEEG(EEG_122, EEG_fs_122, frw, window_in_sec, power_bands);
 [mean_spectrogram_115, time_spectrogram_zero_115, F_115, band_powers_115, EEG_bands_fs_115] = PowerAnalysisEEG(EEG_115, EEG_fs_115, frw, window_in_sec, power_bands);
@@ -1608,8 +1653,8 @@ for idx = 1:length(o)
     mean_spectrogram = eval(sprintf('mean_spectrogram_%s', uniqueId));
     NE_fs = eval(sprintf('signal_fs_%s', uniqueId));
     
-event_var = {NREMexclMA_periods_pklocs, NREM_before_MA_short, NREM_before_MA_long, SWS_before_wake_pklocs, REM_before_wake_pklocs, REM_before_MA_pklocs};
-titles = {'NREM', 'NREM to short MA Transition', 'NREM to long MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition', 'REM to MA Transition'};
+event_var = {NREMexclMA_periods_pklocs, NREM_before_MA_short, NREM_before_MA_long, SWS_before_wake_pklocs};
+titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake', 'REM to Wake', 'REM to MA'};
 main_title = (['Averaged Activity During NE Trough (' uniqueId ')']);
 
 figure_2(event_var, 60, 60, titles, main_title, delta465_filt_2, sec_signal_2, NE_fs, RR, RR_time, 64,  mean_spectrogram, F, EEG_bands_fs, 60);
@@ -1620,12 +1665,12 @@ clear idx uniqueId event_var titles main_title NREMexclMA_periods_pklocs NREM_be
 warning('off','all')
 warning
 
-o = {'205', '207', '209'};
-event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs', 'REM_before_wake_pklocs', 'REM_before_MA_pklocs'};
+o = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
+event_var = {'HRB_time_NREM', 'HRB_time_MA'};
 epoc_start = 60;
 epoc_end = 60; 
 cross_cor_sec = 60;
-saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB';
 
 
 % Loop over each event type
@@ -1779,21 +1824,64 @@ end
 
         %% Figure 2 all animals 4real
 data_types = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high', 'x_corr'};
-titles = {'NREM', 'NREM to short MA Transition', 'NREM to long MA Transition', 'NREM to Wake Transition', 'REM to Wake Transition', 'REM to MA Transition'};
-main_title = ('Averaged Activity During NE Trough for Cortical NE');
+titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake'};
+main_title = ('Averaged Activity During NE Trough for Thalamic NE');
 o = {'205', '207', '209', '420', '588', '201', '213'};
-event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs', 'REM_before_wake_pklocs', 'REM_before_MA_pklocs'};
+t = {'124', '122', '115'};
+event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
 epoc_start = 60;
 epoc_end = 60; 
 
+results = aggregate_event_data(saveDirectory, event_var, t, data_types);
+figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
+
+%Old version
+
+[global_max, global_min] = compute_global_extremes(results, data_types);
+figure_2_cross_animals(results, global_max, global_min, 60, 60, main_title, titles)
+%% Get HRB in NREM and MA
+suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'}; % Add more suffixes as needed
+%
+categorizeAllHRBBySleepStage(suffixes)
+plotCategorizedHRBBySleepStage(suffixes);
+
+data_types = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high', 'x_corr'};
+titles = {'NREM', 'MA'};
+main_title = ('Averaged Activity During HRB for Cortical NE');
+o = {'205', '207', '209', '420', '588', '201', '213'};
+event_var = {'HRB_time_NREM', 'HRB_time_MA'};
+epoc_start = 60;
+epoc_end = 60; 
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB';
+
 results = aggregate_event_data(saveDirectory, event_var, o, data_types);
+figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
+
+%Old version
 [global_max, global_min] = compute_global_extremes(results, data_types);
 figure_2_cross_animals(results, global_max, global_min, 60, 60, main_title, titles)
 
+%% Extract amplitudes
+
+o = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
+event_var = {'HRB_time_NREM', 'HRB_time_MA'};
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB';
+outputDirectory = fullfile(saveDirectory, 'amplitudes');
+
+% Define the times for calculating mean, min, and max values
+times_matrix.NE.min_range = [-20 0];
+times_matrix.NE.max_range = [-10 10];
+times_matrix.RR.min_range = [0 0];
+times_matrix.RR.baseline_range = [-40 -20];
+times_matrix.EEG.mean_range = [-40 -20];
+times_matrix.EEG.min_range = [-10 10];
+
+amplitude_data = extract_amplitude_estimates(o, event_var, saveDirectory, times_matrix, outputDirectory);
 %% RR PSD begins - creat NREMinclMA if you don't have it
 
 % List of suffixes for each animal
-suffixes = {'420'}; % Add more suffixes as needed
+suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'}; % Add more suffixes as needed
 
 % Loop through each suffix
 for s = 1:length(suffixes)
@@ -1801,7 +1889,7 @@ for s = 1:length(suffixes)
     
     % Construct variable names with the current suffix
     sws_varName = ['sws_binary_vector_', suffix];
-    MA_varName = ['MA_binary_vector'_, suffix];
+    MA_varName = ['MA_binary_vector_', suffix];
     
     % Check if the variables exist in the environment
     if exist(sws_varName, 'var') && exist(MA_varName, 'var')
@@ -1994,7 +2082,7 @@ grid on;
 set(gcf, 'Color', 'w'); % Set background color to white
 
 % Clear temporary variables
-clear all_weighted_PXX_matrix fs min_period_dur sampling_hz unique_suffixes s suffix current_data i RR_values period_length p s mu f_y detrend_data pxx PXX period_duration weighted_mean_PXX all_weighted_PXX mean_PXX;
+clear mean_PXX SEM_PSD H fs min_period_dur sampling_hz unique_suffixes s suffix current_data i RR_values period_length p s mu f_y detrend_data pxx PXX period_duration weighted_mean_PXX all_weighted_PXX all_weighted_PXX_matrix;
 
 
 %% 588 figure 1 
@@ -2012,8 +2100,8 @@ clear all_weighted_PXX_matrix fs min_period_dur sampling_hz unique_suffixes s su
     EMG = eval(sprintf('EMG_%s', uniqueId));
     RR = eval(sprintf('RR_%s', uniqueId));
     RR_time = eval(sprintf('RR_time_%s', uniqueId));
-    Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
-    Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
+    % Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
+    % Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
     
     sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
     uniqueIdStr = string(uniqueId);
@@ -2026,24 +2114,31 @@ clear all_weighted_PXX_matrix fs min_period_dur sampling_hz unique_suffixes s su
     % Plot for the current mouse
     figure;
     
-    a = subplot(3, 1, 1);
-        plot(sec_signal_EEG, EEG, 'k-');           
+    % a = subplot(3, 1, 1);
+    %     plot(sec_signal_EEG, EEG, 'k-');           
 
-    b = subplot(3, 1, 2);
+    a = subplot(3, 1, 2);
         hold on
-        plot_sleep(sec_signal_EEG, -EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
+        plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
         %plot(Rpeaks_time, Rpeaks, 'ro');
         hold off
-    c = subplot(3, 1, 3);
+        grid on
+        xlabel('Time (s)');
+        ylabel('EMG (V)');
+    b = subplot(3, 1, 3);
         plot(RR_time, RR, 'k-');
         hold on;
+        grid on
+        xlabel('Time (s)');
+        ylabel('R-R Intervals');
+
         %scatter(HRB_time, HRB, 'bo'); % Plotting HRB
         hold off;
         
         set(gcf,'color','white')
 
     % Linking axes for synchronized zooming
-    linkaxes([a, b, c], 'x');
+    linkaxes([a, b], 'x');
     %% 588 fig 1 subsections for AI
     uniqueId = '588'; % Extract mouse ID as a string
 
@@ -2069,8 +2164,8 @@ MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filte
 RR = filtfilt(MeanFilter, 1, RR);
 
 % Define x-axis range
-x_start = 11100;
-x_end = 11170;
+x_start = 7120;
+x_end = 7190;
 
 % Plot EEG data
 figure;
@@ -2081,7 +2176,9 @@ set(gcf,'color','white');
 % Plot EMG and sleep state data
 figure;
 hold on
-plot_sleep(sec_signal_EEG, -EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
+plot_sleep(sec_signal_EEG, -EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);   
+plot(Rpeaks_time, Rpeaks, 'ro');
+hold off
 xlim([x_start, x_end]);
 set(gcf,'color','white');
 
@@ -2094,7 +2191,7 @@ set(gcf,'color','white');
 
     %% 588 figure 2 
 
-    uniqueId = '588'; % Extract mouse ID as a string
+    uniqueId = '117'; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     % Access the variables dynamically

@@ -7,16 +7,6 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
     % Define the maximum length for EEG bands (modifiable)
     max_length_EEG = 240;
 
-    % Helper function to trim and warn
-    function trimmed_var = trim_and_warn(variable, target_length, var_name)
-        if length(variable) > target_length
-            disp(['Warning: Trimming ', var_name, ' from ', num2str(length(variable)), ' to ', num2str(target_length)]);
-            trimmed_var = variable(1:target_length);
-        else
-            trimmed_var = variable;
-        end
-    end
-
     % Iterate over each event type
     for e_idx = 1:length(event_var)
         event_type_name = event_var{e_idx};
@@ -65,11 +55,8 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
             if ~isempty(all_data.(data_types{d_idx}))
                 % Calculate mean
                 results.(event_type_name).(data_types{d_idx}).mean = mean(all_data.(data_types{d_idx}), 1);
-                
-                % Calculate SEM only if it's not an EEG band
-                if ~ismember(data_types{d_idx}, eeg_bands)
-                    results.(event_type_name).(data_types{d_idx}).sem = std(all_data.(data_types{d_idx}), 0, 1) / sqrt(size(all_data.(data_types{d_idx}), 1));
-                end
+                results.(event_type_name).(data_types{d_idx}).sem = std(all_data.(data_types{d_idx}), 0, 1) / sqrt(size(all_data.(data_types{d_idx}), 1));
+
 
                 % Store the number of events
                 results.(event_type_name).(data_types{d_idx}).num_events = size(all_data.(data_types{d_idx}), 1);
@@ -78,4 +65,5 @@ function [results] = aggregate_event_data(saveDirectory, event_var, animals, dat
             end
         end
     end
+        clear eeg_bands max_length_EEG e_idx event_type_name all_data d_idx a_idx uniqueId excludeEEG filename loaded_data variable_name data_to_append;
 end
