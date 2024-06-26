@@ -4,6 +4,7 @@ folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yf
 
 % List of 3-digit elements to look for in file names
 suffixes = {'387', '403', '412', '414', '416', '408', '420'};
+suffixes = {'468', '484'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders
@@ -50,6 +51,8 @@ clear matFiles filePath folderPath varNames varData data k shouldLoad i suffixes
 % List of suffixes for each animal
 % List of suffixes for each animal
 suffixes = {'387', '403', '412', '414', '416', '408', '420'};
+suffixes = {'468', '484'};
+
 baseName = 'laser_binary';
 
 % Directory where you want to save the .mat files
@@ -145,10 +148,16 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_408, time_spectrogram_zero_408, F_408, band_powers_408, EEG_bands_fs_408] = PowerAnalysisEEG(EEG_408, EEG_fs_408, frw, window_in_sec, power_bands);
 [mean_spectrogram_420, time_spectrogram_zero_420, F_420, band_powers_420, EEG_bands_fs_420] = PowerAnalysisEEG(EEG_420, EEG_fs_420, frw, window_in_sec, power_bands);
 
+[mean_spectrogram_484, time_spectrogram_zero_484, F_484, band_powers_484, EEG_bands_fs_484] = PowerAnalysisEEG(EEG_484, EEG_fs_484, frw, window_in_sec, power_bands);
+[mean_spectrogram_468, time_spectrogram_zero_468, F_468, band_powers_468, EEG_bands_fs_468] = PowerAnalysisEEG(EEG_468, EEG_fs_468, frw, window_in_sec, power_bands);
+
 clear frw window_in_sec
 
 %% Get figure 3 single animal
 o = {'387', '403', '412', '414', '416', '408', '420'};
+o = {'468', '484'};
+o = {'468'};
+
 for idx = 1:length(o)
     uniqueId = o{idx};
     disp(uniqueId)
@@ -177,7 +186,8 @@ clear idx uniqueId event_var titles main_title laser_on laser_on_NREM sec_signal
 warning('off','all')
 warning
 
-o = {'387', '403', '412', '414', '416', '408', '420'};
+o = {'468', '484'};
+%'387', '403', '412', '414', '416', '408', '420', 
 event_var = {'laser_on_NREM'};
 epoc_start = 60;
 epoc_end = 60; 
@@ -340,7 +350,7 @@ titles = {'NREM'};
 main_title_arch = ('Averaged Activity During LC Supression');
 main_title_yfp = ('Averaged Activity During non LC Supression');
 arch = {'387', '403', '412', '414', '416'};
-yfp = {'408', '420'};
+yfp = {'408', '420', '468', '484'};
 event_var = {'laser_on_NREM'};
 epoc_start = 60;
 epoc_end = 60; 
@@ -355,7 +365,7 @@ results_yfp = aggregate_event_data(saveDirectory, event_var, yfp, data_types);
 figure_2_cross_animals(results_yfp, global_max_yfp, global_min_yfp, 60, 60, main_title_yfp, titles)
 %% Get RR for 0 and 20 sec from figure 3
 % Define the suffixes for subjects
-suffixes = {'387', '403', '412', '414', '416', '408', '420'};
+suffixes = {'387', '403', '412', '414', '416', '408', '420', '468', '484'};
 
 % Define the end of the epoch in seconds
 epoch_end = 60;
@@ -367,9 +377,9 @@ saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch
 RR_table = extract_RR_intervals(suffixes, epoch_end, saveDirectory);
 
 % Define the suffixes for subjects
-suffixes = {'387', '403', '412', '414', '416', '408', '420'};
+suffixes = {'387', '403', '412', '414', '416', '408', '420', '468', '484'};
 arch = {'387', '403', '412', '414', '416'};
-yfp = {'408', '420'};
+yfp = {'408', '420', '468', '484'};
 
 % Define the event variables and labels
 event_var_onset = 'RR_laser_onset';
@@ -378,31 +388,51 @@ y_lab = 'RR Values';
 main_title = 'RR Values Distribution by Group at laser onset and 20 seconds after';
 
 % Call the function to plot the violin plots
-plot_RR_violins(RR_table, arch, yfp, event_var_onset, event_var_during, y_lab, main_title);
+%plot_RR_violins(RR_table, arch, yfp, event_var_onset, event_var_during, y_lab, main_title);
 
 % Call the function to plot the bar plot with SEM error bars
 plot_RR_bar(RR_table, arch, yfp, event_var_onset, event_var_during, y_lab, main_title);
 
 
 %% Get AUC for time 0 to 20 for RR
-o = {'387', '403', '412', '414', '416', '408', '420'};
+o = {'387', '403', '412', '414', '416', '408', '420', '468', '484'};
 event_var = {'laser_on_NREM'};
 epoc_start = 60;
 epoc_end = 60;
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\figure_3_data';
 arch = {'387', '403', '412', '414', '416'};
-yfp = {'408', '420'};
+yfp = {'408', '420', '468', '484'};
 % Assuming AUC_table is already created from the previous steps
 y_lab = 'AUC';
+y_lab_diff = 'AUC Difference';
 main_title = 'AUC Distribution by Group 20 sec before and after laser onset';
+main_title_diff = 'Difference in AUC Distribution by Group 20 sec before and after laser onset';
 
 AUC_table = extract_AUC_RR_intervals(o, epoc_end, saveDirectory);
 % Call the function to plot the bar plot with SEM error bars
-plot_AUC_bar(AUC_table, arch, yfp, y_lab, main_title);
+plot_AUC_bar_fig3(AUC_table, arch, yfp, y_lab, main_title);
+plot_AUC_bar_fig3_diff(AUC_table, arch, yfp, y_lab_diff, main_title_diff)
 
 %plot_HRB_arch_yfp_violins(AUC_table, arch, yfp, 'AUC', 'AUC for RR', 'AUC for RR from laser onset to 30 seconds after')
 % Call the function to plot the violins
 %plot_AUC_violins(AUC_table, arch, yfp, y_lab, main_title);
+%% Get Amplitude for time 0 to 20 for RR
+o = {'387', '403', '412', '414', '416', '408', '420', '468', '484'};
+arch = {'387', '403', '412', '414', '416'};
+yfp = {'408', '420', '468', '484'};
+
+event_var = {'laser_on_NREM'};
+titles = {'Laser on NREM'};
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\figure_3_data';
+outputDirectory = fullfile(saveDirectory, 'AUC');
+
+% Define the times_matrix
+times_matrix.RR.min_range = [-20 0];
+times_matrix.RR.max_range = [0 20];
+
+RR_slope_table = extract_amplitude_fig_3(o, event_var, saveDirectory, times_matrix, arch, yfp);
+mean_amplitude_table = calculate_mean_amplitude_fig3(RR_slope_table);
+plot_mean_amplitude_bar_fig3(RR_slope_table, 'RR Amplitude', 'Bar plot of RR Amplitude')
 %% Create memory table
 % Create the data
 Suffix = [387, 399, 392, 403, 412, 414, 416, 418, 486, 408, 420, 468, 477, 484]';
@@ -414,15 +444,19 @@ data_table = table(Suffix, sigma_power_increase, novel_familiar_ratio);
 %% Add AUC diff to memory table
 
 % Update the data_table with AUC differences
-data_table_update = update_table_with_auc_diff(AUC_table, data_table);
+data_table_update_AUC = update_table_with_auc_diff(AUC_table, data_table);
+data_table_update_amplitude = update_table_with_amplitude(RR_slope_table, data_table);
 
 %% Correlation plot between RR AUC diff and memory
 arch = {'387', '403', '412', '414', '416'};
-yfp = {'408', '420'};
+yfp = {'408', '420', '468', '484'};
 
 % Plot the correlation
-plot_correlation(data_table_update, arch, yfp, 'AUC_post'); % Change 'AUC_diff' to any other variable as needed
+plot_correlation_memory(data_table_update_AUC, arch, yfp, 'AUC_diff'); % Change 'AUC_diff' to any other variable as needed
+plot_correlation_memory(data_table_update_amplitude, arch, yfp, 'MeanAmplitude'); % Change 'AUC_diff' to any other variable as needed
+
 %% RR PSD SECTION
+
 %% Create NREMinclMA if you don't have it
 
 % List of suffixes for each animal

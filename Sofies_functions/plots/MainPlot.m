@@ -179,7 +179,7 @@ function MainPlot(event_var, epoc_start, epoc_end, titles, main_title, delta465_
                 end
             end
         end
-        
+       
     
         % Calculate mean of epochs for NE and EEG bands
         mean_NEpk_epocs = nanmean(NE_peak_epoc_collector, 1);

@@ -20,11 +20,13 @@ function categorizeAllHRBBySleepStage(suffixes)
             MA_binary = evalin('base', MA_binary_name);
             NREMexclMA_binary = evalin('base', NREMexclMA_binary_name);
             
-            % Initialize empty arrays to hold HRB times and values for each sleep stage
+            % Initialize empty arrays to hold HRB times and values for each category
             HRB_NREM = [];
             HRB_NREM_values = [];
-            HRB_MA = [];
-            HRB_MA_values = [];
+            HRB_MA_short = [];
+            HRB_MA_short_values = [];
+            HRB_MA_long = [];
+            HRB_MA_long_values = [];
 
             % Iterate through each HRB time
             for i = 1:length(HRB_times_no_troughs)
@@ -51,8 +53,21 @@ function categorizeAllHRBBySleepStage(suffixes)
                 % Check if HRB_time falls within or 5 seconds before/after MA_binary
                 for j = -5:5
                     if rounded_HRB_time+j > 0 && rounded_HRB_time+j <= length(MA_binary) && MA_binary(rounded_HRB_time+j) == 1
-                        HRB_MA = [HRB_MA; HRB_time];
-                        HRB_MA_values = [HRB_MA_values; HRB_values(i)];
+                        % Determine the duration of the MA
+                        start_MA = rounded_HRB_time + j;
+                        end_MA = start_MA;
+                        while end_MA <= length(MA_binary) && MA_binary(end_MA) == 1
+                            end_MA = end_MA + 1;
+                        end
+                        MA_duration = end_MA - start_MA;
+
+                        if MA_duration < 5
+                            HRB_MA_short = [HRB_MA_short; HRB_time];
+                            HRB_MA_short_values = [HRB_MA_short_values; HRB_values(i)];
+                        else
+                            HRB_MA_long = [HRB_MA_long; HRB_time];
+                            HRB_MA_long_values = [HRB_MA_long_values; HRB_values(i)];
+                        end
                         break;
                     end
                 end
@@ -61,11 +76,13 @@ function categorizeAllHRBBySleepStage(suffixes)
             % Assign the results to the workspace with the appropriate suffix
             assignin('base', ['HRB_time_NREM_', suffix], HRB_NREM);
             assignin('base', ['HRB_value_NREM_', suffix], HRB_NREM_values);
-            assignin('base', ['HRB_time_MA_', suffix], HRB_MA);
-            assignin('base', ['HRB_value_MA_', suffix], HRB_MA_values);
+            assignin('base', ['HRB_time_MA_short_', suffix], HRB_MA_short);
+            assignin('base', ['HRB_value_MA_short_', suffix], HRB_MA_short_values);
+            assignin('base', ['HRB_time_MA_long_', suffix], HRB_MA_long);
+            assignin('base', ['HRB_value_MA_long_', suffix], HRB_MA_long_values);
 
             % Clear unnecessary variables
-            clear HRB_times_no_troughs HRB_values MA_binary NREMexclMA_binary HRB_NREM HRB_NREM_values HRB_MA HRB_MA_values;
+            clear HRB_times_no_troughs HRB_values MA_binary NREMexclMA_binary HRB_NREM HRB_NREM_values HRB_MA_short HRB_MA_short_values HRB_MA_long HRB_MA_long_values;
         else
             warning('Variables %s, %s, %s, and/or %s do not exist in the workspace.', ...
                 HRB_times_name, HRB_name, MA_binary_name, NREMexclMA_binary_name);

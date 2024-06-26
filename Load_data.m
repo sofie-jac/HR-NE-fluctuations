@@ -32,11 +32,10 @@ clear workspaceVars varName shouldClear k i suffixes;
 
 %% Load files with certain suffixes
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data';
 
 % List of 3-digit elements to look for in file names
-suffixes = {'588'};
-%'115', '122', '124', '201', '205', '207', '209', '203', '420',
+suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders
@@ -84,7 +83,7 @@ clear matFiles filePath folderPath varNames varData data k shouldLoad i suffixes
 
 %% Load all
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB\amplitudes';
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders

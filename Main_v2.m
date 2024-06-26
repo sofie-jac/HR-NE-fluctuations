@@ -131,17 +131,48 @@ M907 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\Filter_test\70_82_20hz_low' 'J:\C
 M908 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\Filter_test\70_82_20hz_low' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\Filter_test\70_82_20hz_low' '908' '' '' 'x465C' 'x405C' '' 'EEGw' 2 'EMG2' 'Tick' 'Tick' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
 M100 = {'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara' 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara' '100' '' '' 'x465A' 'x405A' 'red' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:18000) 'J:\CTN\NedergaardLAB\KjaerbyLab\Sofie\EEGnofilt_Sara\M100_sleep_new.xlsx'};
 
+% CHR2
+M489 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210901_EEGFP_489_ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\489_ChR2\489_ChR2_2021-09-01_09-08-29-823.exp' '489'  '3' '' 'Dv1N' 'Dv2C' '' '' '' '' 'Pu2_' 'Pu1_' '' ''};
+%M493 = {'D:\temp analysis data\20210826_493' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210826_493\20210826_493_2021-08-26_08-59-15-890.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210826_493\493_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+%EEGFP_optoChR2_20210826_493_ChR2 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210826_493' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210826_493\20210826_493_2021-08-26_08-59-15-890.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210826_493\493_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+    % NB! #493 seems to be misaligned with scoring in middle or recording.
+    % Laser effect does not look convincing - consider exclusion
+% EEGFP_optoChR2_20211222_497_ChR2 = {'D:\temp analysis data\20210823_497' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210823_497\20210823_497_2021-08-23_09-06-15-403.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210823_497\497_sleepscore.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+M497 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210823_497' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210823_497\20210823_497_2021-08-23_09-06-15-403.exp' '497' '2' '' 'Dv1N' 'Dv2C' '' '' '' '' 'Pu2_' 'Pu1_' '' ''};
+% EEGFP_optoChR2_20211222_491_ChR2 = {'D:\temp analysis data\20210824_491_v2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210824_491_v2\20210824_491_v2_2021-08-24_08-53-45-226.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210824_491_v2\491_sleepscore.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 4 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+M491 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210824_491_v2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210824_491_v2\20210824_491_v2_2021-08-24_08-53-45-226.exp' '491' '4' '' 'Dv1N' 'Dv2C' '' '' '' '' 'Pu2_' 'Pu1_' '' ''};
+    
+% EEGFP_optoChR2_20211220_511_ChR2 = {'D:\temp analysis data\20211220_old_511ChR2_new_509YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\511_ChR2_closedloop\511_ChR2_closedloop_2021-12-20_09-33-10-542.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\511_ChR2_closedloop\511_sleepscore_5s.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20211220_511_ChR2 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211220_old_511ChR2_new_509YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\511_ChR2_closedloop\511_ChR2_closedloop_2021-12-20_09-33-10-542.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\511_ChR2_closedloop\511_sleepscore_5s.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+% EEGFP_optoChR2_20211221_514_ChR2 = {'D:\temp analysis data\20211221_old_514ChR2_new_512YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\514_ChR2_closedloop\514_ChR2_closedloop_2021-12-21_09-16-28-511.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\514_ChR2_closedloop\514_sleepscore_5s'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 1 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20211221_514_ChR2 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211221_old_514ChR2_new_512YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\514_ChR2_closedloop\514_ChR2_closedloop_2021-12-21_09-16-28-511.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\514_ChR2_closedloop\514_sleepscore_5s'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 1 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+% EEGFP_optoChR2_20211222_522_ChR2 = {'D:\temp analysis data\20211222_513YFP_522ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\522_ChR2_closedloop\522_ChR2_closedloop_2021-12-22_09-11-25-410.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\522_ChR2_closedloop\522_sleepscore_5s.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20211222_522_ChR2 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211222_513YFP_522ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\522_ChR2_closedloop\522_ChR2_closedloop_2021-12-22_09-11-25-410.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\522_ChR2_closedloop\522_sleepscore_5s.xlsx'  'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+
+% EEGFP_optoChR2_20210825_484_YFP = {'D:\temp analysis data\20210825_484_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210825_484\20210825_484_2021-08-25_09-28-37-229.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210825_484\848_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 3 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20210825_484_YFP = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210825_484_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210825_484\20210825_484_2021-08-25_09-28-37-229.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210825_484\848_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 3 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+% EEGFP_optoChR2_20210831_477_YFP = {'D:\temp analysis data\20210831_477_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210831_477_YFP\20210831_477_YFP_2021-08-31_08-58-12-299.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210831_477_YFP\477_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20210831_477_YFP = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210831_477_YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210831_477_YFP\20210831_477_YFP_2021-08-31_08-58-12-299.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\20210831_477_YFP\477_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+% EEGFP_optoChR2_20210827_486_arch = {'D:\temp analysis data\20210827_EEGFP_closelp_86_Arch' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\486_Arch_closeloop\486_Arch_closeloop_2021-08-27_09-10-10-289.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\486_Arch_closeloop\486_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+EEGFP_optoChR2_20210827_486_arch = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\20210827_EEGFP_closelp_86_Arch' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\486_Arch_closeloop\486_Arch_closeloop_2021-08-27_09-10-10-289.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20210728_Closedloop_ChR2\eeg\486_Arch_closeloop\486_sleepscore_5s' 'Dv1N' 'Dv2C' 'Pu2_' 'Pu1_' 'x' 2 'Wav1' 'Pu2/' 'Pu1/' 'Pu1\'};
+
+%EEGFP_optoChR2_20211220_509_YFP = {'D:\temp analysis data\20211220_old_511ChR2_new_509YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\509_YFP_closedloop\509_YFP_closedloop_2021-12-20_09-33-10-542.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\509_YFP_closedloop\509_sleepscore_5s.xlsx'  'DvAN' 'DvBC' 'Pu2_' 'Pu3_' 'x' 3 'Wav2' 'Pu2/' 'Pu3/' 'Pu3\'};
+EEGFP_optoChR2_20211220_509_YFP = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211220_old_511ChR2_new_509YFP' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\509_YFP_closedloop\509_YFP_closedloop_2021-12-20_09-33-10-542.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\509_YFP_closedloop\509_sleepscore_5s.xlsx' 'DvAN' 'DvBC' 'Pu2_' 'Pu3_' 'x' 3 'Wav2' 'Pu2/' 'Pu13/' 'Pu3\'};
+% EEGFP_optoChR2_20211221_512_YFP = {'D:\temp analysis data\20211221_old_514ChR2_new_512YFP' '\512_YFP_closedloop_2021-12-21_09-16-28-511.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\512_YFP_closedloop\512_sleepscore.xlsx' 'DvAN' 'DvBC' 'Pu2_' 'Pu3_' 'x' 0 'Wav2' 'Pu2/' 'Pu3/' 'Pu3\' };
+EEGFP_optoChR2_20211221_512_YFP = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211221_old_514ChR2_new_512YFP'  'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\512_YFP_closedloop\512_YFP_closedloop_2021-12-21_09-16-28-511.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\512_YFP_closedloop\512_sleepscore.xlsx'  'DvBC' 'Pu2_' 'Pu3_' 'x' 0 'Wav2' 'Pu2/' 'Pu3/' 'Pu3\' };
+% EEGFP_optoChR2_20211222_513_YFP = {'D:\temp analysis data\20211222_513YFP_522ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\513_YFP_closedloop\513_YFP_closedloop_2021-12-22_09-11-25-410.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\513_YFP_closedloop\513_sleepscore_5s.xlsx' 'DvAN' 'DvBC' 'Pu2_' 'Pu3_' 'x' 2 'Wav2' 'Pu2/' 'Pu3/' 'Pu3\' };
+EEGFP_optoChR2_20211222_513_YFP = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211222_513YFP_522ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\513_YFP_closedloop\513_YFP_closedloop_2021-12-22_09-11-25-410.exp' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\513_YFP_closedloop\513_sleepscore_5s.xlsx' 'DvAN'  'DvBC' 'Pu2_' 'Pu3_' 'x' 2 'Wav2' 'Pu2/' 'Pu3/' 'Pu3\' };
+
+
 %mice_saline = {M015, M084, M569, M578, M580, M588, M592, M600, M602};
 mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
 viewpoint_mice = {'M015', 'M084', 'M569', 'M578', 'M592', 'M600', 'M602', 'M201','M203','M205', 'M207','M209','M211','M213','M019','M387', 'M017', 'M026', 'M003', 'M005', 'M019', 'M021', 'M023', 'M025', 'M015', 'M084', 'M569', 'M578', 'M580', 'M588', 'M592', 'M600', 'M602'};
-laser_files = {'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M408', 'M477', 'M484', 'M420', 'M486'};
+laser_files = {'M387', 'M399', 'M392', 'M403', 'M412', 'M414', 'M416', 'M418', 'M468', 'M408', 'M477', 'M484', 'M420', 'M486', 'M489'};
 synapse_mice = {'M168', 'M147', 'M149', 'M117', 'M124', 'M071', 'M073', 'M115', 'M122'};
 mice_with_TTL_IDs = {'M168', 'M147', 'M149', 'M117', 'M124' 'M115', 'M122'};
 mice_without_TTL_IDs = {};
 
-o = {M387, M403, M412, M414, M416, M408, M588, M420, M115, M122, M124};
-o = {M468, M477, M484};
-o = {M117};
+o = {M489};
 %% Load FP and EEG data for all mice
 
 for idx = 1:length(o)
@@ -222,13 +253,13 @@ end
 
 %% Save potential data
 % List of base variable names
-baseVariables = {'delta465_filt_2_', 'sec_signal_2_', 'signal_fs_', 'EEG_', 'EMG_', 'sec_signal_EEG_', 'EEG_fs_', 'onset_FP_EEG_'};
+baseVariables = {'delta465_filt_2_', 'sec_signal_2_', 'signal_fs_', 'EEG_', 'EMG_', 'sec_signal_EEG_', 'EEG_fs_', 'onset_FP_EEG_', 'laser_binary_'};
 
 % List of suffixes for each animal
-suffixes = {'115', '122', '124', '201', '205', '207', '209', '213', '420', '588'};
+suffixes = {'468'};
 
 % Directory where you want to save the .mat files
-saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp';
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Traces';
 
 % Check if the save directory exists, if not, create it
 if ~exist(saveDirectory, 'dir')
@@ -379,10 +410,10 @@ MeanFilterOrder = 1000; % Order for smoothing
 MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
 ds_factor_FP = 100; % Downsample factor
 
-o = {'117'};
+Suffixes = {'489'};
 % Loop through each mouse entry in the 'mice' cell array
-for idx = 1:length(o)
-    uniqueId = o{idx}; % Current mouse
+for idx = 1:length(Suffixes)
+    uniqueId = Suffixes{idx}; % Current mouse
     % uniqueId = mouse{3}; % Extract unique identifier from the third index
 
     % Generate variable names based on uniqueId
@@ -519,6 +550,9 @@ for idx = 1:length(o)
     if strcmp(mouseID, '209')  % Correct comparison for strings
         MA_binary_vector = [MA_binary_vector, zeros(1, 1)];  % Append zeros horizontally
     end
+    if strcmp(mouseID, '484')  % Correct comparison for strings
+        MA_binary_vector = [MA_binary_vector, zeros(1, 2)];  % Append zeros horizontally
+    end
     % Store the results in dynamically named variables
     vars_to_save = {'wake_woMA_binary_vector', 'sws_binary_vector', 'REM_binary_vector', 'MA_binary_vector', ...
                     'NREMinclMA_periods', 'NREMexclMA_periods', 'wake_periods', 'REM_periods', 'MA_periods', ...
@@ -528,8 +562,7 @@ for idx = 1:length(o)
         eval(sprintf('%s_%s = %s;', v{1}, mouseID, v{1}));
     end
 end
-    clear onset_FP_EEG EEG_fs sec_signal_EEG vars_to_save vars_to_save mouseID ID
-
+    clear onset_FP_EEG EEG_fs sec_signal_EEG vars_to_save vars_to_save mouseID ID wake_woMA_binary_vector sws_binary_vector REM_binary_vector MA_binary_vector NREMinclMA_periods NREMexclMA_periods wake_periods REM_periods MA_periods SWS_before_MA_filtered SWS_before_wake_filtered SWS_before_REM_filtered REM_before_MA_filtered REM_before_wake_filtered
 
 
 
@@ -559,13 +592,13 @@ end
 %% Save sleep
 
 % List of base variable names
-baseVariables = {'wake_woMA_binary_vector', 'sws_binary_vector', 'REM_binary_vector', 'MA_binary_vector', 'NREMinclMA_periods'};
+baseVariables = {'wake_woMA_binary_vector_', 'sws_binary_vector_', 'REM_binary_vector_', 'MA_binary_vector_', 'NREMinclMA_periods_'};
 
 % List of suffixes for each animal
-suffixes = {'_387', '_403', '_412', '_414', '_416', '_408'};
+suffixes = {'468', '484'};
 
 % Directory where you want to save the .mat files
-saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp';
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Sleep';
 
 % Check if the save directory exists, if not, create it
 if ~exist(saveDirectory, 'dir')
@@ -683,10 +716,10 @@ laser_go = {'387', '403', '412', '414', '416', '408', '420'};
 baseVariables = {'RR', 'RR_time'};
 
 % List of suffixes for each animal
-suffixes = {'_387', '_403', '_412', '_414', '_416', '_408'};
+suffixes = {'_468'};
 
 % Directory where you want to save the .mat files
-saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp';
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\RR';
 
 % Check if the save directory exists, if not, create it
 if ~exist(saveDirectory, 'dir')
@@ -722,11 +755,15 @@ EMG_207 = -emg_fhp;
 % disp({fileInfo.name});
 % EMG_019 = emg_fhp;
 
-load('C:\Users\trb938\Downloads\EMG_484_filtered_low_pass.mat')
-load('C:\Users\trb938\Downloads\EMG_484_filtered_high_pass.mat')
+load('C:\Users\trb938\Downloads\SOFIE_control_484_update_21_june\25_30_slow\EMG_484_filtered_low_pass.mat')
+load('C:\Users\trb938\Downloads\SOFIE_control_484_update_21_june\25_30_slow\EMG_484_filtered_high_pass.mat')
+[RR_484, RR_time_484, RR_fs_484, Rpeaks_484, Rpeaks_time_484] = GetRRIntervals('M468', -emg_f, sec_signal_EEG, 512, 1.8, 1.3); 
+save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_484.mat','RR_484'); 
+save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_intervals\RR_time_484.mat','RR_time_484');
 
 sec_signal_EEG = (1:length(emg_f))/512;
-[RR_484, RR_time_484, RR_fs_484, Rpeaks_484, Rpeaks_time_484] = GetRRIntervals('M484', -emg_f, sec_signal_EEG, 512, 2, 1.5); 
+[RR_468, RR_time_468, RR_fs_468, Rpeaks_468, Rpeaks_time_468] = GetRRIntervals('M468', emg_f, sec_signal_EEG, 512, 2, 1.3); 
+
 
 load('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\SOFIE_control_files\EMG_477_filtered_low_pass.mat')
 sec_signal_EEG = (1:length(emg_fhp))/512;
@@ -764,8 +801,8 @@ save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\RR_i
         grid on;
 
     b = subplot(2, 1, 2);
-        plot(RR_time_205, RR_205);
-        title('emg_fhp');
+        plot(RR_time_484, RR_484);
+        title('emg_f');
         xlabel('time (s)');
         ylabel('V');
         grid on;
@@ -1157,7 +1194,7 @@ power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}
 frw = 0:0.2:100;
 window_in_sec = 1; % sec. 1 for 30 sec
 
-[mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
+% [mean_spectrogram_117, time_spectrogram_zero_117, F_117, band_powers_117, EEG_bands_fs_117] = PowerAnalysisEEG(EEG_117, EEG_fs_117, frw, window_in_sec, power_bands);
 [mean_spectrogram_124, time_spectrogram_zero_124, F_124, band_powers_124, EEG_bands_fs_124] = PowerAnalysisEEG(EEG_124, EEG_fs_124, frw, window_in_sec, power_bands);
 [mean_spectrogram_122, time_spectrogram_zero_122, F_122, band_powers_122, EEG_bands_fs_122] = PowerAnalysisEEG(EEG_122, EEG_fs_122, frw, window_in_sec, power_bands);
 [mean_spectrogram_115, time_spectrogram_zero_115, F_115, band_powers_115, EEG_bands_fs_115] = PowerAnalysisEEG(EEG_115, EEG_fs_115, frw, window_in_sec, power_bands);
@@ -1666,7 +1703,7 @@ warning('off','all')
 warning
 
 o = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
-event_var = {'HRB_time_NREM', 'HRB_time_MA'};
+event_var = {'HRB_time_MA_long', 'HRB_time_MA_short'};
 epoc_start = 60;
 epoc_end = 60; 
 cross_cor_sec = 60;
@@ -1825,16 +1862,28 @@ end
         %% Figure 2 all animals 4real
 data_types = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high', 'x_corr'};
 titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake'};
-main_title = ('Averaged Activity During NE Trough for Thalamic NE');
+main_title = ('Averaged Activity During NE Trough for Cortical NE');
 o = {'205', '207', '209', '420', '588', '201', '213'};
-t = {'124', '122', '115'};
+t = {'124', '115', '122'};
 event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
 epoc_start = 60;
 epoc_end = 60; 
 
-results = aggregate_event_data(saveDirectory, event_var, t, data_types);
+results = aggregate_event_data(saveDirectory, event_var, o, data_types);
+[table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
+writetable(table_NE, 'figure_2_NE_traces.csv')
+writetable(table_RR, 'figure_2_RR_traces.csv')
+writetable(table_SO, 'figure_2_table_SO.csv')
+writetable(table_Delta, 'figure_2_table_Delta.csv')
+writetable(table_Theta, 'figure_2_table_Theta.csv')
+writetable(table_Sigma, 'figure_2_table_Sigma.csv')
+writetable(table_Beta, 'figure_2_table_Beta.csv')
+writetable(table_Gamma_low, 'figure_2_table_Gamma_low.csv')
+writetable(table_Gamma_high, 'figure_2_table_Gamma_high.csv')
+
 figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
+figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles);
 
 %Old version
 
@@ -1843,29 +1892,32 @@ figure_2_cross_animals(results, global_max, global_min, 60, 60, main_title, titl
 %% Get HRB in NREM and MA
 suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'}; % Add more suffixes as needed
 %
-categorizeAllHRBBySleepStage(suffixes)
-plotCategorizedHRBBySleepStage(suffixes);
+categorizeAllHRBBySleepStage(suffixes) %devides the HRB into NREM, MA short and MA long
+%plotCategorizedHRBBySleepStage(suffixes);
 
 data_types = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high', 'x_corr'};
-titles = {'NREM', 'MA'};
+titles = {'NREM', 'MA (short)', 'MA (long)'};
 main_title = ('Averaged Activity During HRB for Cortical NE');
 o = {'205', '207', '209', '420', '588', '201', '213'};
-event_var = {'HRB_time_NREM', 'HRB_time_MA'};
+t = {'124', '115', '122'};
+event_var = {'HRB_time_NREM', 'HRB_time_MA_short', 'HRB_time_MA_long'};
 epoc_start = 60;
 epoc_end = 60; 
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB';
 
 results = aggregate_event_data(saveDirectory, event_var, o, data_types);
 figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
+figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles)
 
 %Old version
 [global_max, global_min] = compute_global_extremes(results, data_types);
 figure_2_cross_animals(results, global_max, global_min, 60, 60, main_title, titles)
 
-%% Extract amplitudes
+%% Extract amplitudes for HRB
 
-o = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
-event_var = {'HRB_time_NREM', 'HRB_time_MA'};
+o = {'205', '207', '209', '420', '588', '201', '213'};
+event_var = {'HRB_time_NREM', 'HRB_time_MA_short', 'HRB_time_MA_long'};
+titles = {'NREM', 'MA Short', 'MA Long'};
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB';
 outputDirectory = fullfile(saveDirectory, 'amplitudes');
 
@@ -1877,7 +1929,136 @@ times_matrix.RR.baseline_range = [-40 -20];
 times_matrix.EEG.mean_range = [-40 -20];
 times_matrix.EEG.min_range = [-10 10];
 
-amplitude_data = extract_amplitude_estimates(o, event_var, saveDirectory, times_matrix, outputDirectory);
+amplitude_data_HRB = extract_amplitude_estimates(o, event_var, saveDirectory, times_matrix, outputDirectory);
+amplitude_diff_data_troughs_HRB = extract_amplitude_differences_HRB(amplitude_data_HRB, event_var);
+plot_amplitude_diff_bar(amplitude_diff_data_troughs_HRB, event_var, o, titles); %This is good
+plot_correlations_HRB(amplitude_diff_data_troughs_HRB, event_var)
+
+
+%% Extract AUC for NE troughs
+
+o = {'205', '207', '209', '420', '588', '201', '213'};
+t = {'124', '115', '122'};
+
+event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
+titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake'};
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
+outputDirectory = fullfile(saveDirectory, 'AUC');
+
+% Define the times_matrix
+times_matrix_post = struct();
+times_matrix_post.NE.range = [0, 25];
+times_matrix_post.RR.range = [0, 25];
+times_matrix_post.EEG.range = [0, 25];
+
+times_matrix_pre = struct();
+times_matrix_pre.NE.range = [-25, 0];
+times_matrix_pre.RR.range = [-25, 0];
+times_matrix_pre.EEG.range = [-25, 0];
+
+% Call the function with the specified time range
+%auc_data = extract_auc_and_plot(o, event_var, saveDirectory, times_matrix_post, outputDirectory, titles);
+
+auc_data = extract_auc_and_plot_3(o, event_var, saveDirectory, times_matrix_pre, times_matrix_post, outputDirectory); %This is the right one
+auc_diff_table = plot_auc_bar(auc_data, event_var, o, titles);
+writetable(auc_diff_table, 'auc_diff_table.csv')
+
+auc_data_t = extract_auc_and_plot_3(t, event_var, saveDirectory, times_matrix_pre, times_matrix_post, outputDirectory); %This is the right one
+auc_diff_table_t = plot_auc_bar(auc_data_t, event_var, t, titles);
+writetable(auc_diff_table_t, 'auc_diff_table_thalamic.csv')
+
+%% Extract amplitudes for NE troughs
+
+o = {'205', '207', '209', '420', '588', '201', '213',};
+titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake'};
+
+event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
+outputDirectory = fullfile(saveDirectory, 'amplitudes');
+
+% Define the times for calculating mean, min, and max values
+times_matrix.NE.min_range = [-10 10];
+times_matrix.NE.max_range = [5 25];
+times_matrix.RR.min_range = [0 20];
+times_matrix.RR.max_range = [-10 -10];
+times_matrix.EEG.mean_range = [-40 -20];
+times_matrix.EEG.min_range = [0 25];
+
+amplitude_data_troughs = extract_amplitude_estimates_troughs(o, event_var, saveDirectory, times_matrix, outputDirectory);
+
+
+%% Cross corr NE trough amplitudes
+event_var = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
+amplitude_diff_data_troughs = extract_amplitude_differences(amplitude_data_troughs, event_var);
+plot_amplitude_diff_bar(amplitude_diff_data_troughs, event_var, o, titles); %This is good
+
+plot_correlations(amplitude_diff_data_troughs, event_var)
+
+%% Sigma Power
+% Define the subject IDs
+subjects = [420, 588, 201, 207, 209, 124, 122, 115];
+
+% Define the smoothing parameters
+MeanFilterOrder = 85; % Order for smoothing
+MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
+
+% Peak detection parameters
+min_prominence = 0.05;
+
+for i = 1:length(subjects)
+    % Extract the subject ID
+    subject = subjects(i);
+    
+    % Construct variable names
+    band_powers_var = sprintf('band_powers_%d', subject);
+    EEG_bands_fs_var = sprintf('EEG_bands_fs_%d', subject);
+    
+    % Extract sigma band power
+    sigma = eval(sprintf('%s{4}', band_powers_var));
+    
+    % Apply smoothing
+    smoothed_sigma = filtfilt(MeanFilter, 1, sigma);
+    
+    % Save the smoothed sigma to the workspace
+    smoothed_sigma_var = sprintf('sigma_smooth_%d', subject);
+    assignin('base', smoothed_sigma_var, smoothed_sigma);
+    
+    % Get the sampling frequency
+    fs = eval(EEG_bands_fs_var);
+    
+    % Create a time vector
+    time = (0:length(sigma)-1) / fs;
+    
+    % Find peaks in the smoothed sigma
+    [peaks, locs] = findpeaks(smoothed_sigma, 'MinPeakProminence', min_prominence);
+    
+    % Create a figure for the subplots
+    figure;
+    
+    % Plot the raw sigma in the top subplot
+    subplot(2, 1, 1);
+    plot(time, sigma, 'b');
+    title(['Raw Sigma for Subject ', num2str(subject)]);
+    xlabel('Time (seconds)');
+    ylabel('Sigma Power');
+    
+    % Plot the smoothed sigma in the bottom subplot
+    subplot(2, 1, 2);
+    plot(time, smoothed_sigma, 'r');
+    hold on;
+    plot(time(locs), peaks, 'ko', 'MarkerFaceColor', 'none', 'DisplayName', 'Detected Peaks');
+    title(['Smoothed Sigma for Subject ', num2str(subject)]);
+    xlabel('Time (seconds)');
+    ylabel('Sigma Power');
+    legend show;
+    hold off;
+    
+    % Link the x-axes of the subplots
+    linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+end
+
+
+
 %% RR PSD begins - creat NREMinclMA if you don't have it
 
 % List of suffixes for each animal
@@ -2081,9 +2262,159 @@ title('Mean PSD for RR intervals across NREM incl MA bouts');
 grid on;
 set(gcf, 'Color', 'w'); % Set background color to white
 
+PSD_summary_table = table(f', mean_PXX, SEM_PSD, 'VariableNames', {'Frequency', 'Mean_PSD', 'SEM_PSD'});
+writetable(PSD_summary_table, 'PSD_summary.csv');
+
+% Clear temporary variables
+clear SEM_PSD H fs min_period_dur sampling_hz unique_suffixes s suffix current_data i RR_values period_length p s mu f_y detrend_data pxx PXX period_duration weighted_mean_PXX all_weighted_PXX all_weighted_PXX_matrix;
+
+%% Kuo & Kuo (2016) PSD approach
+
+% Define the sampling frequency and other parameters
+fs = 64; % Specify sampling frequency of your signal trace
+min_period_dur = 180; % Specify minimum bout duration for bout to be included in the analysis
+sampling_hz = 0.0002;
+
+% Initialize the cell array to store the results
+PSD_results = {};
+
+% Loop through each unique suffix in RR_data_NREM
+unique_suffixes = unique(RR_data_NREM_table.MouseID);
+
+for s = 1:length(unique_suffixes)
+    suffix = unique_suffixes{s};
+    
+    % Filter RR_data_NREM to get data for the current suffix
+    current_data = RR_data_NREM_table(strcmp(RR_data_NREM_table.MouseID, suffix), :);
+    
+    PXX = [];
+    period_duration = [];
+    
+    % Loop through each period for the current suffix
+    for i = 1:height(current_data)
+        RR_values = current_data.RR_Values{i};
+        
+        % Calculate the duration of the period
+        period_length = length(RR_values);
+        
+        if period_length < min_period_dur * fs % periods shorter than 180 s are excluded from analysis
+            continue
+        end
+        
+        % Detrend (and center around 0)
+        [p, s, mu] = polyfit((1:numel(RR_values))', RR_values, 5);
+        f_y = polyval(p, (1:numel(RR_values))', [], mu);
+        detrend_data = RR_values - f_y'; % Detrend data
+        
+        [pxx, f] = pwelch(detrend_data, [], [], [0:sampling_hz:3], fs); % Calculate PSD
+        PXX = [PXX pxx'];
+        
+        period_duration = [period_duration period_length / fs];
+    end
+    
+    if ~isempty(PXX)
+        % Calculate weighted mean PSD
+        weighted_mean_PXX = sum(period_duration .* PXX, 2) / sum(period_duration);
+        
+        % Store results in a cell array
+        PSD_results{end+1, 1} = suffix;
+        PSD_results{end, 2} = weighted_mean_PXX;
+    end
+end
+
+% Convert the cell array to a table for better visualization (optional)
+PSD_results_table = cell2table(PSD_results, 'VariableNames', {'MouseID', 'WeightedMeanPXX'});
+
+% Calculate the mean PSD across all unique suffixes
+all_weighted_PXX = cell2mat(PSD_results_table.WeightedMeanPXX);
+all_weighted_PXX_matrix = reshape(all_weighted_PXX, length(f), []);
+
+mean_PXX = mean(all_weighted_PXX_matrix, 2);
+SEM_PSD = std(all_weighted_PXX_matrix, 0, 2) / sqrt(size(all_weighted_PXX_matrix, 2));
+
+% Log-log plot and linear regression
+log_f = log(f(f>0)); % Exclude zero frequency for log calculation
+log_mean_PXX = log(mean_PXX(f>0));
+
+% Perform linear regression
+p = polyfit(log_f, log_mean_PXX, 1);
+slope = p(1);
+intercept = p(2);
+
+% Calculate the power-law component
+power_law_PXX = exp(intercept + slope * log_f);
+
+% Calculate the residual PSD
+residual_PXX = mean_PXX(f>0) - power_law_PXX';
+
+% Define frequency bands
+vlf_range = [0, 0.15];
+lf_range = [0.15, 1.5];
+hf_range = [1.5, 5];
+
+% Ensure the ranges are within the bounds of f
+valid_f_indices = f(f > 0); % This excludes zero frequency for further calculations
+vlf_indices = (valid_f_indices >= vlf_range(1)) & (valid_f_indices <= vlf_range(2));
+lf_indices = (valid_f_indices >= lf_range(1)) & (valid_f_indices <= lf_range(2));
+hf_indices = (valid_f_indices >= hf_range(1)) & (valid_f_indices <= hf_range(2));
+
+% Calculate the power in each band for residual PSD using trapezoidal integration
+vlf_power = trapz(valid_f_indices(vlf_indices), residual_PXX(vlf_indices));
+lf_power = trapz(valid_f_indices(lf_indices), residual_PXX(lf_indices));
+hf_power = trapz(valid_f_indices(hf_indices), residual_PXX(hf_indices));
+
+% Plot the mean PSD
+figure;
+hold on;
+maxY = max(mean_PXX + SEM_PSD) + 0.0001;
+maxX = max(f);
+
+% Transparent shading for different frequency bands
+fill([vlf_range(1) vlf_range(2) vlf_range(2) vlf_range(1)], ...
+    [0 0 maxY maxY], 'r', 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'DisplayName', 'Very Low Frequency (VLF)');
+
+fill([lf_range(1) lf_range(2) lf_range(2) lf_range(1)], ...
+    [0 0 maxY maxY], 'g', 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'DisplayName', 'Low Frequency (LF)');
+
+fill([hf_range(1) hf_range(2) hf_range(2) hf_range(1)], ...
+    [0 0 maxY maxY], 'y', 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'DisplayName', 'High Frequency (HF)');
+
+% Shaded error bar for mean PSD
+H = shadedErrorBar(f, mean_PXX, SEM_PSD);
+set(get(get(H.patch, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+set(get(get(H.mainLine, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+set(get(get(H.edge(1), 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+set(get(get(H.edge(2), 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+
+% Plot the mean PSD again on top of the shaded areas
+hPSD = plot(f, mean_PXX, 'k', 'LineWidth', 1, 'HandleVisibility', 'off');
+uistack(hPSD, 'top');
+
+% Adding the legend
+legend({'Very Low Frequency (VLF)', 'Low Frequency (LF)', 'High Frequency (HF)'}, 'Location', 'northeast');
+
+% Set y-axis limit
+ylim([0, maxY]);
+xlim([0, maxX]);
+
+hold off;
+xlabel('Frequency (Hz)');
+ylabel('Power Spectral Density (PSD) of RR intervals');
+title('Mean PSD for RR intervals across NREM incl MA bouts');
+grid on;
+set(gcf, 'Color', 'w'); % Set background color to white
+
 % Clear temporary variables
 clear mean_PXX SEM_PSD H fs min_period_dur sampling_hz unique_suffixes s suffix current_data i RR_values period_length p s mu f_y detrend_data pxx PXX period_duration weighted_mean_PXX all_weighted_PXX all_weighted_PXX_matrix;
 
+% Display residual PSD
+figure;
+plot(f(f>0), residual_PXX);
+xlabel('Frequency (Hz)');
+ylabel('Residual Power Spectral Density (rPSD)');
+title('Residual PSD after removing power-law component');
+grid on;
+set(gcf, 'Color', 'w'); % Set background color to white
 
 %% 588 figure 1 
 
@@ -2164,8 +2495,8 @@ MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filte
 RR = filtfilt(MeanFilter, 1, RR);
 
 % Define x-axis range
-x_start = 7120;
-x_end = 7190;
+x_start = 7140;
+x_end = 7170;
 
 % Plot EEG data
 figure;
@@ -2176,8 +2507,8 @@ set(gcf,'color','white');
 % Plot EMG and sleep state data
 figure;
 hold on
-plot_sleep(sec_signal_EEG, -EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);   
-plot(Rpeaks_time, Rpeaks, 'ro');
+plot(sec_signal_EEG, -EMG);   
+scatter(Rpeaks_time, Rpeaks, 'r', 'filled');
 hold off
 xlim([x_start, x_end]);
 set(gcf,'color','white');

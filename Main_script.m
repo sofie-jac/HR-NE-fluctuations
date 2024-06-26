@@ -68,7 +68,6 @@ EMG = EMG(samplesToRemove_EEG_EMG:end);
 % Directly trim the first second from signal_405_2 and signal_465_2
 signal_405_2 = signal_405_2(samplesToRemove_FP:end);
 signal_465_2 = signal_465_2(samplesToRemove_FP:end);
-%% 
 
 %% remove period before TTL pulse
 
@@ -586,11 +585,13 @@ save('EMG_602.mat', 'EMG_602');
 save('EMG_084.mat', 'EMG_084');
 save('EMG_023.mat', 'EMG_023');
 
-save('NE_588_new.mat', 'delta465_filt_2_588');
-save('wake_588.mat', 'wake_woMA_binary_vector_588');
-save('NREM_588.mat', 'sws_binary_vector_588');
-save('REM_588.mat', 'REM_binary_vector_588');
-save('micro_arousal_588.mat', 'MA_binary_vector_588');
+save('NE_100_new.mat', 'delta465_filt_2_100');
+save('EMG_100.mat', 'EMG_100');
+save('EEG_100.mat', 'EEG_100');
+save('wake_100.mat', 'wake_woMA_binary_vector_100');
+save('NREM_100.mat', 'sws_binary_vector_100');
+save('REM_100.mat', 'REM_binary_vector_100');
+save('micro_arousal_100.mat', 'MA_binary_vector_100');
 
 %% Get clean sections for machine learning training
 % Your provided variables and code for movement detection
@@ -2538,8 +2539,8 @@ for stage_idx = 1:length(sleep_variables)
     t1 = analysis_periods(:,1);
     t2 = analysis_periods(:,2);
     
-    tsamp1 = floor(t1*fs); %eeg start time 
-    tsamp2 = floor(t2*fs); %eeg end time
+    tsamp1 = floor(t1*fs); %RR start time 
+    tsamp2 = floor(t2*fs); %RR end time
     NREM_data = cell(1, numel(tsamp1));
     
     PXX = [];

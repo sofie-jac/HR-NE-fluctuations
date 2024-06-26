@@ -1,15 +1,12 @@
 function plot_AUC_bar(AUC_table, arch, yfp, y_lab, main_title)
     % Helper function to calculate SEM
-    remove_outliers = @(data) data(abs(data - mean(data)) <= 5 * std(data));
+    calc_sem = @(data) std(data) / sqrt(length(data));
 
     % Extract and preprocess data for each group
     yfp_pre = remove_outliers(AUC_table.AUC_pre(ismember(AUC_table.Suffix, yfp)));
     yfp_post = remove_outliers(AUC_table.AUC_post(ismember(AUC_table.Suffix, yfp)));
     arch_pre = remove_outliers(AUC_table.AUC_pre(ismember(AUC_table.Suffix, arch)));
     arch_post = remove_outliers(AUC_table.AUC_post(ismember(AUC_table.Suffix, arch)));
-    
-    calc_sem = @(data) std(data) / sqrt(length(data));
-
     
     % Combine all data
     data = {yfp_pre, yfp_post, arch_pre, arch_post};

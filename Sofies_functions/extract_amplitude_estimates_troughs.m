@@ -1,4 +1,4 @@
-function amplitude_data = extract_amplitude_estimates(o, event_var, saveDirectory, times_matrix, outputDirectory)
+function amplitude_data = extract_amplitude_estimates_troughs(o, event_var, saveDirectory, times_matrix, outputDirectory)
     % Set default epoch start and end times
     epoc_start = 60;
     epoc_end = 60;
@@ -40,9 +40,6 @@ function amplitude_data = extract_amplitude_estimates(o, event_var, saveDirector
                 continue;
             end
 
-            % Determine the sampling frequency for NE based on data length and duration
-            NE_fs = size(NE_collector.(['NE_' event_type_name '_' uniqueId]), 2) / 120; % Number of seconds covered is 120
-
             % Define time vectors based on sampling frequencies
             time_vector_NE = linspace(-epoc_start, epoc_end, size(NE_collector.(['NE_' event_type_name '_' uniqueId]), 2));
             time_vector_RR = linspace(-epoc_start, epoc_end, size(RR_collector.(['RR_' event_type_name '_' uniqueId]), 2));
@@ -57,14 +54,15 @@ function amplitude_data = extract_amplitude_estimates(o, event_var, saveDirector
                 summary_data.NE_min(event_idx, 1) = NE_min;
                 summary_data.NE_max(event_idx, 1) = NE_max;
 
-                % Calculate RR baseline and min
-                [RR_baseline, RR_min] = calculate_mean_min(RR_collector.(['RR_' event_type_name '_' uniqueId])(event_idx, :), time_vector_RR, times_matrix.RR.baseline_range, times_matrix.RR.min_range);
-                summary_data.RR_min(event_idx, 1) = RR_min;
-                summary_data.RR_baseline(event_idx, 1) = RR_baseline;
+                % Calculate RR baseline and min, and convert to milliseconds
+                [RR_min, RR_max] = calculate_min_max(RR_collector.(['RR_' event_type_name '_' uniqueId])(event_idx, :), time_vector_RR, times_matrix.RR.min_range, times_matrix.RR.max_range);
+                summary_data.RR_min(event_idx, 1) = RR_min * 1000;
+                summary_data.RR_max(event_idx, 1) = RR_max * 1000;
 
                 % Calculate EEG band values if not excluded
                 if ~any(strcmp(uniqueId, {'213', '205'}))
                     eeg_bands = {'SO', 'Delta', 'Theta', 'Sigma', 'Beta'};
+                    gamma_bands = {'Gamma_low', 'Gamma_high'};
                     for band_idx = 1:length(eeg_bands)
                         band_name = eeg_bands{band_idx};
                         band_data = eval([band_name '_collector.(''' band_name '_' event_type_name '_' uniqueId ''')(event_idx, :)']);
@@ -72,15 +70,15 @@ function amplitude_data = extract_amplitude_estimates(o, event_var, saveDirector
                         summary_data.([band_name '_min'])(event_idx, 1) = band_min;
                         summary_data.([band_name '_baseline'])(event_idx, 1) = band_baseline;
                     end
-
-                    % Calculate max for gamma bands instead of min
-                    gamma_bands = {'Gamma_low', 'Gamma_high'};
                     for band_idx = 1:length(gamma_bands)
                         band_name = gamma_bands{band_idx};
                         band_data = eval([band_name '_collector.(''' band_name '_' event_type_name '_' uniqueId ''')(event_idx, :)']);
-                        [band_baseline, band_max] = calculate_mean_max(band_data, time_vector_EEG, times_matrix.EEG.mean_range, [-10, 10]);
-                        summary_data.([band_name '_max'])(event_idx, 1) = band_max;
-                        summary_data.([band_name '_baseline'])(event_idx, 1) = band_baseline;
+                        baseline_range = [-40, -20];
+                        max_range = [0, 25];
+                        baseline_mean = calculate_mean(band_data, time_vector_EEG, baseline_range);
+                        max_mean = calculate_max_mean(band_data, time_vector_EEG, max_range);
+                        summary_data.([band_name '_baseline'])(event_idx, 1) = baseline_mean;
+                        summary_data.([band_name '_max_mean'])(event_idx, 1) = max_mean;
                     end
                 end
             end
@@ -107,16 +105,14 @@ function mean_value = calculate_mean(data, time_vector, mean_range)
     mean_value = mean(data(mean_indices), 2); % Mean of the specified interval
 end
 
+function mean_value = calculate_max_mean(data, time_vector, max_range)
+    max_indices = time_vector >= max_range(1) & time_vector <= max_range(2);
+    mean_value = mean(prctile(data(max_indices), 95)); % Mean of the top 5% of the specified interval
+end
+
 function [min_value, max_value] = calculate_min_max(data, time_vector, min_range, max_range)
     min_indices = time_vector >= min_range(1) & time_vector <= min_range(2);
     max_indices = time_vector >= max_range(1) & time_vector <= max_range(2);
     min_value = mean(prctile(data(min_indices), 5)); % Mean of the bottom 5% of the specified interval
-    max_value = mean(prctile(data(max_indices), 95)); % Mean of the top 5% of the specified interval
-end
-
-function [mean_value, max_value] = calculate_mean_max(data, time_vector, mean_range, max_range)
-    mean_indices = time_vector >= mean_range(1) & time_vector <= mean_range(2);
-    max_indices = time_vector >= max_range(1) & time_vector <= max_range(2);
-    mean_value = mean(data(mean_indices), 2); % Mean of the specified interval
     max_value = mean(prctile(data(max_indices), 95)); % Mean of the top 5% of the specified interval
 end
