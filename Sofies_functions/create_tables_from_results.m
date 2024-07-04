@@ -6,6 +6,13 @@ function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, t
         aligned_data = data - baseline_mean;
     end
 
+    % Function to downsample data by a specified factor
+    function [downsampled_data, downsampled_time, downsampled_sem] = downsample_data(data, time_vector, sem, factor)
+        downsampled_data = data(1:factor:end);
+        downsampled_time = time_vector(1:factor:end);
+        downsampled_sem = sem(1:factor:end);  % Downsample SEM in the same way
+    end
+
     % Initialize the tables to store mean and SEM
     table_NE = table();
     table_RR = table();
@@ -32,12 +39,17 @@ function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, t
             lenNE = length(results.(event_name).NE.mean);
             epoc_FPtime_NE = linspace(plot_start, plot_end, lenNE)';
             aligned_mean_NE = subtract_baseline(results.(event_name).NE.mean, epoc_FPtime_NE)';
+            aligned_sem_NE = results.(event_name).NE.sem';  % Directly use the SEM without baseline correction
+
+            % Downsample by a factor of 100
+            factor = 100;
+            [downsampled_mean_NE, downsampled_time_NE, downsampled_sem_NE] = downsample_data(aligned_mean_NE, epoc_FPtime_NE, aligned_sem_NE, factor);
 
             % Append data to the table
             if isempty(table_NE)
-                table_NE.Time = epoc_FPtime_NE;
+                table_NE.Time = downsampled_time_NE;
             end
-            table_NE = addvars(table_NE, aligned_mean_NE, results.(event_name).NE.sem', ...
+            table_NE = addvars(table_NE, downsampled_mean_NE, downsampled_sem_NE, ...
                 'NewVariableNames', {sprintf('%s_mean', event_name), sprintf('%s_sem', event_name)});
         end
     end

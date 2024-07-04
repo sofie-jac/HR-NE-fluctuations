@@ -1,7 +1,7 @@
 clear all
 %% Clear suffix
 % List of 3-digit elements to look for in variable names
-suffixes = {'468', '477', '484'};
+suffixes = {'513'};
 
 % Get the list of variables in the workspace
 workspaceVars = who;
@@ -27,15 +27,16 @@ for k = 1:length(workspaceVars)
 end
 
 % Clear temporary variables
-clear workspaceVars varName shouldClear k i suffixes;
+clear workspaceVars varName shouldClear k i suffixes onset_FP REM_onset Rpeaks RR RR_fs RR_time sigma beta subjects suffixes suffix Suffixes sws_onset t time time_correlation TTL_FP TTL_gap TTL_onset v wake_binary_vector window_in_sec x_start x_end sec_signal reg peaks min_prominence MeanFilter MeanFilterOrder mean_spectrogram locs laser_on laser_off j idx hTheta hSigma hSO hGamma_high hGamma_low hBeta fs_signal fs freq_range first_TTL fig frw hypno_duration info laser_binary normDat subject time_correction TimeReldebSec TimeRelEndSec wake_onset F hDelta EEG_scoring_onset EEG_sleepscore d controlFit emg_f emg_fhp Info;
 
 
 %% Load files with certain suffixes
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp';
 
 % List of 3-digit elements to look for in file names
 suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
+suffixes = {'522'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders

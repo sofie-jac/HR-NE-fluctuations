@@ -2,8 +2,8 @@ function [delta465_filt_2, sec_signal_2, signal_fs, EEG, EMG, sec_signal_EEG, EE
     addpath(genpath(['J:\CTN\NedergaardLAB\Personal_folders\Mie\EEG data from NH\EEG toolbox']));
     ViewpointData.FileInfo=loadEXP([mouse{2}],'no');
     TimeReldebSec=0; %start extract data from the beginning (first bin)
-    %TimeRelEndSec=inf; %inf to include data until last bin
-    TimeRelEndSec=ViewpointData.FileInfo.BinFiles.Duration; %to include all data (also last time bin even if incomplete)
+    TimeRelEndSec=inf; %inf to include data until last bin
+    %TimeRelEndSec=ViewpointData.FileInfo.BinFiles.Duration; %to include all data (also last time bin even if incomplete)
 
     [Data,Time]=ExtractContinuousData([],ViewpointData.FileInfo,[],TimeReldebSec, TimeRelEndSec,[],1);
     EMG_raw = Data(1,1:end);
