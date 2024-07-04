@@ -316,6 +316,19 @@ r.squaredGLMM(m_sqrt)
 
 print(ci_delta)
 
+# Extract fitted values from the model
+fitted_values <- fitted(m_sqrt)
+
+# Get the indices of the non-NA values used in the model
+used_indices <- as.numeric(names(fitted_values))
+
+# Extract the corresponding observed values
+observed_values <- df$RR_sqrt[used_indices]
+
+# Calculate Pearson correlation between observed and fitted values
+correlation <- cor(observed_values, fitted_values)
+print(correlation)
+
 ```
 
 ```{r NE-test}
