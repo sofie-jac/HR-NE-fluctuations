@@ -1,4 +1,4 @@
-function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles)
+function figure_2_reorganized_single(results, epoc_start, epoc_end, main_title, titles)
     % Define the number of rows and columns for subplot
     numEventVars = length(fieldnames(results));
     numColumns = 2; % Number of columns for subplots
@@ -13,7 +13,7 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
     if numEventVars > 6
         disp('Please add more colors to the function - Im only loaded up with 6')
     end
-
+    
     % Function to format the number of events string
     function n_events_str = format_num_events(n_events_all)
         n_events_str = '';
@@ -25,84 +25,69 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
         end
     end
 
-    % Function to subtract the mean value of the trace from -40 to -30 seconds
-    function aligned_data = subtract_baseline(data, time_vector)
-        baseline_indices = time_vector >= -40 & time_vector <= -30;
-        baseline_mean = mean(data(baseline_indices));
-        aligned_data = data - baseline_mean;
-    end
-
-    % Adjust the epoch range to -30 to 30 seconds
-    plot_start = -30;
-    plot_end = 30;
-
     % Plot NE data
     subplot(numRows, numColumns, 1);
     hold on;
     legend_entries = {};
-    for i = numEventVars:-1:1
+    for i = 1:numEventVars
         event_name = event_var_names{i};
         currentTitle = titles{i};
 
-        % Determine the length of time vectors dynamically from data if available
-        if isfield(results.(event_name), 'NE')
+        % Check if mean and SEM exist
+        if isfield(results.(event_name), 'NE') && isfield(results.(event_name).NE, 'mean') && isfield(results.(event_name).NE, 'sem')
+            % Determine the length of time vectors dynamically from data if available
             lenNE = length(results.(event_name).NE.mean);
-            epoc_FPtime_NE = linspace(plot_start, plot_end, lenNE);
-            % Subtract the baseline
-            aligned_mean_NE = subtract_baseline(results.(event_name).NE.mean, epoc_FPtime_NE);
-            plot(epoc_FPtime_NE, aligned_mean_NE, 'Color', colors{i}); % Event specific color
-            legend_entries{numEventVars-i+1} = currentTitle;
+            epoc_FPtime_NE = linspace(-epoc_start, epoc_end, lenNE);
+            plot(epoc_FPtime_NE, results.(event_name).NE.mean, 'Color', colors{i}); % Event specific color
+            legend_entries{end+1} = currentTitle; % Add current title to legend entries
         end
     end
-    for i = numEventVars:-1:1
+    for i = 1:numEventVars
         event_name = event_var_names{i};
 
-        % Determine the length of time vectors dynamically from data if available
-        if isfield(results.(event_name), 'NE')
+        % Check if mean and SEM exist
+        if isfield(results.(event_name), 'NE') && isfield(results.(event_name).NE, 'mean') && isfield(results.(event_name).NE, 'sem')
             lenNE = length(results.(event_name).NE.mean);
-            epoc_FPtime_NE = linspace(plot_start, plot_end, lenNE);
-            % Subtract the baseline
-            aligned_mean_NE = subtract_baseline(results.(event_name).NE.mean, epoc_FPtime_NE);
+            epoc_FPtime_NE = linspace(-epoc_start, epoc_end, lenNE);
 
             lineProps = {'Color', colors{i}, 'HandleVisibility', 'off'}; % Sets line color and width
-            shadedErrorBar(epoc_FPtime_NE, aligned_mean_NE, results.(event_name).NE.sem, lineProps, 1);
+            shadedErrorBar(epoc_FPtime_NE, results.(event_name).NE.mean, results.(event_name).NE.sem, lineProps, 1);
         end
     end
     plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
     hold off;
-    n_events_all = arrayfun(@(i) results.(event_var_names{i}).NE.num_events, 1:numEventVars);
+    n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), 'NE') && isfield(results.(event_var_names{i}).NE, 'num_events') && results.(event_var_names{i}).NE.num_events, 1:numEventVars);
     n_events_str = format_num_events(n_events_all);
     title(sprintf('NE (%s Events)', n_events_str));
     ylabel('Delta F/F');
-    xlim([plot_start, plot_end]);
-    legend(legend_entries, 'Location', 'northwest');
+    xlim([-epoc_start, epoc_end]);
+    legend(legend_entries, 'Location', 'best');
     grid on;
 
     % Plot RR data
     subplot(numRows, numColumns, 2);
     hold on;
-    for i = numEventVars:-1:1
+    for i = 1:numEventVars
         event_name = event_var_names{i};
         currentTitle = titles{i};
 
-        if isfield(results.(event_name), 'RR')
+        % Check if mean and SEM exist
+        if isfield(results.(event_name), 'RR') && isfield(results.(event_name).RR, 'mean') && isfield(results.(event_name).RR, 'sem')
             lenRR = length(results.(event_name).RR.mean);
-            epoc_FPtime_RR = linspace(plot_start, plot_end, lenRR);
-            % Subtract the baseline
-            aligned_mean_RR = subtract_baseline(results.(event_name).RR.mean, epoc_FPtime_RR);
+            epoc_FPtime_RR = linspace(-epoc_start, epoc_end, lenRR);
 
             lineProps = {'Color', colors{i}}; % Sets line color and width
-            shadedErrorBar(epoc_FPtime_RR, aligned_mean_RR, results.(event_name).RR.sem, lineProps, 1);
-            plot(epoc_FPtime_RR, aligned_mean_RR, 'Color', colors{i}); % Event specific color
+            shadedErrorBar(epoc_FPtime_RR, results.(event_name).RR.mean, results.(event_name).RR.sem, lineProps, 1);
+            plot(epoc_FPtime_RR, results.(event_name).RR.mean, 'Color', colors{i}); % Event specific color
         end
     end
     plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
     hold off;
-    n_events_all = arrayfun(@(i) results.(event_var_names{i}).RR.num_events, 1:numEventVars);
+    n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), 'RR') && isfield(results.(event_var_names{i}).RR, 'num_events') && results.(event_var_names{i}).RR.num_events, 1:numEventVars);
     n_events_str = format_num_events(n_events_all);
     title(sprintf('RR (%s Events)', n_events_str));
     ylabel('RR Intervals (s)');
-    xlim([plot_start, plot_end]);
+    xlim([-epoc_start, epoc_end]);
     grid on;
 
     % Plot x-corr data
@@ -113,9 +98,10 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
         event_name = event_var_names{i};
         currentTitle = titles{i};
 
-        if isfield(results.(event_name), 'x_corr')
+        % Check if mean and SEM exist
+        if isfield(results.(event_name), 'x_corr') && isfield(results.(event_name).x_corr, 'mean') && isfield(results.(event_name).x_corr, 'sem')
             lenRR = length(results.(event_name).x_corr.mean);
-            epoc_FPtime_RR = linspace(plot_start, plot_end, lenRR);
+            epoc_FPtime_RR = linspace(epoc_start, epoc_end, lenRR);
             % Do not subtract the baseline
             aligned_mean_xcorr = results.(event_name).x_corr.mean;
 
@@ -133,11 +119,12 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
     hold off;
     titleStr = 'Cross-correlation';
     for i = 1:numEventVars
-        titleStr = sprintf('%s, Min at %.2f s', titleStr, minTimestamps(i));
+        if minTimestamps(i) ~= 0
+            titleStr = sprintf('%s, Min at %.2f s', titleStr, minTimestamps(i));
+        end
     end
     title(titleStr);
     ylabel('R');
-    xlim([plot_start, plot_end]);
     grid on;
 
     % Plot EEG bands data
@@ -145,29 +132,28 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
     for k = 1:length(eeg_bands)
         subplot(numRows, numColumns, k + 3);
         hold on;
-        for i = numEventVars:-1:1
+        for i = 1:numEventVars
             event_name = event_var_names{i};
             currentTitle = titles{i};
 
-            if isfield(results.(event_name), eeg_bands{k})
+            % Check if mean and SEM exist
+            if isfield(results.(event_name), eeg_bands{k}) && isfield(results.(event_name).(eeg_bands{k}), 'mean') && isfield(results.(event_name).(eeg_bands{k}), 'sem')
                 lenSO = length(results.(event_name).(eeg_bands{k}).mean);
-                epoc_FPtime_EEG = linspace(plot_start, plot_end, lenSO);
-                % Subtract the baseline
-                aligned_mean_EEG = subtract_baseline(results.(event_name).(eeg_bands{k}).mean, epoc_FPtime_EEG);
+                epoc_FPtime_EEG = linspace(-epoc_start, epoc_end, lenSO);
 
                 lineProps = {'Color', colors{i}}; % Sets line color and width
-                shadedErrorBar(epoc_FPtime_EEG, aligned_mean_EEG, results.(event_name).(eeg_bands{k}).sem, lineProps, 1);
-                plot(epoc_FPtime_EEG, aligned_mean_EEG, 'Color', colors{i}); % Event specific color
+                shadedErrorBar(epoc_FPtime_EEG, results.(event_name).(eeg_bands{k}).mean, results.(event_name).(eeg_bands{k}).sem, lineProps, 1);
+                plot(epoc_FPtime_EEG, results.(event_name).(eeg_bands{k}).mean, 'Color', colors{i}); % Event specific color
             end
         end
         plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
         hold off;
         band_title = strrep(eeg_bands{k}, '_', ' '); % Replace underscores with spaces for titles
-        n_events_all = arrayfun(@(i) results.(event_var_names{i}).(eeg_bands{k}).num_events, 1:numEventVars);
+        n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), eeg_bands{k}) && isfield(results.(event_var_names{i}).(eeg_bands{k}), 'num_events') && results.(event_var_names{i}).(eeg_bands{k}).num_events, 1:numEventVars);
         n_events_str = format_num_events(n_events_all);
         title(sprintf('%s (%s Events)', band_title, n_events_str));
         ylabel('Power');
-        xlim([plot_start, plot_end]);
+        xlim([-epoc_start, epoc_end]);
         grid on;
     end
 

@@ -1,4 +1,4 @@
-function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
+function [NE_table, RR_table, SO_table, Delta_table, Theta_table, Sigma_table, Beta_table, Gamma_low_table, Gamma_high_table] = figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
     % Define the number of rows and columns for subplot
     numEventVars = length(fieldnames(results));
     numColumns = 2; % Number of columns for subplots
@@ -9,9 +9,9 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
     set(gcf, 'Color', 'w'); % Set background color to white
 
     event_var_names = fieldnames(results);
-    colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.4660 0.6740 0.1880]};
-    if numEventVars > 4
-        disp('Please add more colors to the function - Im only loaded up with 4')
+    colors = {[0 0.4470 0.7410], [0.8500 0.3250 0.0980], [0.9290 0.6940 0.1250], [0.4660 0.6740 0.1880], [0.4940 0.1840 0.5560], [0.3010 0.7450 0.9330]};
+    if numEventVars > 6
+        disp('Please add more colors to the function - Im only loaded up with 6')
     end
     
     % Function to format the number of events string
@@ -24,6 +24,23 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
             end
         end
     end
+
+    % Down-sampling function
+    function [downsampled_x, downsampled_y] = downsample_data(x, y, factor)
+        downsampled_x = x(1:factor:end);
+        downsampled_y = y(1:factor:end);
+    end
+
+    % Initialize tables for storing the data
+    NE_table = table();
+    RR_table = table();
+    SO_table = table();
+    Delta_table = table();
+    Theta_table = table();
+    Sigma_table = table();
+    Beta_table = table();
+    Gamma_low_table = table();
+    Gamma_high_table = table();
 
     % Plot NE data
     subplot(numRows, numColumns, 1);
@@ -56,6 +73,17 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
 
         lineProps = {'Color', colors{i}, 'HandleVisibility', 'off'}; % Sets line color and width
         shadedErrorBar(epoc_FPtime_NE, results.(event_name).NE.mean, results.(event_name).NE.sem, lineProps, 1);
+
+        % Down-sample NE data
+        [downsampled_time_NE, downsampled_mean_NE] = downsample_data(epoc_FPtime_NE, results.(event_name).NE.mean, 100);
+        [~, downsampled_sem_NE] = downsample_data(epoc_FPtime_NE, results.(event_name).NE.sem, 100);
+
+        % Add the data to the NE table
+        if i == 1
+            NE_table = table(downsampled_time_NE(:), downsampled_mean_NE(:), downsampled_sem_NE(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+        else
+            NE_table = [NE_table, table(downsampled_mean_NE(:), downsampled_sem_NE(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+        end
     end
     plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
     hold off;
@@ -84,6 +112,17 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
         lineProps = {'Color', colors{i}}; % Sets line color and width
         shadedErrorBar(epoc_FPtime_RR, results.(event_name).RR.mean, results.(event_name).RR.sem, lineProps, 1);
         plot(epoc_FPtime_RR, results.(event_name).RR.mean, 'Color', colors{i}); % Event specific color
+
+        % Down-sample RR data
+        [downsampled_time_RR, downsampled_mean_RR] = downsample_data(epoc_FPtime_RR, results.(event_name).RR.mean, 7);
+        [~, downsampled_sem_RR] = downsample_data(epoc_FPtime_RR, results.(event_name).RR.sem, 7);
+
+        % Add the data to the RR table
+        if i == 1
+            RR_table = table(downsampled_time_RR(:), downsampled_mean_RR(:), downsampled_sem_RR(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+        else
+            RR_table = [RR_table, table(downsampled_mean_RR(:), downsampled_sem_RR(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+        end
     end
     plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
     hold off;
@@ -91,41 +130,6 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
     n_events_str = format_num_events(n_events_all);
     title(sprintf('RR (%s Events)', n_events_str));
     ylabel('RR Intervals (s)');
-    xlim([-epoc_start, epoc_end]);
-    grid on;
-
-    % Plot x-corr data
-    subplot(numRows, numColumns, 3);
-    hold on;
-    minTimestamps = zeros(1, numEventVars);
-    for i = 1:numEventVars
-        event_name = event_var_names{i};
-        currentTitle = titles{i};
-
-        if isfield(results.(event_name), 'RR')
-            lenRR = length(results.(event_name).RR.mean);
-            epoc_FPtime_RR = linspace(-epoc_start, epoc_end, lenRR);
-        else
-            epoc_FPtime_RR = linspace(-epoc_start, epoc_end, 1000); % Default length
-        end
-
-        lineProps = {'Color', colors{i}}; % Sets line color and width
-        shadedErrorBar(epoc_FPtime_RR, results.(event_name).x_corr.mean, results.(event_name).x_corr.sem, lineProps, 1);
-        plot(epoc_FPtime_RR, results.(event_name).x_corr.mean, 'Color', colors{i}); % Event specific color
-
-        % Find the index of the minimum x_corr value
-        [minValue, minIndex] = min(results.(event_name).x_corr.mean);
-        minTimestamps(i) = epoc_FPtime_RR(minIndex);
-        plot(minTimestamps(i), minValue, 'kx'); % Mark the min value with a black cross
-    end
-    plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
-    hold off;
-    titleStr = 'Cross-correlation';
-    for i = 1:numEventVars
-        titleStr = sprintf('%s, Min at %.2f s', titleStr, minTimestamps(i));
-    end
-    title(titleStr);
-    ylabel('R');
     xlim([-epoc_start, epoc_end]);
     grid on;
 
@@ -138,9 +142,9 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
             event_name = event_var_names{i};
             currentTitle = titles{i};
 
-            if isfield(results.(event_name), 'SO')
-                lenSO = length(results.(event_name).SO.mean);
-                epoc_FPtime_EEG = linspace(-epoc_start, epoc_end, lenSO);
+            if isfield(results.(event_name), eeg_bands{k})
+                lenEEG = length(results.(event_name).(eeg_bands{k}).mean);
+                epoc_FPtime_EEG = linspace(-epoc_start, epoc_end, lenEEG);
             else
                 epoc_FPtime_EEG = linspace(-epoc_start, epoc_end, 1000); % Default length
             end
@@ -148,6 +152,52 @@ function figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
             lineProps = {'Color', colors{i}}; % Sets line color and width
             shadedErrorBar(epoc_FPtime_EEG, results.(event_name).(eeg_bands{k}).mean, results.(event_name).(eeg_bands{k}).sem, lineProps, 1);
             plot(epoc_FPtime_EEG, results.(event_name).(eeg_bands{k}).mean, 'Color', colors{i}); % Event specific color
+
+            % Add the data to the corresponding EEG table
+            switch eeg_bands{k}
+                case 'SO'
+                    if i == 1
+                        SO_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        SO_table = [SO_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Delta'
+                    if i == 1
+                        Delta_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Delta_table = [Delta_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Theta'
+                    if i == 1
+                        Theta_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Theta_table = [Theta_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Sigma'
+                    if i == 1
+                        Sigma_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Sigma_table = [Sigma_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Beta'
+                    if i == 1
+                        Beta_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Beta_table = [Beta_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Gamma_low'
+                    if i == 1
+                        Gamma_low_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Gamma_low_table = [Gamma_low_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+                case 'Gamma_high'
+                    if i == 1
+                        Gamma_high_table = table(epoc_FPtime_EEG(:), results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {'Time', sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)});
+                    else
+                        Gamma_high_table = [Gamma_high_table, table(results.(event_name).(eeg_bands{k}).mean(:), results.(event_name).(eeg_bands{k}).sem(:), 'VariableNames', {sprintf('Mean_%s', event_name), sprintf('SEM_%s', event_name)})];
+                    end
+            end
         end
         plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
         hold off;

@@ -1,12 +1,12 @@
-function auc_data = extract_auc_and_plot_3(o, event_var, saveDirectory, times_matrix_pre, times_matrix_post, outputDirectory)
+function auc_data = extract_auc_and_plot_3(o, event_var, saveDirectory, times_matrix_pre, times_matrix_post)
 % Set default epoch start and end times
 epoc_start = 60;
 epoc_end = 60;
 
-% Create output directory if it does not exist
-if ~exist(outputDirectory, 'dir')
-    mkdir(outputDirectory);
-end
+% Create output directory if it does not exist (not used anymore)
+% if ~exist(outputDirectory, 'dir')
+%     mkdir(outputDirectory);
+% end
 
 % Initialize the structure to hold AUC values
 auc_data = struct();

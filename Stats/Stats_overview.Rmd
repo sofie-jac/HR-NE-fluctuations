@@ -5,9 +5,9 @@ date: "2024-06-28"
 ---
 
 ```{r setup, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#knitr::opts_chunk$set(echo = TRUE)
 library(pacman)
-pacman::p_load(optimx, MuMIn, tidyverse, emmeans, MASS, boot, robustlmm, dplyr, lmtest, fitdistrplus, car, ggpubr, ggplot2, ggthemes, plyr, lme4, RColorBrewer, reshape2, afex, emmeans, psych, lmerTest, compare, rstatix, ggExtra, gridExtra, ggeffects, modelr, boot, stats)
+pacman::p_load(knitr, optimx, MuMIn, tidyverse, emmeans, MASS, boot, robustlmm, dplyr, lmtest, fitdistrplus, car, ggpubr, ggplot2, ggthemes, plyr, lme4, RColorBrewer, reshape2, afex, emmeans, psych, lmerTest, compare, rstatix, ggExtra, gridExtra, ggeffects, modelr, boot, stats)
 setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Graphpad tables")
 
 df <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Graphpad tables/auc_diff_table.csv')
@@ -18,6 +18,7 @@ df$SubjectID <- as.factor(df$SubjectID)
 
 ```
 
+Continuous Predictor tests
 ```{r check_lmm_assumptions}
 # Function to check assumptions of linear mixed effects model
 check_lmm_assumptions <- function(model) {
@@ -152,34 +153,80 @@ perform_bootstrap_fixed_effects_correlation <- function(data, formula, subject_v
   return(boot_ci)
 }
 
+library(lme4)
+library(boot)
+library(MuMIn)
+
 perform_bootstrap_fixed_effects_NAs <- function(data, formula, subject_var, R = 1000) {
-  # Filter out rows with NA values in the predictors
+  # Remove rows with NA values
   data <- na.omit(data)
   
-  # Fit the initial model with a specified optimizer
-  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  # Debug: Check data after NA removal
+  print(paste("Data rows after NA removal:", nrow(data)))
   
   # Define the bootstrapping function
   boot_model <- function(data, indices) {
     d <- data[indices, ]  # Allows boot to select sample
+    
+    # Debug: Check the sampled data
+    print(paste("Sampled data rows:", nrow(d)))
+    
     model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
-    if (inherits(model, "try-error")) {
+    if (inherits(model, "try-error") || isSingular(model)) {
       return(NA)  # Return NA if model fails
     } else {
-      cor_matrix <- vcov(model) / (sqrt(diag(vcov(model))) %*% t(sqrt(diag(vcov(model)))))
-      cor_fixed_effects <- cor_matrix["(Intercept)", "Delta"]
+      cor_matrix <- tryCatch({
+        vcov_matrix <- vcov(model)
+        cor_matrix <- vcov_matrix / (sqrt(diag(vcov_matrix)) %*% t(sqrt(diag(vcov_matrix))))
+        cor_matrix
+      }, error = function(e) {
+        # Debug: Print error message
+        print(paste("Error in calculating correlation matrix:", e$message))
+        return(NULL)
+      })
+      
+      if (is.null(cor_matrix)) {
+        return(NA)  # Return NA if correlation matrix calculation fails
+      }
+      
+      # Debug: Check the correlation matrix
+      print(cor_matrix)
+      
+      cor_fixed_effects <- tryCatch({
+        cor_fixed_effects <- cor_matrix["(Intercept)", "Sigma"]
+        cor_fixed_effects
+      }, error = function(e) {
+        # Debug: Print error message
+        print(paste("Error in accessing correlation matrix elements:", e$message))
+        return(NA)
+      })
+      
       return(cor_fixed_effects)  # Return the correlation of fixed effects
     }
   }
   
   # Apply bootstrapping with R replications
-  results <- boot(data = data, statistic = boot_model, R = R)
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
   
   # Filter out NA results due to non-converging models
   valid_results <- results$t[!is.na(results$t)]
   
   # Check the number of valid bootstrap samples
   cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
   
   # Recreate the boot object with only valid results
   boot_results <- results
@@ -192,10 +239,85 @@ perform_bootstrap_fixed_effects_NAs <- function(data, formula, subject_var, R = 
   # Return the bootstrap confidence intervals
   return(boot_ci)
 }
+
+library(lme4)
+library(boot)
+
+perform_bootstrap_pearson_correlation <- function(data, formula, subject_var, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(NA)  # Return NA if model fails
+    } else {
+      fitted_values <- fitted(model)
+      observed_values <- d$RR  # Assuming RR is the response variable
+      if (length(fitted_values) != length(observed_values)) {
+        return(NA)  # Return NA if lengths do not match
+      }
+      correlation <- cor(observed_values, fitted_values)
+      return(correlation)  # Return the Pearson correlation coefficient
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the Pearson correlation coefficient
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+
+pearson <- function(model, y) { 
+  # Extract fitted values from the model
+fitted_values <- fitted(model)
+
+# Get the indices of the non-NA values used in the model
+used_indices <- as.numeric(names(fitted_values))
+
+# Extract the corresponding observed values
+observed_values <- y[used_indices]
+
+# Calculate Pearson correlation between observed and fitted values
+correlation <- cor(observed_values, fitted_values)
+print(correlation)
+  }
+
+
 ```
-
-
-
 
 ```{r NE/RR corr test}
 m_h1 <- lmer(formula = RR ~  NE + (1|SubjectID), data = df)
@@ -220,17 +342,20 @@ m_inv <- lmer(RR_inv ~ NE + (NE|SubjectID), data = df)
 check_lmm_assumptions(m_h1_transformed)
 
 # Example initialization with a continuous predictor
-pairwise_ci_RR <- perform_bootstrap_fixed_effects_correlation(df, RR ~ NE + (NE | SubjectID), "SubjectID", R = 1000)
+pairwise_ci_RR <- perform_bootstrap_pearson_correlation(df, RR ~ NE + (NE | SubjectID), "SubjectID", R = 1000)
 
 summary(m_h2)
+r.squaredGLMM(m_h2)
 print(pairwise_ci_RR)
+pearson(m_h2, df$RR)
+
 ```
+
 ```{r Delta/RR corr test}
 m_h1 <- lmer(formula = RR ~  Delta + (1|SubjectID), data = df)
 m_h2 <- lmer(formula = RR ~  Delta + (Delta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
 anova(m_h1, m_h2) # M1 better
 summary(m_h1)
-r.squaredGLMM(m_h1)
 
 # Example usage with your model
 check_lmm_assumptions(m_h1)
@@ -248,11 +373,17 @@ m_inv <- lmer(RR_inv ~ Delta + (Delta|SubjectID), data = df)
 check_lmm_assumptions(m_inv)
 
 # Example initialization with a continuous predictor
-ci_delta <- perform_bootstrap_fixed_effects_NAs(df, RR ~  Delta + (1|SubjectID), "SubjectID", R = 1000)
+ci_delta <- perform_bootstrap_pearson_correlation(df, RR ~  Delta + (1|SubjectID), "SubjectID", R = 1000)
 
-summary(m_h2)
+summary(m_h1)
+r.squaredGLMM(m_h1)
 print(ci_delta)
+pearson(m_h1, df$RR)
+
+
+
 ```
+
 ```{r Theta/RR corr test}
 m_h1 <- lmer(formula = RR ~  Theta + (1|SubjectID), data = df)
 m_h2 <- lmer(formula = RR ~  Theta + (Theta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
@@ -260,29 +391,12 @@ anova(m_h1, m_h2) # M2 better
 summary(m_h1)
 r.squaredGLMM(m_h1)
 
-# Example usage with your model
+# Example usage with your model - assumptions met!
 check_lmm_assumptions(m_h2)
 
-# Transformations
-df$RR_log <- log(df$RR + 1)  # Adding 1 to avoid log(0)
-df$RR_sqrt <- sqrt(df$RR)
-df$RR_inv <- 1 / (df$RR + 1)
-# Fit Models with Transformations
-m_h1_transformed <- lmer(formula = RR_log ~ Theta + (Theta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m_sqrt <- lmer(RR_sqrt ~ Theta + (Theta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m_inv <- lmer(RR_inv ~ Theta + (Theta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-
-# Check Assumptions for all transformations
-check_lmm_assumptions(m_inv)
-
-# Example initialization with a continuous predictor
-ci_delta <- perform_bootstrap_fixed_effects_NAs(df, RR ~  Theta + (1|SubjectID), "SubjectID", R = 1000)
-
 summary(m_h2)
-m_h2
 r.squaredGLMM(m_h2)
-
-print(ci_delta)
+pearson(m_h2, df$RR)
 
 ```
 
@@ -309,27 +423,78 @@ m_inv <- lmer(RR_inv ~ Sigma + (Sigma|SubjectID), data = df, control = lmerContr
 check_lmm_assumptions(m_sqrt)
 
 # Example initialization with a continuous predictor
-ci_delta <- perform_bootstrap_fixed_effects_NAs(df, m_sqrt ~  Sigma + (1|SubjectID), "SubjectID", R = 1000)
+ci_delta <- perform_bootstrap_pearson_correlation(df, RR ~  Sigma + (Sigma|SubjectID), "SubjectID", R = 1000)
 
-summary(m_sqrt)
-r.squaredGLMM(m_sqrt)
+summary(m_h2)
+r.squaredGLMM(m_h2)
 
 print(ci_delta)
 
-# Extract fitted values from the model
-fitted_values <- fitted(m_sqrt)
-
-# Get the indices of the non-NA values used in the model
-used_indices <- as.numeric(names(fitted_values))
-
-# Extract the corresponding observed values
-observed_values <- df$RR_sqrt[used_indices]
-
-# Calculate Pearson correlation between observed and fitted values
-correlation <- cor(observed_values, fitted_values)
-print(correlation)
-
+pearson(m_h2, df$RR)
 ```
+
+```{r Beta/RR corr test}
+m_h1 <- lmer(formula = RR ~  Beta + (1|SubjectID), data = df)
+m_h2 <- lmer(formula = RR ~  Beta + (Beta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1, m_h2) # M2 better
+
+# Example usage with your model
+check_lmm_assumptions(m_h2)
+
+# Transformations
+df$RR_log <- log(df$RR + 1)  # Adding 1 to avoid log(0)
+df$RR_sqrt <- sqrt(df$RR)
+df$RR_inv <- 1 / (df$RR + 1)
+# Fit Models with Transformations
+m_h1_transformed <- lmer(formula = RR_log ~ Beta + (Beta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m_sqrt <- lmer(RR_sqrt ~ Beta + (Beta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m_inv <- lmer(RR_inv ~ Beta + (Beta|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+# Check Assumptions for all transformations
+check_lmm_assumptions(m_sqrt)
+
+# Example initialization with a continuous predictor
+ci_beta <- perform_bootstrap_pearson_correlation(df, RR ~  Beta + (Beta|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h2)
+r.squaredGLMM(m_h2)
+print(ci_delta)
+pearson(m_h2, df$RR)
+```
+
+```{r Gamma/RR corr test}
+m_h1 <- lmer(formula = RR ~  Gamma_high + (1|SubjectID), data = df)
+m_h2 <- lmer(formula = RR ~  Gamma_high + (Gamma_high|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1, m_h2) # M2 better
+
+# Example usage with your model
+check_lmm_assumptions(m_h2)
+
+# Transformations
+df$RR_log <- log(df$RR + 1)  # Adding 1 to avoid log(0)
+df$RR_sqrt <- sqrt(df$RR)
+df$RR_inv <- 1 / (df$RR + 1)
+# Fit Models with Transformations
+m_h1_transformed <- lmer(formula = RR_log ~ Gamma_high + (Gamma_high|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m_sqrt <- lmer(RR_sqrt ~ Gamma_high + (Gamma_high|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m_inv <- lmer(RR_inv ~ Gamma_high + (Gamma_high|SubjectID), data = df, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+# Check Assumptions for all transformations
+check_lmm_assumptions(m_inv)
+
+# Example initialization with a continuous predictor
+ci_Gamma_high <- perform_bootstrap_pearson_correlation(df, RR ~  Gamma_high + (Gamma_high|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h2)
+r.squaredGLMM(m_h2)
+print(ci_delta)
+pearson(m_h2, df$RR)
+```
+
+
+
+
+Grouped Predictor tests
 
 ```{r NE-test}
 m_h1 <- lmer(formula = NE ~  EventVar + (1|SubjectID), data = df)
@@ -351,7 +516,6 @@ pairwise_comparisons <- pairs(emm, adjust = "tukey")
 pairwise_ci <- perform_bootstrap_pairwise(df, NE ~ EventVar + (1|SubjectID), "EventVar", "SubjectID", R = 1000)
 print(pairwise_ci)
 ```
-
 
 ```{r RR-test}
 m_RR1 <- lmer(formula = RR ~  EventVar + (1|SubjectID), data = df)
@@ -387,7 +551,6 @@ summary(m_RR1)
 print(pairwise_comparisons)
 print(pairwise_ci_RR)
 ```
-
 
 ```{r, echo=FALSE}
 m_Delta1 <- lmer(formula = Delta ~  EventVar + (1|SubjectID), data = df)

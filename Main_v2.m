@@ -147,6 +147,10 @@ M509 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedl
 M512 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211221_old_514ChR2_new_512YFP'  'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\512_YFP_closedloop\512_YFP_closedloop_2021-12-21_09-16-28-511.exp' '512'  '0' '' 'DvAN' 'DvBC' '' '' '' '' 'Pu2_' 'Pu3_' '' '' };
 M513 = {'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\20211222_513YFP_522ChR2' 'J:\CTN\NedergaardLAB\Personal_folders\Celia Kjaerby\FP\20211220_closedloop_batch 2\EEG\513_YFP_closedloop\513_YFP_closedloop_2021-12-22_09-11-25-410.exp' '513'  '2' '' 'DvAN' 'DvBC' '' '' '' '' 'Pu2_' 'Pu3_' '' ''};
 
+%Arch y-maze
+EEGopto_15_2on_4off = {'J:\CTN\NedergaardLAB\Personal_folders\Viviane\Optogenetics\Data_EEGopto_062022\Protocol 1\16062022_EEGopto_15_2on_4off' 'J:\CTN\NedergaardLAB\Personal_folders\Viviane\Optogenetics\Data_EEGopto_062022\Protocol 1\16062022_EEGopto_15_2on_4off' '015' '' ''  'B2_A' 'V2_A' 'EEGw' '' 'EMGw' '' 'Ep1_' 1000 10000 'J:\CTN\NedergaardLAB\Personal_folders\Viviane\Optogenetics\Data_EEGopto_062022\Scored files Data_EEGopto_062022\Protocol 1\TDT_15_P1_bt'} ;
+M117 = {'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117' '117' '' '' 'x465C' 'x405C' '' 'EEGw' 1 'EMG1' 'PtC0' 'PtC0' (1:20000) 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\practice data\mouse_117\117_sleep\6h FP and EEG\Score_117.xlsx'};
+
 
 %mice_saline = {M015, M084, M569, M578, M580, M588, M592, M600, M602};
 mice = {M168, M147, M149, M117, M124, M387, M392, M403, M412, M414, M416, M418, M468, M420, M477, M484,M015, M084, M569, M578, M580, M588, M592, M600, M602};
@@ -157,7 +161,7 @@ mice_with_TTL_IDs = {'M168', 'M147', 'M149', 'M117', 'M124' 'M115', 'M122'};
 mice_without_TTL_IDs = {};
 
 o = {M480};
-o = {M480, M586, M577, M513, M512, M584};
+o = {M480, M497};
 %% Load FP and EEG data for all mice
 
 for idx = 1:length(o)
@@ -397,9 +401,9 @@ ds_factor_FP = 100; % Downsample factor
 
 Suffixes = {'522'};
 % Loop through each mouse entry in the 'mice' cell array
-for idx = 1:length(o)
-    mouse = o{idx};
-    uniqueId = mouse{3}; % Extract unique identifier
+for idx = 1:length(Suffixes)
+    mouse = Suffixes{idx};
+    uniqueId = Suffixes{idx}; % Extract unique identifier
     %uniqueId = Suffixes{idx}; % Current mouse
 
     % Generate variable names based on uniqueId
@@ -719,7 +723,7 @@ save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\RR\Rpe
 [RR_489, RR_time_489, RR_fs_489, Rpeaks_489, Rpeaks_time_489] = GetRRIntervals('M489', EMG_hp_489, sec_signal_EEG_489, EEG_fs_489, 2.1, 2.1);
 
 [EMG_hp_584, EMG_hplp_584] = Analyze_EMG_windows([],1,512,2,80,2.5,0,0,1); 
-[RR_584, RR_time_584, RR_fs_584, Rpeaks_584, Rpeaks_time_584] = GetRRIntervals('M584', -EMG_hp_584, sec_signal_EEG_584, EEG_fs_584, 2.5, 2.1); %very good
+[RR_584, RR_time_584, RR_fs_584, Rpeaks_584, Rpeaks_time_584] = GetRRIntervals('M584', -EMG_hp_584, sec_signal_EEG_584, EEG_fs_584, 2.5, 2.1);
 [EMG_hp_586, EMG_hplp_586] = Analyze_EMG_windows([],1,512,2,80,2.5,0,0,1); 
 [RR_586, RR_time_586, RR_fs_586, Rpeaks_586, Rpeaks_time_586] = GetRRIntervals('M586', -EMG_hp_586, sec_signal_EEG_586, EEG_fs_586, 2.25, 2.1); 
 [EMG_hp_577, EMG_hplp_577] = Analyze_EMG_windows([],1,512,2,80,2.5,0,0,1); 
@@ -743,7 +747,10 @@ save('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\RR\Rpe
 
 laser_go = {'387', '403', '412', '414', '416', '408', '420'};
 %detred should be 20
-%
+
+% Arch round 2
+[EMG_hp_584, EMG_hplp_584] = Analyze_EMG_windows([],1,512,2,80,2.5,0,0,1); 
+[RR_584, RR_time_584, RR_fs_584, Rpeaks_584, Rpeaks_time_584] = GetRRIntervals('M584', -EMG_hp_584, sec_signal_EEG_584, EEG_fs_584, 2.5, 2.1);
 %% Interpolate missing values for EMG
 % List of suffixes for the EMG signals
 suffixes = {'497', '491', '489'};
@@ -784,7 +791,7 @@ end
 baseVariables = {'RR_', 'RR_time_'};
 
 % List of suffixes for each animal
-suffixes = {'480'};
+suffixes = {'584'};
 
 % Directory where you want to save the .mat files
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\RR';
