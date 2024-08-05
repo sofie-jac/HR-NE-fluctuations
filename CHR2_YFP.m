@@ -769,18 +769,19 @@ saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2
 epoc_start = 60;
 epoc_end = 60; 
 
-results = aggregate_event_data(saveDirectory, event_var, chr2, data_types);
+results = aggregate_event_data(saveDirectory, event_var, yfp, data_types);
 [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
 table_NE_ds = table_NE(1:5:end, :);
-writetable(table_NE_ds, 'chr2_NE_traces_ds.csv')
-writetable(table_RR, 'chr2_RR_traces.csv')
-writetable(table_SO, 'chr2_table_SO.csv')
-writetable(table_Delta, 'chr2_table_Delta.csv')
-writetable(table_Theta, 'chr2_table_Theta.csv')
-writetable(table_Sigma, 'chr2_table_Sigma.csv')
-writetable(table_Beta, 'chr2_table_Beta.csv')
-writetable(table_Gamma_low, 'chr2_table_Gamma_low.csv')
-writetable(table_Gamma_high, 'chr2_table_Gamma_high.csv')
+table_RR_ds = table_RR(1:5:end, :);
+writetable(table_NE, 'yfp_NE_traces_ds.csv')
+writetable(table_RR_ds, 'yfp_RR_traces.csv')
+writetable(table_SO, 'yfp_table_SO.csv')
+writetable(table_Delta, 'yfp_table_Delta.csv')
+writetable(table_Theta, 'yfp_table_Theta.csv')
+writetable(table_Sigma, 'yfp_table_Sigma.csv')
+writetable(table_Beta, 'yfp_table_Beta.csv')
+writetable(table_Gamma_low, 'yfp_table_Gamma_low.csv')
+writetable(table_Gamma_high, 'yfp_table_Gamma_high.csv')
 
 [NE_table, RR_table, SO_table, Delta_table, Theta_table, Sigma_table, Beta_table, Gamma_low_table, Gamma_high_table] = figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles);
 figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles);
@@ -805,24 +806,25 @@ titles = {'Laser -15', 'Laser -10', 'Laser -5', 'Laser 0', 'Laser 5'};
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\Figure_4_data';
 outputDirectory = fullfile(saveDirectory, 'AUC');
 chr2 = {'489', '480', '491', '497', '511', '522'};
+yfp = {'584', '577', '512', '513'};
 
 % Define the times_matrix
 times_matrix_post = struct();
-times_matrix_post.NE.range = [-20, 20];
-times_matrix_post.RR.range = [-20, 20];
-times_matrix_post.EEG.range = [-20, 20];
+times_matrix_post.NE.range = [-20, 0];
+times_matrix_post.RR.range = [-20, 0];
+times_matrix_post.EEG.range = [-20, 0];
 
 times_matrix_pre = struct();
-times_matrix_pre.NE.range = [-60, -20];
-times_matrix_pre.RR.range = [-60, -20];
-times_matrix_pre.EEG.range = [-60, -20];
+times_matrix_pre.NE.range = [-40, -20];
+times_matrix_pre.RR.range = [-40, -20];
+times_matrix_pre.EEG.range = [-40, -20];
 
 % Call the function with the specified time range
 %auc_data = extract_auc_and_plot(o, event_var, saveDirectory, times_matrix_post, outputDirectory, titles);
 
-auc_data_chr2 = extract_auc_and_plot_3(chr2, event_var, saveDirectory, times_matrix_pre, times_matrix_post); %This is the right one
-auc_diff_table = plot_auc_bar(auc_data_chr2, event_var, chr2, titles);
-writetable(auc_diff_table, 'chr2_auc_diff_both_table.csv')
+auc_data_yfp = extract_auc_and_plot_3(yfp, event_var, saveDirectory, times_matrix_pre, times_matrix_post); %This is the right one
+auc_diff_table = plot_auc_bar(auc_data_yfp, event_var, yfp, titles);
+writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
 
 % PRE is -20 to 0 with -40 to -20 baseline
 %POST is 0 to 20 with 20 to 40 as baseline
@@ -831,7 +833,7 @@ writetable(auc_diff_table, 'chr2_auc_diff_both_table.csv')
 %% continued - change table to graphpad format
 
     % Define the file path
-    file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\chr2_auc_diff_both_table.csv';
+    file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_pre_table.csv';
     
     % Load the CSV file into a table
     data_table = readtable(file_path);
@@ -843,7 +845,7 @@ writetable(auc_diff_table, 'chr2_auc_diff_both_table.csv')
     data_columns = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
         
     % Define the output directory
-    output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp', 'AUC of Traces');
+    output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC of Traces');
     
     % Create the directory if it doesn't exist
     if ~exist(output_dir, 'dir')
@@ -855,7 +857,7 @@ writetable(auc_diff_table, 'chr2_auc_diff_both_table.csv')
         column_name = data_columns{i};
         
         % Filter data for chr2 subjects
-        chr2_data = data_table(ismember(data_table.SubjectID, chr2), :);
+        chr2_data = data_table(ismember(data_table.SubjectID, yfp), :);
         
         % Initialize an empty table to store the results
         combined_table = table(chr2_data.SubjectID, 'VariableNames', {'SubjectID'});
@@ -877,14 +879,14 @@ writetable(auc_diff_table, 'chr2_auc_diff_both_table.csv')
         end
         
         % Save the combined table to a CSV file
-        output_file = fullfile(output_dir, sprintf('%s_combined_both_table.csv', column_name));
+        output_file = fullfile(output_dir, sprintf('%s_combined_pre_yfp.csv', column_name));
         writetable(combined_table, output_file);
     end
 
     %% Make a pre-post table
     % Define the pre and post file paths
-pre_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\chr2_auc_diff_pre_table.csv';
-post_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\chr2_auc_diff_post_table.csv';
+pre_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_pre_table.csv';
+post_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_post_table.csv';
 
 % Load the CSV files into tables
 pre_data_table = readtable(pre_file_path);
@@ -898,7 +900,7 @@ post_data_table.SubjectID = string(post_data_table.SubjectID);
 data_columns = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
 
 % Define the output directory
-output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp', 'AUC of Traces');
+output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC of Traces');
 
 % Create the directory if it doesn't exist
 if ~exist(output_dir, 'dir')
@@ -910,8 +912,8 @@ for i = 1:length(data_columns)
     column_name = data_columns{i};
     
     % Load pre and post tables for each data type
-    pre_table_path = fullfile(output_dir, sprintf('%s_combined_pre_table.csv', column_name));
-    post_table_path = fullfile(output_dir, sprintf('%s_combined_post_table.csv', column_name));
+    pre_table_path = fullfile(output_dir, sprintf('%s_combined_pre_yfp.csv', column_name));
+    post_table_path = fullfile(output_dir, sprintf('%s_combined_post_yfp.csv', column_name));
     
     pre_table = readtable(pre_table_path);
     post_table = readtable(post_table_path);
@@ -1153,12 +1155,59 @@ yfp = {'584', '577', '512', '513'};
 % resultTable_chr2_NE = processNestedCellsChr2(PXX_NE_chr2, [f_NE], 'chr2');
 % resultTable_chr2_RR = processNestedCellsChr2(PXX_RR_chr2, f_RR, 'chr2');
 
-writetable(mean_sem_NE_PSD_chr2, 'chr2_NE_PSD_trace.csv')
-writetable(mean_sem_RR_PSD_chr2, 'chr2_RR_PSD_trace.csv')
+writetable(mean_sem_NE_PSD_yfp, 'yfp_NE_PSD_trace.csv')
+writetable(mean_sem_RR_PSD_yfp, 'yfp_RR_PSD_trace.csv')
 %% AUC PSD NE
-[AUC_table_chr2, peak_psd_chr2] = process_group_NE_AUC(chr2, 0.2);
-[AUC_table_yfp, peak_psd_yfp] = process_group_NE_AUC(yfp);
+[AUC_table_chr2, peak_psd_chr2, PeakPower_chr2_NE] = process_group_NE_AUC(chr2, 0.2);
+[AUC_table_yfp, peak_psd_yfp, PeakPower_yfp_NE] = process_group_NE_AUC(yfp, 0.2);
 
+    %% AUC PSD RR
+
+[AUC_table_chr2_RR, peak_freq_chr2_RR, PeakPower_chr2_RR] = process_group_RR_AUC(chr2, 0.00, 0.15);
+[AUC_table_yfp_RR, peak_freq_yfp_RR, PeakPower_yfp_RR] = process_group_RR_AUC(yfp, 0.00, 0.15);
+%% Combine AUC PSD tables for R export
+
+% Add 'GT' column to peak_psd_chr2 table
+peak_psd_chr2.GT = repmat({'chr2'}, height(peak_psd_chr2), 1);
+
+% Add 'GT' column to peak_psd_yfp table
+peak_psd_yfp.GT = repmat({'yfp'}, height(peak_psd_yfp), 1);
+
+% Add 'GT' column to peak_freq_chr2_RR table
+peak_freq_chr2_RR.GT = repmat({'chr2'}, height(peak_freq_chr2_RR), 1);
+
+% Add 'GT' column to peak_freq_yfp_RR table
+peak_freq_yfp_RR.GT = repmat({'yfp'}, height(peak_freq_yfp_RR), 1);
+
+% Combine the peak_psd_chr2 and peak_psd_yfp tables
+combined_peak_psd_table = [peak_psd_chr2; peak_psd_yfp];
+
+% Combine the peak_freq_chr2_RR and peak_freq_yfp_RR tables
+combined_peak_freq_RR_table = [peak_freq_chr2_RR; peak_freq_yfp_RR];
+
+writetable(combined_peak_psd_table, 'combined_NE_peakfreq_psd.csv');
+writetable(combined_peak_freq_RR_table, 'combined_RR_peakfreq_psd.csv');
+
+% Add 'GT' column to peak_psd_chr2 table
+PeakPower_chr2_NE.GT = repmat({'chr2'}, height(PeakPower_chr2_NE), 1);
+
+% Add 'GT' column to peak_psd_yfp table
+PeakPower_yfp_NE.GT = repmat({'yfp'}, height(PeakPower_yfp_NE), 1);
+
+% Add 'GT' column to peak_freq_chr2_RR table
+PeakPower_chr2_RR.GT = repmat({'chr2'}, height(PeakPower_chr2_RR), 1);
+
+% Add 'GT' column to peak_freq_yfp_RR table
+PeakPower_yfp_RR.GT = repmat({'yfp'}, height(PeakPower_yfp_RR), 1);
+
+% Combine the peak_psd_chr2 and peak_psd_yfp tables
+combined_peak_psd_table = [PeakPower_chr2_NE; PeakPower_yfp_NE];
+
+% Combine the peak_freq_chr2_RR and peak_freq_yfp_RR tables
+combined_peak_freq_RR_table = [PeakPower_chr2_RR; PeakPower_yfp_RR];
+
+writetable(combined_peak_psd_table, 'combined_NE_peakPower_psd.csv');
+writetable(combined_peak_freq_RR_table, 'combined_RR_peakPower_psd.csv');
 
 %% Plot AUC for NE PSD
 
@@ -1219,10 +1268,7 @@ writetable(mean_sem_RR_PSD_chr2, 'chr2_RR_PSD_trace.csv')
 
     hold off;
 
-    %% AUC PSD RR
 
-[AUC_table_chr2_RR, peak_freq_chr2_RR] = process_group_RR_AUC(chr2, 0.00, 0.5);
-[AUC_table_yfp_RR] = process_group_RR_AUC(yfp, 0.00, 0.15);
 %% Plot RR PSD AUC
 
     % Number of laser levels
@@ -1285,18 +1331,18 @@ writetable(mean_sem_RR_PSD_chr2, 'chr2_RR_PSD_trace.csv')
     %% Export peak psd to graphpad format
     
     % Initialize the combined table with AUC_NE_relative as the first column
-    combined_table_graphpad_peak = table(peak_psd_chr2.PeakFrequency, peak_freq_chr2_RR.PeakFrequency, 'VariableNames', {'peakfre_NE', 'peakfre_RR'});
+    combined_table_graphpad_peak = table(peak_psd_yfp.PeakFrequency, peak_freq_yfp_RR.PeakFrequency, 'VariableNames', {'peakfre_NE', 'peakfre_RR'});
     
     % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        peakfre_RR_column = NaN(height(peak_freq_chr2_RR), 1);
+        peakfre_RR_column = NaN(height(peak_freq_yfp_RR), 1);
         
         % Find the indices for the current laser level
-        indices = peak_freq_chr2_RR.LaserLevel == level;
+        indices = peak_freq_yfp_RR.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        peakfre_RR_column(indices) = peak_freq_chr2_RR.PeakFrequency(indices);
+        peakfre_RR_column(indices) = peak_freq_yfp_RR.PeakFrequency(indices);
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakfre_RR_column, 'VariableNames', {['peakfre_RR_LaserLevel_' num2str(level)]})];
@@ -1305,36 +1351,73 @@ writetable(mean_sem_RR_PSD_chr2, 'chr2_RR_PSD_trace.csv')
         % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        peakfre_NE_column = NaN(height(peak_psd_chr2), 1);
+        peakfre_NE_column = NaN(height(peak_psd_yfp), 1);
         
         % Find the indices for the current laser level
-        indices = peak_psd_chr2.LaserLevel == level;
+        indices = peak_psd_yfp.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        peakfre_NE_column(indices) = peak_psd_chr2.PeakFrequency(indices);
+        peakfre_NE_column(indices) = peak_psd_yfp.PeakFrequency(indices);
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakfre_NE_column, 'VariableNames', {['peakfre_NE_LaserLevel_' num2str(level)]})];
     end
 
-    writetable(combined_table_graphpad_peak, 'chr2_peakfreq_NE_RR_PSD.csv')
+    writetable(combined_table_graphpad_peak, 'yfp_peakfreq_NE_RR_PSD.csv')
+
+      %% Export peak power to graphpad format
+    
+    % Initialize the combined table with AUC_NE_relative as the first column
+combined_table_graphpad_peak = table(PeakPower_chr2_NE.PeakPower, PeakPower_chr2_RR.PeakPower, 'VariableNames', {'PeakPower_NE', 'PeakPower_RR'});
+
+% Loop over laser levels 1 to 5 for RR
+for level = 1:5
+    % Initialize the column for the current laser level with NaN
+    peakPower_RR_column = NaN(height(PeakPower_chr2_RR), 1);
+    
+    % Find the indices for the current laser level
+    indices = PeakPower_chr2_RR.LaserLevel == level;
+    
+    % Place the peak power values in the column
+    peakPower_RR_column(indices) = PeakPower_chr2_RR.PeakPower(indices);
+    
+    % Add the column to the combined table with the appropriate name
+    combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakPower_RR_column, 'VariableNames', {['PeakPower_RR_LaserLevel_' num2str(level)]})];
+end
+
+% Loop over laser levels 1 to 5 for NE
+for level = 1:5
+    % Initialize the column for the current laser level with NaN
+    peakPower_NE_column = NaN(height(PeakPower_chr2_NE), 1);
+    
+    % Find the indices for the current laser level
+    indices = PeakPower_chr2_NE.LaserLevel == level;
+    
+    % Place the peak power values in the column
+    peakPower_NE_column(indices) = PeakPower_chr2_NE.PeakPower(indices);
+    
+    % Add the column to the combined table with the appropriate name
+    combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakPower_NE_column, 'VariableNames', {['PeakPower_NE_LaserLevel_' num2str(level)]})];
+end
+
+writetable(combined_table_graphpad_peak, 'chr2_peakpower_NE_RR_PSD.csv')
 
     %% Plot relative % RR/NE PSD AUC (with burst onset data)
 plot_relative_auc_chr2_no_baseline(AUC_table_chr2_RR, AUC_table_yfp_RR, 'AUC of PSD RR for chr2 and yfp');
 plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE for chr2 and yfp');
     %% Combine RR and NE PSD AUC tables
  % Ensure the tables have the same number of rows and the same other columns
-    if height(AUC_table_chr2) == height(AUC_table_chr2_RR) && isequal(AUC_table_chr2(:, 2:end), AUC_table_chr2_RR(:, 2:end))
+    if height(AUC_table_yfp) == height(AUC_table_yfp_RR) && isequal(AUC_table_yfp(:, 2:end), AUC_table_yfp_RR(:, 2:end))
         % Calculate the baseline for AUC_NE as the mean of all level 1 laser values
-        AUC_NE_base = mean(AUC_table_chr2.AUC(AUC_table_chr2.LaserLevel == 1));
-        AUC_NE_relative = (AUC_table_chr2.AUC / AUC_NE_base) * 100;
+        AUC_NE_base = mean(AUC_table_yfp.AUC(AUC_table_yfp.LaserLevel == 1));
+        AUC_NE_relative = (AUC_table_yfp.AUC / AUC_NE_base) * 100;
 
         % Calculate the baseline for AUC_RR as the mean of all level 1 laser values
-        AUC_RR_base = mean(AUC_table_chr2_RR.AUC(AUC_table_chr2_RR.LaserLevel == 1));
-        AUC_RR_relative = (AUC_table_chr2_RR.AUC / AUC_RR_base) * 100;
+        AUC_RR_base = mean(AUC_table_yfp_RR.AUC(AUC_table_yfp_RR.LaserLevel == 1));
+        AUC_RR_relative = (AUC_table_yfp_RR.AUC / AUC_RR_base) * 100;
         
         % Create the combined table
-        combined_table = AUC_table_chr2;
+        combined_table = AUC_table_yfp;
         combined_table.AUC_NE = AUC_NE_relative;
         combined_table.AUC_RR = AUC_RR_relative;
         
@@ -1354,12 +1437,12 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
 
 
      % Calculate the baseline for AUC_NE as the mean of all level 1 laser values
-    AUC_NE_base = mean(AUC_table_chr2.AUC(AUC_table_chr2.LaserLevel == 1));
-    AUC_NE_relative = (AUC_table_chr2.AUC / AUC_NE_base) * 100;
+    AUC_NE_base = mean(AUC_table_yfp.AUC(AUC_table_yfp.LaserLevel == 1));
+    AUC_NE_relative = (AUC_table_yfp.AUC / AUC_NE_base) * 100;
 
          % Calculate the baseline for AUC_NE as the mean of all level 1 laser values
-    AUC_RR_base = mean(AUC_table_chr2_RR.AUC(AUC_table_chr2_RR.LaserLevel == 1));
-    AUC_RR_relative = (AUC_table_chr2_RR.AUC / AUC_RR_base) * 100;
+    AUC_RR_base = mean(AUC_table_yfp_RR.AUC(AUC_table_yfp_RR.LaserLevel == 1));
+    AUC_RR_relative = (AUC_table_yfp_RR.AUC / AUC_RR_base) * 100;
     
     % Initialize the combined table with AUC_NE_relative as the first column
     combined_table_graphpad = table(AUC_NE_relative, AUC_RR_relative, 'VariableNames', {'AUC_NE', 'AUC_RR'});
@@ -1367,13 +1450,13 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
     % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        AUC_RR_column = NaN(height(AUC_table_chr2_RR), 1);
+        AUC_RR_column = NaN(height(AUC_table_yfp_RR), 1);
         
         % Find the indices for the current laser level
-        indices = AUC_table_chr2_RR.LaserLevel == level;
+        indices = AUC_table_yfp_RR.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        AUC_RR_column(indices) = (AUC_table_chr2_RR.AUC(indices) / AUC_RR_base) * 100;
+        AUC_RR_column(indices) = (AUC_table_yfp_RR.AUC(indices) / AUC_RR_base) * 100;
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad = [combined_table_graphpad, table(AUC_RR_column, 'VariableNames', {['AUC_RR_LaserLevel_' num2str(level)]})];
@@ -1382,21 +1465,21 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
         % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        AUC_NE_column = NaN(height(AUC_table_chr2), 1);
+        AUC_NE_column = NaN(height(AUC_table_yfp), 1);
         
         % Find the indices for the current laser level
-        indices = AUC_table_chr2.LaserLevel == level;
+        indices = AUC_table_yfp.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        AUC_NE_column(indices) = (AUC_table_chr2.AUC(indices) / AUC_NE_base) * 100;
+        AUC_NE_column(indices) = (AUC_table_yfp.AUC(indices) / AUC_NE_base) * 100;
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad = [combined_table_graphpad, table(AUC_NE_column, 'VariableNames', {['AUC_NE_LaserLevel_' num2str(level)]})];
     end
 
     %% Continued - save this combined table
-    writetable(combined_table, 'chr2_AUC_NE_RR_combined_table.csv')
-    writetable(combined_table_graphpad, 'chr2_AUC_NE_RR_with_levels_combined_table.csv')
+    writetable(combined_table, 'yfp_PSD_AUC_NE_RR_combined_table.csv')
+    writetable(combined_table_graphpad, 'yfp_PSD_AUC_NE_RR_with_levels_combined_table.csv')
 
 
 %% Correlation plot between RR and NE PSD AUC
