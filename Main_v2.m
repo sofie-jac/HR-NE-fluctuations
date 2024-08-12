@@ -399,7 +399,7 @@ MeanFilterOrder = 1000; % Order for smoothing
 MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
 ds_factor_FP = 100; % Downsample factor
 
-Suffixes = {'522'};
+Suffixes = {'403'};
 % Loop through each mouse entry in the 'mice' cell array
 for idx = 1:length(Suffixes)
     mouse = Suffixes{idx};
@@ -573,7 +573,8 @@ end
 % 
 % [wake_woMA_binary_vector_387, sws_binary_vector_387, REM_binary_vector_387, MA_binary_vector_387, NREMinclMA_periods_387, NREMexclMA_periods_387, wake_periods_387, REM_periods_387, MA_periods_387, SWS_before_MA_filtered_387, SWS_before_wake_filtered_387, SWS_before_REM_filtered_387, REM_before_MA_filtered_387, REM_before_wake_filtered_387] = SleepProcess_viewpoint(M387, sec_signal_EEG_387, onset_FP_EEG_387, EEG_fs_387, 20, 20, 15);
 % [wake_woMA_binary_vector_392, sws_binary_vector_392, REM_binary_vector_392, MA_binary_vector_392, NREMinclMA_periods_392, NREMexclMA_periods_392, wake_periods_392, REM_periods_392, MA_periods_392, SWS_before_MA_filtered_392, SWS_before_wake_filtered_392, SWS_before_REM_filtered_392, REM_before_MA_filtered_392, REM_before_wake_filtered_392] = SleepProcess_viewpoint(M392, sec_signal_EEG_392, onset_FP_EEG_392, EEG_fs_392, 20, 20, 15);
-% 
+        MA_binary_vector_403 = [MA_binary_vector_403, zeros(1, 2)];  % Append zeros horizontally
+
 % 
 % [wake_woMA_binary_vector_403, sws_binary_vector_403, REM_binary_vector_403, MA_binary_vector_403, NREMinclMA_periods_403, NREMexclMA_periods_403, wake_periods_403, REM_periods_403, MA_periods_403, SWS_before_MA_filtered_403, SWS_before_wake_filtered_403, SWS_before_REM_filtered_403, REM_before_MA_filtered_403, REM_before_wake_filtered_403] = SleepProcess_viewpoint(M403, sec_signal_EEG_403, onset_FP_EEG_403, EEG_fs_403, 20, 20, 15);
 % [wake_woMA_binary_vector_412, sws_binary_vector_412, REM_binary_vector_412, MA_binary_vector_412, NREMinclMA_periods_412, NREMexclMA_periods_412, wake_periods_412, REM_periods_412, MA_periods_412, SWS_before_MA_filtered_412, SWS_before_wake_filtered_412, SWS_before_REM_filtered_412, REM_before_MA_filtered_412, REM_before_wake_filtered_412] = SleepProcess_viewpoint(M412, sec_signal_EEG_412, onset_FP_EEG_412, EEG_fs_412, 20, 20, 15);
@@ -979,14 +980,14 @@ save('RR_588.mat','RR_588'); save('RR_time_588.mat','RR_time_588');
 %[RR_149, RR_time_149, RR_fs_149, Rpeaks_149, Rpeaks_time_149] = GetRRIntervals(M149, EMG_149, sec_signal_EEG_149, EEG_fs_149, 3.5, 2.5);
 %[RR_168, RR_time_168, RR_fs_168, Rpeaks_168, Rpeaks_time_168] = GetRRIntervals(M168, EMG_168, sec_signal_EEG_168, EEG_fs_168, 3.5, 2.5);
 
-[RR_387, RR_time_387, RR_fs_387, Rpeaks_387, Rpeaks_time_387] = GetRRIntervals(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387, 2.5, 2.5);
+[RR_387, RR_time_387, RR_fs_387, Rpeaks_387, Rpeaks_time_387] = GetRRIntervals_arch(M387, -EMG_387, sec_signal_EEG_387, EEG_fs_387, 2.5, 2.5);
 %[RR_392, RR_time_392, RR_fs_392] = GetRRIntervals(M392, EMG_392, sec_signal_EEG_392, EEG_fs_392);
-[RR_403, RR_time_403, RR_fs_403] = GetRRIntervals(M403, EMG_403, sec_signal_EEG_403, EEG_fs_403, 2.5, 2.5); % could be used before 2730, but needs cutting prior to that
+[RR_403, RR_time_403, RR_fs_403] = GetRRIntervals_arch(M403, EMG_403, sec_signal_EEG_403, EEG_fs_403, 2.5, 2.5); % could be used before 2730, but needs cutting prior to that
 %[RR_412, RR_time_412, RR_fs_412] = GetRRIntervals(M412, EMG_412, sec_signal_EEG_412, EEG_fs_412);
 %[RR_414, RR_time_414, RR_fs_414] = GetRRIntervals(M414, EMG_414, sec_signal_EEG_414, EEG_fs_414);
-[RR_416, RR_time_416, RR_fs_416] = GetRRIntervals(M416, -EMG_416, sec_signal_EEG_416, EEG_fs_416, 1, 2.5);
+[RR_416, RR_time_416, RR_fs_416] = GetRRIntervals_arch(M416, -EMG_416, sec_signal_EEG_416, EEG_fs_416, 1, 2.5);
 %[RR_418, RR_time_418, RR_fs_418] = GetRRIntervals(M418, EMG_418, sec_signal_EEG_418, EEG_fs_418, 2.5);
-[RR_468, RR_time_468, RR_fs_468] = GetRRIntervals(M468, -EMG_468, sec_signal_EEG_468, EEG_fs_468, 2.5, 2.3); %Parts are good, others are messy
+[RR_468, RR_time_468, RR_fs_468] = GetRRIntervals_arch(M468, -EMG_468, sec_signal_EEG_468, EEG_fs_468, 2.5, 2.3); %Parts are good, others are messy
 %[RR_484, RR_time_484, RR_fs_484] = GetRRIntervals(M484, EMG_484, sec_signal_EEG_484, EEG_fs_484, 2.5);
 %[RR_477, RR_time_477, RR_fs_477] = GetRRIntervals(M477, -EMG_477, sec_signal_EEG_477, EEG_fs_477, 3.5);
 %[RR_015, RR_time_015, RR_fs_015] = GetRRIntervals(M015, -EMG_015, sec_signal_EEG_015, EEG_fs_015, 1); 
@@ -2495,7 +2496,7 @@ set(gcf, 'Color', 'w'); % Set background color to white
 
 %% 588 figure 1 
 
-    uniqueId = '588'; % Extract mouse ID as a string
+    uniqueId = '420'; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     % Access the variables dynamically
@@ -2508,8 +2509,8 @@ set(gcf, 'Color', 'w'); % Set background color to white
     EMG = eval(sprintf('EMG_%s', uniqueId));
     RR = eval(sprintf('RR_%s', uniqueId));
     RR_time = eval(sprintf('RR_time_%s', uniqueId));
-    Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
-    Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
+  %  Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
+   % Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
     
     sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
     uniqueIdStr = string(uniqueId);

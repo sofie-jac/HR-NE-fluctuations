@@ -33,6 +33,7 @@ function [results] = aggregate_event_data_single(saveDirectory, event_var, anima
                 variable_name = sprintf('%s_%s_%s', data_types{d_idx}, event_type_name, animal);
                 if isfield(loaded_data, variable_name)
                     data_to_append = loaded_data.(variable_name);
+                    disp(size(data_to_append))
 
                     % Check if data is an EEG band and needs trimming
                     if ismember(data_types{d_idx}, eeg_bands)

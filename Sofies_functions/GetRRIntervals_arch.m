@@ -1,0 +1,265 @@
+function [resampled_RR_pchip, new_time_vector, new_fs, quality_selected_peaks, quality_selected_peak_times] = GetRRIntervals_arch(UniqueID, EMG, sec_signal_EMG, EEG_fs, move_thresh, peak_thresh)
+% Determine HR and movement peaks - current version
+
+% Initialize selected peaks storage
+selected_peaks = [];
+selected_peak_locs = [];
+
+% Calculate mean and standard deviation of the filtered EMG signal
+mean_EMG = mean(EMG);
+sd_EMG = std(EMG);
+
+% Set threshold as mean + 3.5 * SD for movement detection
+threshold = mean_EMG + move_thresh * sd_EMG;
+
+% Find movement peaks in the filtered EMG signal using the predefined threshold
+[movement, movement_locs] = findpeaks(EMG, 'MinPeakHeight', threshold);
+movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
+
+% Define window length in seconds (1 second) and ensure window_length_samples is an integer
+window_length_sec = 2;
+window_length_samples = round(window_length_sec * EEG_fs);
+
+% Initialize a variable to keep track of the last movement to handle consecutive movements
+last_movement_end = -Inf;
+
+% Convert 100 ms before and 250 ms after to samples
+exclude_before_movement = ceil(EEG_fs * 0.1); % 100 ms before
+exclude_after_movement = ceil(EEG_fs * 0.25); % 250 ms after
+
+for start_idx = 1:window_length_samples:length(EMG) - window_length_samples + 1
+    end_idx = start_idx + window_length_samples - 1;
+    valid_indices = true(window_length_samples, 1); % Initialize all indices as valid
+
+    % Check for movement within the current window
+    movement_in_window = movement_sec(movement_sec >= sec_signal_EMG(start_idx) & movement_sec <= sec_signal_EMG(end_idx));
+    
+    for i = 1:length(movement_in_window)
+        movement_time = movement_in_window(i);
+        movement_idx = find(sec_signal_EMG == movement_time, 1, 'first');
+        if ~isempty(movement_idx) && movement_idx <= end_idx
+            start_exclude_idx = max(start_idx, movement_idx - exclude_before_movement); % Ensure not before start of window
+            end_exclude_idx = min(end_idx, movement_idx + exclude_after_movement); % Ensure not beyond end of window
+            
+            % Update valid_indices to exclude the specified range
+            valid_indices(start_exclude_idx - start_idx + 1:end_exclude_idx - start_idx + 1) = false;
+        end
+    end
+
+% Apply exclusion and perform further analysis as needed
+valid_data = EMG(start_idx:end_idx);
+valid_data = valid_data(valid_indices);
+
+if ~isempty(valid_data) && length(valid_data) >= 3
+    mean_EMG_window = mean(valid_data);
+    sd_EMG_window = std(valid_data);
+    
+    % Calculate the dynamic threshold for peak detection
+    dynamic_threshold = mean_EMG_window + peak_thresh*sd_EMG_window;
+    
+    % Check if any data point exceeds the dynamic threshold
+    if any(valid_data > dynamic_threshold)
+        [peaks_window, locs_window] = findpeaks(valid_data, 'MinPeakHeight', dynamic_threshold);
+        
+        % Correct calculation of actual_locs_window
+        valid_indices_cumsum = cumsum(valid_indices); % Get the cumulative sum of valid indices
+        actual_locs_window = start_idx - 1 + valid_indices_cumsum(locs_window); % Map locs_window back to the global indices correctly
+
+        % Ensure peaks_window and actual_locs_window are column vectors before concatenation
+        peaks_window = peaks_window(:);
+        actual_locs_window = actual_locs_window(:);
+
+        % Concatenate peaks and locations
+        selected_peaks = [selected_peaks; peaks_window];
+        selected_peak_locs = [selected_peak_locs; actual_locs_window];
+    end
+end
+    
+    % If there is movement in the current window and the previous one, consider removing peaks between those movements
+    % Specific logic will depend on your requirements
+    
+    % Update the last movement end index
+    if ~isempty(movement_in_window)
+        last_movement_end = end_idx;
+    end
+end
+clear last_movement_end
+% Remove selected peaks that are to quick
+% Calculate the minimum time interval between peaks based on physiological bounds
+min_interval_sec = 60 / 800; % Minimum time interval in seconds for 700 bpm
+
+% Sort the peaks by their timestamps
+% Remove zeros from selected_peak_locs if present
+% Find indices where selected_peak_locs is greater than 0
+valid_indices = selected_peak_locs > 0;
+
+% Apply the valid indices to filter both selected_peak_locs and selected_peaks
+selected_peak_locs = selected_peak_locs(valid_indices);
+selected_peaks = selected_peaks(valid_indices);
+
+% Now, selected_peak_locs no longer contains zeros, and selected_peaks has been reduced accordingly
+selected_peak_times = sec_signal_EMG(selected_peak_locs);
+
+% Sort the peaks by their timestamps
+[sorted_peak_times, sort_index] = sort(selected_peak_times);
+sorted_peaks = selected_peaks(sort_index);
+sorted_peak_locs = selected_peak_locs(sort_index);
+
+% Initialize lists to keep the peaks and locations that meet the criteria
+quality_selected_peaks = [];
+quality_selected_peak_locs = [];
+
+i = 1;
+while i <= length(sorted_peak_times)
+    current_peak = sorted_peaks(i);
+    current_loc = sorted_peak_locs(i);
+    % Assume current peak is valid initially
+    is_peak_valid = true;
+    
+    % Look ahead to check if the next peak is too close
+    if i < length(sorted_peak_times) && (sorted_peak_times(i + 1) - sorted_peak_times(i) < min_interval_sec)
+        next_peak = sorted_peaks(i + 1);
+        % If the next peak is higher, mark the current peak as invalid
+        if next_peak > current_peak
+            is_peak_valid = false;
+        else
+            % Otherwise, mark the next peak as invalid by removing it
+            % Note: we don't need to explicitly mark it, just skip adding it in the next iteration
+            i = i + 1;  % Skip the next peak
+        end
+    end
+    
+    % If the peak is valid, add it to the kept lists
+    if is_peak_valid
+        quality_selected_peaks  = [quality_selected_peaks ; current_peak];
+        quality_selected_peak_locs  = [quality_selected_peak_locs ; current_loc];
+    end
+    
+    i = i + 1;  % Move to the next peak
+end
+quality_selected_peak_times = sec_signal_EMG(quality_selected_peak_locs);
+
+% kept_peaks and kept_peak_locs now contain only the peaks (and their locations) that were kept
+
+% Plot movement and selected peaks
+
+% Calculate mean and standard deviation of the filtered EMG signal
+mean_EMG = mean(EMG);
+sd_EMG = std(EMG);
+
+% Set threshold as mean + 3.5 * SD for movement detection
+threshold = mean_EMG + move_thresh * sd_EMG;
+clear mean_EMG sd_EMG
+% Plotting peaks
+figure;
+
+% % Plot the original EMG signal
+subplot(2,1,1);
+plot(sec_signal_EMG, EMG, 'b-', quality_selected_peak_times, quality_selected_peaks, 'ro');
+hold on;
+scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+hold off
+xlabel('Time (s)');
+ylabel('EMG (V)');
+title('Original EMG Data w. peaks corrected v2');
+grid on;
+
+subplot(2,1,2);
+plot(sec_signal_EMG, EMG, 'b-');
+xlabel('Time (s)');
+ylabel('EMG (V)');
+title('EMG');
+set(gcf,'color','white')
+grid on;
+
+% Plot the filtered EMG signal with selected peaks
+% subplot(2,1,2);
+% plot(sec_signal_EMG, EMG, 'b-', selected_peak_times, selected_peaks, 'ro');
+% hold on;
+% scatter(movement_sec, movement, 'y', 'filled'); % Plotting movement peaks in yellow
+% line([min(sec_signal_EMG), max(sec_signal_EMG)], [threshold, threshold], 'Color', 'g', 'LineStyle', '--');
+% xlabel('Time (s)');
+% ylabel('EMG (V)');
+% title('EMG with Selected Peaks (dynamic window mean+2.5SD) and Movement Peaks');
+% set(gcf,'color','white')
+% grid on;
+
+sgtitle(sprintf('Mouse %s', UniqueID))
+set(gcf, 'Color', 'w'); % Set background color to white
+
+
+legend('Filtered EMG', 'Selected Peaks', 'Movement Peaks', 'Threshold');
+
+linkaxes([subplot(2,1,1), subplot(2,1,2)], 'x');
+
+% Make RR intervals & Remove selected peaks + RR's within movement chunks
+
+% Find the time between selected peaks ('RR') and record the timestamp of the first peak for each RR observation ('RR_time')
+RR = diff(sec_signal_EMG(quality_selected_peak_locs)); % Time between selected peaks in seconds
+RR_time = sec_signal_EMG(quality_selected_peak_locs(1:end-1)); % Timestamp of the first peak for each RR observation
+
+% Define minimum time between two movement peaks (in seconds)
+minimum_time_between_movement = 1.5;
+
+% Check if there is less than 1 second between two movement peaks
+for i = 1:length(movement_sec)-1
+    % Find the indices corresponding to selected peaks between two movement peaks
+    indices_between_movements_selected = find(selected_peak_locs > movement_sec(i) & selected_peak_locs < movement_sec(i+1));
+
+    % Find the indices corresponding to RR_time between two movement peaks
+    indices_between_movements_RR = find(RR_time > movement_sec(i) & RR_time < movement_sec(i+1));
+
+    % Check if there is less than minimum_time_between_movement between two movement peaks
+    if movement_sec(i+1) - movement_sec(i) < minimum_time_between_movement
+        % Remove the selected peaks and their corresponding locations between two movement peaks
+        selected_peaks(indices_between_movements_selected) = [];
+        selected_peak_locs(indices_between_movements_selected) = [];
+
+        % Set RR and RR_time values to NaN for the observations between two movement peaks
+        RR(indices_between_movements_RR) = NaN;
+        RR_time(indices_between_movements_RR) = NaN;
+    end
+end
+% Plot RR's with selected/movement peaks
+
+clear selected_peak_locs selected_peak_locs movement_sec minimum_time_between_movement indices_between_movements_selected
+% Remove RR outliers
+%Outlier detection
+
+% Define the thresholds for filtering in seconds
+upper_threshold = 60 / 150; % Maximum allowed heart rate in seconds (corresponding to 400 BPM)
+lower_threshold = 60 / 700; % Minimum allowed heart rate in seconds (corresponding to 800 BPM)
+
+% Find indices of RR intervals that meet the criteria
+valid_indices = find(RR <= upper_threshold & RR >= lower_threshold);
+
+% Filter RR and RR_time based on the valid indices
+filtered_RR = RR(valid_indices);
+filtered_RR_time = RR_time(valid_indices);
+
+
+% Smooth the filtered RR's for plotting
+% Choose the window size for the moving average
+window_size = 5;
+
+% Apply the moving average - cahnge to RR if you haven't filtered
+filtered_RR_smooth = movmean(filtered_RR, window_size);
+clear filtered_RR
+
+% filtered_RR_smooth = filtfilt(MeanFilter,1,double(filtered_RR));
+
+% Resample RR at 64 hz
+
+% Define the target sampling rate
+new_fs = 64; % 64 Hz
+
+% Create a new time vector with a fixed sampling rate of 64 Hz, starting from the first to the last observation in the original time vector
+new_time_vector = filtered_RR_time(1):1/new_fs:filtered_RR_time(end);
+
+% Use interpolation to resample RR intervals at these new time points
+% 'linear' interpolation is commonly used, but you can choose another method if it fits your data better
+% resampled_RR = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'spline');
+% resampled_RR_linear = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'linear');
+% resampled_RR_nearest = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'nearest');
+resampled_RR_pchip = interp1(filtered_RR_time, filtered_RR_smooth, new_time_vector, 'pchip');

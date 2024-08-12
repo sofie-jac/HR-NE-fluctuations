@@ -1,4 +1,4 @@
-function updated_table = update_table_with_auc_diff(AUC_table, data_table)
+function updated_table = update_table_with_auc_diff_arch(AUC_table, data_table)
     % Calculate AUC differences
     suffixes = unique(AUC_table.Suffix);
     mean_auc_diff = arrayfun(@(s) mean(AUC_table.AUC_post(strcmp(AUC_table.Suffix, s)) - ...
@@ -17,8 +17,9 @@ function updated_table = update_table_with_auc_diff(AUC_table, data_table)
     updated_table.AUC_post = NaN(height(data_table), 1);
 
     for i = 1:height(data_table)
-        % suffix = num2str(data_table.Suffix(i)); % Convert suffix to string
-        if any(strcmp(suffixes, Suffix))
+        % Get the suffix from the data_table
+        suffix = data_table.Suffix{i};
+        if any(strcmp(suffixes, suffix))
             idx = strcmp(suffixes, suffix);
             updated_table.AUC_diff(i) = mean_auc_diff(idx);
             updated_table.AUC_pre(i) = mean_auc_pre(idx);

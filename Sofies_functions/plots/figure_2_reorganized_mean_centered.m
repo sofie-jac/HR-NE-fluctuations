@@ -33,8 +33,8 @@ function figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_
     end
 
     % Adjust the epoch range to -30 to 30 seconds
-    plot_start = -30;
-    plot_end = 30;
+    plot_start = -60;
+    plot_end = 60;
 
     % Plot NE data
     subplot(numRows, numColumns, 1);

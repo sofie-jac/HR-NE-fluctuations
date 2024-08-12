@@ -1,7 +1,21 @@
 function [mean_spectrogram, time_spectrogram_zero, F, band_powers, EEG_bands_fs] = PowerAnalysisEEG(EEG, EEG_fs, frw, window_in_sec, power_bands)
     % Assuming EEG, sec_signal_EEG, and EEG_fs are defined in your workspace
     Data_EEG = EEG; % EEG data vector
+    
+    % Check if Data_EEG is a vector
+    if ~isvector(Data_EEG)
+        error('Data_EEG must be a vector.');
+    end
+    
     frq = EEG_fs; % sampling frequency of EEG data
+    
+    % Print diagnostic information
+    disp('EEG data length:');
+    disp(length(Data_EEG));
+    disp('Sampling frequency:');
+    disp(frq);
+    disp('Window length in samples:');
+    disp(round(frq * window_in_sec));
     
     % Compute spectrogram
     [transition_spectrogram, F, T] = spectrogram(Data_EEG, round(frq * window_in_sec), [], frw, frq, 'yaxis');
@@ -28,4 +42,5 @@ function [mean_spectrogram, time_spectrogram_zero, F, band_powers, EEG_bands_fs]
         band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
     end
 
-    EEG_bands_fs = length(T)/T(end); % for EEG bands
+    EEG_bands_fs = length(T) / T(end); % for EEG bands
+end

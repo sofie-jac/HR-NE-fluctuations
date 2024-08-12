@@ -20,6 +20,12 @@ laser_shift_513 = {'2:43:00' '3:50:00' '4:50:00' '5:48:00' '6:48:00' '7:48:00'};
 % thrshldtime_optoChR2_20211220_509_YFP = {'2:26:30' ' 3:30:59' '4:26:29' '5:26:25' '6:26:23' '7:26:22'};
 % thrshldtime_optoChR2_20211221_514_ChR2 = {'2:43:49' '3:43:51' '4:43:49' '5:44:18' '6:44:12' '7:44:20'};
 %thrshldtime_optoChR2_20210826_493_ChR2 = {'3:00:02' '4:00:50' '5:01:07' '6:02:00' '7:00:02' ''};
+%% Check time to fall asleep
+yfp = {'584', '577', '512', '513'};
+chr2 = {'489', '480', '491', '497', '511', '522'};
+o = {'205', '207', '209', '420', '588', '201', '213'};
+t = {'124', '115', '122'};
+sleep_onset_table = identify_first_sleep_onset(o, t);
 
 %% Interp the saved EEG/EMG
 % Directory where the original EEG traces are stored
@@ -797,8 +803,8 @@ writetable(table_Gamma_low, 'chr2_table_Gamma_low.csv')
 writetable(table_Gamma_high, 'chr2_table_Gamma_high.csv')
 
 %Run figure for single animal
-results_single = aggregate_event_data_single(saveDirectory, event_var, '513', data_types);
-figure_2_reorganized_single(results_single, epoc_start, epoc_end, '513' , titles)
+results_single = aggregate_event_data_single(saveDirectory, event_var, '403', data_types);
+figure_2_reorganized_single(results_single, epoc_start, epoc_end, '403' , titles)
 
 %% AUC diff chr2
 event_var = {'laser_1_NREM', 'laser_2_NREM', 'laser_3_NREM', 'laser_4_NREM', 'laser_5_NREM'};
@@ -807,7 +813,8 @@ saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2
 outputDirectory = fullfile(saveDirectory, 'AUC');
 chr2 = {'489', '480', '491', '497', '511', '522'};
 yfp = {'584', '577', '512', '513'};
-
+yfp = {'584', '577', '512', '513'};
+chr2 = {'489', '480', '491', '497', '511', '522'};
 % Define the times_matrix
 times_matrix_post = struct();
 times_matrix_post.NE.range = [-20, 0];
@@ -1515,7 +1522,7 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
 %% Example trace for figure
     %% 588 figure 2 
 
-    uniqueId = '522'; % Extract mouse ID as a string
+    uniqueId = '403'; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     % Access the variables dynamically
