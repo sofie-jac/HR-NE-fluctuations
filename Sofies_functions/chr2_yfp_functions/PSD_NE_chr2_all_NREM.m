@@ -24,7 +24,9 @@ function [AUC_results_chr2, AUC_results_yfp] = PSD_NE_chr2_all_NREM(NE_intervals
         
         % Calculate period duration
         period_duration = length(NE_values) / fs;
-        
+
+
+        if period_duration > 60
         % Detrend (and center around 0)
         [p, s, mu] = polyfit((1:numel(NE_values))', NE_values, 5);
         f_y = polyval(p, (1:numel(NE_values))', [], mu);
@@ -78,6 +80,7 @@ function [AUC_results_chr2, AUC_results_yfp] = PSD_NE_chr2_all_NREM(NE_intervals
             end
             psd_yfp.(laser_field).(id_field) = [psd_yfp.(laser_field).(id_field), pxx'];
             durations_yfp.(laser_field).(id_field) = [durations_yfp.(laser_field).(id_field), period_duration];
+        end
         end
     end
 

@@ -542,6 +542,8 @@ yfp = {'408', '420', '484', '468', '015' '079', '089'};
 arch = {'387', '403', '412', '414', '416', '013', '019'};
 yfp = {'408', '420', '484', '468', '015' '079', '089'};
 
+yfp = { '420', '484', '468', '408'};
+arch = {'387', '412', '414', '416'};
 
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Copy_of_figure_3_data';
 epoc_start = 60;
@@ -566,7 +568,7 @@ figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title_yfp
 figure_2_reorganized(results, epoc_start, epoc_end, main_title_yfp, titles);
 
 results = aggregate_event_data(saveDirectory, event_var, arch, data_types);
-[table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
+[table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma_arch, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
 table_NE_ds = table_NE(1:5:end, :);
 table_RR_ds = table_RR(1:5:end, :);
 writetable(table_NE, 'arch_NE_traces_ds.csv')
@@ -574,7 +576,7 @@ writetable(table_RR_ds, 'arch_RR_traces.csv')
 writetable(table_SO, 'arch_table_SO.csv')
 writetable(table_Delta, 'arch_table_Delta.csv')
 writetable(table_Theta, 'arch_table_Theta.csv')
-writetable(table_Sigma, 'arch_table_Sigma.csv')
+writetable(table_Sigma_arch, 'arch_table_Sigma.csv')
 writetable(table_Beta, 'arch_table_Beta.csv')
 writetable(table_Gamma_low, 'arch_table_Gamma_low.csv')
 writetable(table_Gamma_high, 'arch_table_Gamma_high.csv')
@@ -587,9 +589,9 @@ yfp = {'408', '420', '484', '468', '015' '079', '089'};
 arch = {'387', '403', '412', '414', '416', '013', '019'};
 
 %Run figure for single animal
-saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\figure_3_data';
-results_single = aggregate_event_data_single(saveDirectory, event_var, '019', data_types);
-figure_2_reorganized_single(results_single, epoc_start, epoc_end, '019' , titles)
+saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Copy_of_figure_3_data';
+results_single = aggregate_event_data_single(saveDirectory, event_var, '015', data_types);
+figure_2_reorganized_single(results_single, epoc_start, epoc_end, '015' , titles)
 %% AUC !!!
 
 %% AUC diff ARCH/YFP
@@ -598,20 +600,35 @@ titles = {'Laser On'};
 saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Copy_of_figure_3_data';
 outputDirectory = fullfile(saveDirectory, 'AUC');
 yfp = {'408', '420', '484', '468', '015' '079', '089'};
-arch = {'387', '403', '412', '414', '416', '013', '019'};
+arch = {'387', '412', '414', '416', '013', '019'};
 yfp = { '420', '484', '468', '408'};
 arch = {'387', '412', '414', '416'};
 Suffix = {'408', '420', '484', '468', '015' '079', '089', '387', '412', '414', '416', '013', '019'};
+
+yfp = { '420', '484', '468', '408'};
+arch = {'387', '412', '414', '416'};
+
+% % Define the times_matrix
+% times_matrix_post = struct();
+% times_matrix_post.NE.range = [30, 45];
+% times_matrix_post.RR.range = [30, 45];
+% times_matrix_post.EEG.range = [30, 45];
+% 
+% times_matrix_pre = struct();
+% times_matrix_pre.NE.range = [-25, -10];
+% times_matrix_pre.RR.range = [-25, -10];
+% times_matrix_pre.EEG.range = [-25, -10];
+
 % Define the times_matrix
 times_matrix_post = struct();
-times_matrix_post.NE.range = [5, 45];
-times_matrix_post.RR.range = [5, 45];
-times_matrix_post.EEG.range = [5, 45];
+times_matrix_post.NE.range = [5, 40];
+times_matrix_post.RR.range = [5, 40];
+times_matrix_post.EEG.range = [5, 40];
 
 times_matrix_pre = struct();
-times_matrix_pre.NE.range = [-45, -5];
-times_matrix_pre.RR.range = [-45, -5];
-times_matrix_pre.EEG.range = [-45, -5];
+times_matrix_pre.NE.range = [-40, -5];
+times_matrix_pre.RR.range = [-40, -5];
+times_matrix_pre.EEG.range = [-40, -5];
 
 % Call the function with the specified time range
 %auc_data = extract_auc_and_plot(o, event_var, saveDirectory, times_matrix_post, outputDirectory, titles);
@@ -624,17 +641,30 @@ auc_data_arch = extract_auc_and_plot_3(arch, event_var, saveDirectory, times_mat
 auc_diff_table_arch = plot_auc_bar(auc_data_arch, event_var, arch, titles);
 writetable(auc_diff_table_arch, 'arch_auc_table.csv')
 
+% Update AUC_table
+
 auc_diff_table_combined = [auc_diff_table_yfp; auc_diff_table_arch];
 
 % Assuming auc_diff_table and updated_table from the previous functions are already in the workspace
 auc_diff_table_mean = compute_mean_by_subject(auc_diff_table_combined);
 % Merge the two tables on the Suffix column
-merged_table = outerjoin(auc_diff_table_mean, data_table_update_AUC, 'MergeKeys', true);
+merged_table = outerjoin(auc_diff_table_mean, data_table, 'MergeKeys', true);
+%merged_table = outerjoin(average_AUC_table_RR, data_table, 'MergeKeys', true);
+
+average_AUC_table_RR
 % Display the merged table
 disp(merged_table);
+
 plot_correlation_memory_arch(merged_table, arch, yfp, 'mean_RR'); % Change 'AUC_diff' to any other variable as needed
 
+%Export memory table
+writetable(merged_table, 'memory_table.csv')
+
 % AUC will be subtracting -40 to -5 from 5 to 40
+%% Export AUC to R
+
+auc_table_arch = condition_column_to_AUC(auc_diff_table_combined, arch, yfp);
+writetable(auc_table_arch, 'AUC_for_R_batch_1_old.csv')
 
 %% continued - change table to graphpad format
 
@@ -745,14 +775,7 @@ for i = 1:length(data_columns)
 end
 
 
-%% Create memory table
-% Create the data
-Suffix = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'};
-%sigma_power_increase = [0.056842, 0.057477, 0.047644, 0.062896, 0.064325, 0.068995, 0.080907, 0.045944, 0.051554, 0.016309, 0.041683, 0.012267, 0.03086, 0.058014]';
-novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
-Suffix = Suffix';
-% Create the table
-data_table = table(Suffix, novel_familiar_ratio);
+
 %% Add AUC diff to memory table
 
 % Update the data_table with AUC differences
@@ -901,31 +924,393 @@ end
 
 % Clear temporary variables
 clear baseVariables suffixes s suffix sws_varName MA_varName sws_binary_vector MA_binary_vector NREMinclMA_binary NREMinclMA_onset NREMinclMA_offset NREMinclMA_periods NREMinclMA_binary_name NREMinclMA_periods_name;
+%% Make sleep (/NREM/REM) periods
+% List of suffixes for each animal
+suffixes = {'387', '412', '414', '416', '408', '420', '484', '468'}; % Add more suffixes as needed
+
+% Loop through each suffix
+for s = 1:length(suffixes)
+    suffix = suffixes{s};
+    
+    % Construct variable names with the current suffix
+    sws_varName = ['sws_binary_vector_', suffix];
+    MA_varName = ['MA_binary_vector_', suffix];
+    REM_varName = ['REM_binary_vector_', suffix];
+
+    % Check if the variables exist in the environment
+    if exist(sws_varName, 'var') && exist(MA_varName, 'var') && exist(REM_varName, 'var')
+        % Retrieve the variables from the workspace
+        sws_binary_vector = eval(sws_varName);
+        MA_binary_vector = eval(MA_varName);
+        REM_binary_vector = eval(REM_varName);
+        
+        % Add the binary vectors to create sleep_binary (including SWS, MA, and REM)
+        sleep_binary = sws_binary_vector + MA_binary_vector + REM_binary_vector;
+        sleep_binary(sleep_binary > 1) = 1; % Ensure it remains binary
+        
+        % Convert sleep_binary to sleep_periods
+        [sleep_onset, sleep_offset] = binaryToOnOff(sleep_binary);
+        sleep_periods = [sleep_onset; sleep_offset];
+        sleep_periods = sleep_periods';
+
+        % Save the results with a new name
+        sleep_binary_name = ['sleep_binary_', suffix];
+        sleep_periods_name = ['sleep_periods_', suffix];
+        assignin('base', sleep_binary_name, sleep_binary);
+        assignin('base', sleep_periods_name, sleep_periods);
+    else
+        warning('Variables %s, %s, and/or %s do not exist in the workspace.', sws_varName, MA_varName, REM_varName);
+    end
+end
+
+% Clear temporary variables
+clear baseVariables suffixes s suffix sws_varName MA_varName REM_varName sws_binary_vector MA_binary_vector REM_binary_vector sleep_binary sleep_onset sleep_offset sleep_periods sleep_binary_name sleep_periods_name;
+
+
+
 %% Get RR from NREMiclMA
-suffixes = {'387', '403', '412', '414', '416', '408', '420'}; % Add more suffixes as needed
+suffixes = {'387', '412', '414', '416', '408', '420', '484', '468'}; % Add more suffixes as needed
 Suffix = {'408', '420', '484', '468', '015' '079', '089', '387', '412', '414', '416', '013', '019'};
 
-RR_data_NREM_table = process_NREM_with_laser(Suffix);
-NE_data_NREM_table = process_NREM_with_laser_NE(Suffix);
+RR_data_NREM_table = process_NREM_with_laser(suffixes);
+NE_data_NREM_table = process_NREM_with_laser_NE(suffixes);
+
+RR_data_NREM_table = process_NREM_no_laser(suffixes);
+NE_data_NREM_table = process_NREM_no_laser_NE(suffixes);
+
+
 
 %% RR PSD plot
-yfp = {'408', '420', '484', '468', '015' '079', '089'};
-arch = {'387', '412', '414', '416', '013', '019'};
+yfp = {'408', '420', '484', '468'};
+arch = {'387', '412', '414', '416'};
 psd_table = plot_PSD_with_laser(RR_data_NREM_table, arch, yfp, 60);
 [psd_table_NE, AUC_table_NE, PeakFrequency_table_NE, PeakPower_table_NE]= plot_PSD_with_laser_NE(NE_data_NREM_table, arch, yfp, 60);
-[psd_table_RR, AUC_table_RR, PeakFrequency_table_RR, PeakPower_table_RR]= plot_PSD_with_laser_RR(RR_data_NREM_table, arch, yfp, 60);
+[psd_table_RR, AUC_table_RR, PeakFrequency_table_RR, PeakPower_table_RR]= plot_PSD_with_laser_RR(RR_data_NREM_table, arch, yfp, 60, 1);
+
+%Updated PSd with no Laser on/off element added
+[psd_table_NE, AUC_table_NE, PeakFrequency_table_NE, PeakPower_table_NE]= PSD_no_laser_NE(NE_data_NREM_table, arch, yfp, 60);
+[psd_table_RR, AUC_table_RR, PeakFrequency_table_RR, PeakPower_table_RR]= PSD_no_laser_RR(RR_data_NREM_table, arch, yfp, 60, 0.15);
+
 
 [psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = plot_PSD_with_laser_combined(NE_data_NREM_table, RR_data_NREM_table, arch, yfp, 60, 60);
 
-writetable(psd_table, 'PSD_traces.csv')
+filtered_AUC_table_RR = AUC_table_RR(ismember(AUC_table_RR.EventVar, {'Arch_on', 'Yfp_on'}), :);
+average_AUC_table_RR = groupsummary(filtered_AUC_table_RR, 'Suffix', 'mean', 'AUC');
+
+%Export traces
+writetable(psd_table_NE, 'PSD_traces_NE.csv')
 writetable(psd_table_RR, 'PSD_traces_RR.csv')
+%% Created weigthed mean/SEM for PSD quantification export
+
+% Define the groups
+groups = {'Arch', 'YFP'};
+
+% Initialize arrays to store results
+weighted_means = zeros(length(groups), 1);
+weighted_sems = zeros(length(groups), 1);
+
+for i = 1:length(groups)
+    % Select data for the current group
+    group = groups{i};
+    idx = strcmp(PeakFrequency_table_NE.EventVar, group);
+    data = PeakFrequency_table_NE.PeakFrequency(idx);
+    weights = PeakFrequency_table_NE.BoutLength(idx);
+    n = sum(idx); % Number of events (rows) in the data for this group
+    
+    % Calculate weighted mean
+    weighted_mean = sum(weights .* data) / sum(weights);
+    weighted_means(i) = weighted_mean;
+    
+    % Calculate weighted variance
+    weighted_variance = sum(weights .* (data - weighted_mean).^2) / sum(weights);
+    
+    % Calculate weighted standard error of the mean (SEM)
+    % SEM is the square root of the weighted variance divided by sqrt(n)
+    weighted_sem = sqrt(weighted_variance) / sqrt(n);
+    weighted_sems(i) = weighted_sem;
+end
+
+% Create a table to display the results
+result_table = table(groups', weighted_means, weighted_sems, 'VariableNames', {'EventVar', 'WeightedMean', 'WeightedSEM'});
+
+%% Get weighted mean per subject
+
+% Define the suffixes
+suffixes = {'387', '412', '414', '416', '408', '420', '484', '468'}; % Add more suffixes as needed
+
+% Initialize arrays to store results
+weighted_means = zeros(length(suffixes), 1);
+weighted_sems = zeros(length(suffixes), 1);
+
+for i = 1:length(suffixes)
+    % Select data for the current suffix
+    suffix = suffixes{i};
+    idx = strcmp(AUC_table_RR.Suffix, suffix);
+    data = AUC_table_RR.AUC(idx);
+    weights = AUC_table_RR.BoutLength(idx);
+    n = sum(idx); % Number of events (rows) for this suffix
+    
+    % Check if there is data for this suffix
+    if n > 0
+        % Calculate weighted mean
+        weighted_mean = sum(weights .* data) / sum(weights);
+        weighted_means(i) = weighted_mean;
+        
+        % Calculate weighted variance
+        weighted_variance = sum(weights .* (data - weighted_mean).^2) / sum(weights);
+        
+        % Calculate weighted standard error of the mean (SEM)
+        % SEM is the square root of the weighted variance divided by sqrt(n)
+        weighted_sem = sqrt(weighted_variance) / sqrt(n);
+        weighted_sems(i) = weighted_sem;
+    else
+        % If no data is available for this suffix, assign NaN
+        weighted_means(i) = NaN;
+        weighted_sems(i) = NaN;
+    end
+end
+
+% Create a table to display the results
+result_table = table(suffixes', weighted_means, weighted_sems, 'VariableNames', {'Suffix', 'WeightedMean', 'WeightedSEM'});
+
+% Display the results
+disp(result_table);
+
+
+%% Create memory table
+% Create the data
+Suffix = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'};
+%sigma_power_increase = [0.056842, 0.057477, 0.047644, 0.062896, 0.064325, 0.068995, 0.080907, 0.045944, 0.051554, 0.016309, 0.041683, 0.012267, 0.03086, 0.058014]';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
+Suffix = Suffix';
+% Create the table
+data_table = table(Suffix, novel_familiar_ratio);
+
+merged_table = outerjoin(result_table, data_table, 'MergeKeys', true);
+
+plot_correlation_memory_arch(merged_table, arch, yfp, 'WeightedMean'); % Change 'AUC_diff' to any other variable as needed
+
+
+%% R export of PSD related items
+
+% Update for R export
+AUC_table_RR = add_condition_column(AUC_table_RR);
+PeakFrequency_table_RR = add_condition_column(PeakFrequency_table_RR);
+PeakPower_table_RR = add_condition_column(PeakPower_table_RR);
+
+%Export to R
+writetable(AUC_table_RR, 'RR_AUC_PSD_for_R.csv')
+writetable(PeakFrequency_table_RR, 'RR_PeakFrequency_table_for_R.csv')
+writetable(PeakPower_table_RR, 'RR_PeakPower_table_for_R.csv')
+
+% Update for R export
+AUC_table_NE = add_condition_column(AUC_table_NE);
+PeakFrequency_table_NE = add_condition_column(PeakFrequency_table_NE);
+PeakPower_table_NE = add_condition_column(PeakPower_table_NE);
+
+%Export to R
+writetable(AUC_table_NE, 'NE_AUC_PSD_for_R.csv')
+writetable(PeakFrequency_table_NE, 'NE_PeakFrequency_table_for_R.csv')
+writetable(PeakPower_table_NE, 'NE_PeakPower_table_for_R.csv')
+
+%% Graphpad for no laser
+
+% Extract the AUC values corresponding to 'Arch' and 'YFP'
+AUC_Arch = AUC_table_NE.AUC(strcmp(AUC_table_NE.EventVar, 'Arch'));
+AUC_YFP = AUC_table_NE.AUC(strcmp(AUC_table_NE.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(AUC_Arch), length(AUC_YFP));
+
+% Pad the shorter vector with NaNs
+if length(AUC_Arch) < max_length
+    AUC_Arch = [AUC_Arch; nan(max_length - length(AUC_Arch), 1)];
+elseif length(AUC_YFP) < max_length
+    AUC_YFP = [AUC_YFP; nan(max_length - length(AUC_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+AUC_split_table_NE = table(AUC_Arch, AUC_YFP, 'VariableNames', {'AUC_Arch', 'AUC_YFP'});
+
+
+
+
+% Extract the AUC values corresponding to 'Arch' and 'YFP'
+AUC_Arch = AUC_table_RR.AUC(strcmp(AUC_table_RR.EventVar, 'Arch'));
+AUC_YFP = AUC_table_RR.AUC(strcmp(AUC_table_RR.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(AUC_Arch), length(AUC_YFP));
+
+% Pad the shorter vector with NaNs
+if length(AUC_Arch) < max_length
+    AUC_Arch = [AUC_Arch; nan(max_length - length(AUC_Arch), 1)];
+elseif length(AUC_YFP) < max_length
+    AUC_YFP = [AUC_YFP; nan(max_length - length(AUC_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+AUC_split_table_RR = table(AUC_Arch, AUC_YFP, 'VariableNames', {'AUC_Arch', 'AUC_YFP'});
+
+
+
+% Extract the PeakFrequency values corresponding to 'Arch' and 'YFP'
+PeakFrequency_Arch = PeakFrequency_table_NE.PeakFrequency(strcmp(PeakFrequency_table_NE.EventVar, 'Arch'));
+PeakFrequency_YFP = PeakFrequency_table_NE.PeakFrequency(strcmp(PeakFrequency_table_NE.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(PeakFrequency_Arch), length(PeakFrequency_YFP));
+
+% Pad the shorter vector with NaNs
+if length(PeakFrequency_Arch) < max_length
+    PeakFrequency_Arch = [PeakFrequency_Arch; nan(max_length - length(PeakFrequency_Arch), 1)];
+elseif length(PeakFrequency_YFP) < max_length
+    PeakFrequency_YFP = [PeakFrequency_YFP; nan(max_length - length(PeakFrequency_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+PeakFrequency_split_table_NE = table(PeakFrequency_Arch, PeakFrequency_YFP, 'VariableNames', {'PeakFrequency_Arch', 'PeakFrequency_YFP'});
+
+
+
+
+% Extract the PeakFrequency values corresponding to 'Arch' and 'YFP'
+PeakFrequency_Arch = PeakFrequency_table_RR.PeakFrequency(strcmp(PeakFrequency_table_RR.EventVar, 'Arch'));
+PeakFrequency_YFP = PeakFrequency_table_RR.PeakFrequency(strcmp(PeakFrequency_table_RR.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(PeakFrequency_Arch), length(PeakFrequency_YFP));
+
+% Pad the shorter vector with NaNs
+if length(PeakFrequency_Arch) < max_length
+    PeakFrequency_Arch = [PeakFrequency_Arch; nan(max_length - length(PeakFrequency_Arch), 1)];
+elseif length(PeakFrequency_YFP) < max_length
+    PeakFrequency_YFP = [PeakFrequency_YFP; nan(max_length - length(PeakFrequency_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+PeakFrequency_split_table_RR = table(PeakFrequency_Arch, PeakFrequency_YFP, 'VariableNames', {'PeakFrequency_Arch', 'PeakFrequency_YFP'});
+
+
+
+
+
+% Extract the PeakFrequency values corresponding to 'Arch' and 'YFP'
+PeakPower_Arch = PeakPower_table_NE.PeakPower(strcmp(PeakPower_table_NE.EventVar, 'Arch'));
+PeakPower_YFP = PeakPower_table_NE.PeakPower(strcmp(PeakPower_table_NE.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(PeakPower_Arch), length(PeakPower_YFP));
+
+% Pad the shorter vector with NaNs
+if length(PeakPower_Arch) < max_length
+    PeakPower_Arch = [PeakPower_Arch; nan(max_length - length(PeakPower_Arch), 1)];
+elseif length(PeakPower_YFP) < max_length
+    PeakPower_YFP = [PeakPower_YFP; nan(max_length - length(PeakPower_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+PeakPower_split_table_NE = table(PeakPower_Arch, PeakPower_YFP, 'VariableNames', {'PeakPower_Arch', 'PeakPower_YFP'});
+
+
+
+
+% Extract the PeakFrequency values corresponding to 'Arch' and 'YFP'
+PeakPower_Arch = PeakPower_table_RR.PeakPower(strcmp(PeakPower_table_RR.EventVar, 'Arch'));
+PeakPower_YFP = PeakPower_table_RR.PeakPower(strcmp(PeakPower_table_RR.EventVar, 'YFP'));
+
+% Find the length of the longest vector
+max_length = max(length(PeakPower_Arch), length(PeakPower_YFP));
+
+% Pad the shorter vector with NaNs
+if length(PeakPower_Arch) < max_length
+    PeakPower_Arch = [PeakPower_Arch; nan(max_length - length(PeakPower_Arch), 1)];
+elseif length(PeakPower_YFP) < max_length
+    PeakPower_YFP = [PeakPower_YFP; nan(max_length - length(PeakPower_YFP), 1)];
+end
+
+% Create a new table with two columns for 'Arch' and 'YFP', now padded with NaNs
+PeakPower_split_table_RR = table(PeakPower_Arch, PeakPower_YFP, 'VariableNames', {'PeakPower_Arch', 'PeakPower_YFP'});
+
+
+writetable(AUC_split_table_NE, 'NE_AUC_for_Graphpad.csv')
+writetable(AUC_split_table_RR, 'RR_AUC_for_Graphpad.csv')
+writetable(PeakFrequency_split_table_NE, 'NE_PeakFrequency_for_Graphpad.csv')
+writetable(PeakFrequency_split_table_RR, 'RR_PeakFrequency_for_Graphpad.csv')
+writetable(PeakPower_split_table_NE, 'NE_PeakPower_for_Graphpad.csv')
+writetable(PeakPower_split_table_RR, 'RR_PeakPower_for_Graphpad.csv')
+
+% Define the six datasets
+datasets = {AUC_split_table_NE, AUC_split_table_RR, ...
+            PeakFrequency_split_table_NE, PeakFrequency_split_table_RR, ...
+            PeakPower_split_table_NE, PeakPower_split_table_RR};
+
+% Titles for each subplot
+titles = {'AUC NE', 'AUC RR', 'Peak Frequency NE', 'Peak Frequency RR', 'Peak Power NE', 'Peak Power RR'};
+
+% Prepare figure
+figure;
+
+% Loop through each dataset and plot
+for i = 1:length(datasets)
+    % Extract current dataset
+    current_table = datasets{i};
+    
+    % Extract 'Arch' and 'YFP' data, ignoring NaNs
+    arch_data = current_table{:, 1};  % Arch data
+    yfp_data = current_table{:, 2};   % YFP data
+    
+    arch_data = arch_data(~isnan(arch_data));  % Remove NaNs
+    yfp_data = yfp_data(~isnan(yfp_data));    % Remove NaNs
+    
+    % Calculate means and SEM
+    mean_arch = mean(arch_data);
+    sem_arch = std(arch_data) / sqrt(length(arch_data));
+    
+    mean_yfp = mean(yfp_data);
+    sem_yfp = std(yfp_data) / sqrt(length(yfp_data));
+    
+    % Create subplot for this dataset
+    subplot(2, 3, i);
+    
+    % Bar plot
+    bar_data = [mean_arch, mean_yfp];
+    bar(bar_data);
+    
+    % Hold the current plot to add error bars
+    hold on;
+    
+    % Error bars
+    errorbar(1, mean_arch, sem_arch, 'k', 'linestyle', 'none');
+    errorbar(2, mean_yfp, sem_yfp, 'k', 'linestyle', 'none');
+    
+    % Set x-axis labels
+    set(gca, 'XTickLabel', {'Arch', 'YFP'});
+    
+    % Set title
+    title(titles{i});
+    
+    % Set y-axis label
+    ylabel('Mean Value');
+    
+    % Adjust axis for better readability
+    ylim([min([mean_arch - sem_arch, mean_yfp - sem_yfp]) - 0.1, ...
+          max([mean_arch + sem_arch, mean_yfp + sem_yfp]) + 0.1]);
+    
+    % Release hold on plot
+    hold off;
+end
+
+% Set figure title
+suptitle('Comparison of Arch and YFP across Datasets');
+
 
     %% Export peak frquency to graphpad format
 % Define the unique event options
 event_options = {'Arch_on', 'Arch_off', 'Yfp_on', 'Yfp_off'};
 
 % Initialize the combined table with PeakFrequency for NE and RR as the first columns
-combined_table_graphpad_peak = table(PeakFrequency_table.PeakFrequency_NE, PeakFrequency_table.PeakFrequency_RR, ...
+combined_table_graphpad_peak = table(PeakFrequency_table_NE.PeakFrequency, PeakFrequency_table_RR.PeakFrequency, ...
     'VariableNames', {'peakfre_NE', 'peakfre_RR'});
 
 % Loop over the event options for Peak Frequency NE
@@ -933,13 +1318,13 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    peakfre_NE_column = NaN(height(PeakFrequency_table), 1);
+    peakfre_NE_column = NaN(height(PeakFrequency_table_NE), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(PeakFrequency_table.EventVar, event);
+    indices = strcmp(PeakFrequency_table_NE.EventVar, event);
 
     % Assign the PeakFrequency values to the corresponding event option
-    peakfre_NE_column(indices) = PeakFrequency_table.PeakFrequency_NE(indices);
+    peakfre_NE_column(indices) = PeakFrequency_table_NE.PeakFrequency(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_peak = [combined_table_graphpad_peak, ...
@@ -951,13 +1336,13 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    peakfre_RR_column = NaN(height(PeakFrequency_table), 1);
+    peakfre_RR_column = NaN(height(PeakFrequency_table_RR), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(PeakFrequency_table.EventVar, event);
+    indices = strcmp(PeakFrequency_table_RR.EventVar, event);
 
     % Assign the PeakFrequency values to the corresponding event option
-    peakfre_RR_column(indices) = PeakFrequency_table.PeakFrequency_RR(indices);
+    peakfre_RR_column(indices) = PeakFrequency_table_RR.PeakFrequency(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_peak = [combined_table_graphpad_peak, ...
@@ -968,8 +1353,9 @@ end
  writetable(combined_table_graphpad_peak, 'peakfreq_NE_RR_PSD.csv');
 
 %% For AUC Table
+%% For AUC Table
 % Initialize the combined table with AUC for NE and RR as the first columns
-combined_table_graphpad_AUC = table(AUC_table.AUC_NE, AUC_table.AUC_RR, ...
+combined_table_graphpad_AUC = table(AUC_table_NE.AUC, AUC_table_RR.AUC, ...
     'VariableNames', {'AUC_NE', 'AUC_RR'});
 
 % Loop over the event options for AUC NE
@@ -977,13 +1363,13 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    AUC_NE_column = NaN(height(AUC_table), 1);
+    AUC_NE_column = NaN(height(AUC_table_NE), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(AUC_table.EventVar, event);
+    indices = strcmp(AUC_table_NE.EventVar, event);
 
     % Assign the AUC values to the corresponding event option
-    AUC_NE_column(indices) = AUC_table.AUC_NE(indices);
+    AUC_NE_column(indices) = AUC_table_NE.AUC(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_AUC = [combined_table_graphpad_AUC, ...
@@ -995,25 +1381,26 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    AUC_RR_column = NaN(height(AUC_table), 1);
+    AUC_RR_column = NaN(height(AUC_table_RR), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(AUC_table.EventVar, event);
+    indices = strcmp(AUC_table_RR.EventVar, event);
 
     % Assign the AUC values to the corresponding event option
-    AUC_RR_column(indices) = AUC_table.AUC_RR(indices);
+    AUC_RR_column(indices) = AUC_table_RR.AUC(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_AUC = [combined_table_graphpad_AUC, ...
         table(AUC_RR_column, 'VariableNames', {['AUC_RR_' event]})];
 end
 
+
 % Write the combined table to a CSV file
 writetable(combined_table_graphpad_AUC, 'AUC_NE_RR_PSD.csv');
 
 %% For Peak Power Table
 % Initialize the combined table with PeakPower for NE and RR as the first columns
-combined_table_graphpad_power = table(PeakPower_table.PeakPower_NE, PeakPower_table.PeakPower_RR, ...
+combined_table_graphpad_power = table(PeakPower_table_NE.PeakPower, PeakPower_table_RR.PeakPower, ...
     'VariableNames', {'PeakPower_NE', 'PeakPower_RR'});
 
 % Loop over the event options for Peak Power NE
@@ -1021,13 +1408,13 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    PeakPower_NE_column = NaN(height(PeakPower_table), 1);
+    PeakPower_NE_column = NaN(height(PeakPower_table_NE), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(PeakPower_table.EventVar, event);
+    indices = strcmp(PeakPower_table_NE.EventVar, event);
 
     % Assign the PeakPower values to the corresponding event option
-    PeakPower_NE_column(indices) = PeakPower_table.PeakPower_NE(indices);
+    PeakPower_NE_column(indices) = PeakPower_table_NE.PeakPower(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_power = [combined_table_graphpad_power, ...
@@ -1039,13 +1426,13 @@ for i = 1:length(event_options)
     event = event_options{i};
 
     % Initialize the column for the current event option with NaN
-    PeakPower_RR_column = NaN(height(PeakPower_table), 1);
+    PeakPower_RR_column = NaN(height(PeakPower_table_RR), 1);
 
     % Find the indices for the current event option
-    indices = strcmp(PeakPower_table.EventVar, event);
+    indices = strcmp(PeakPower_table_RR.EventVar, event);
 
     % Assign the PeakPower values to the corresponding event option
-    PeakPower_RR_column(indices) = PeakPower_table.PeakPower_RR(indices);
+    PeakPower_RR_column(indices) = PeakPower_table_RR.PeakPower(indices);
 
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_power = [combined_table_graphpad_power, ...
@@ -1054,6 +1441,7 @@ end
 
 % Write the combined table to a CSV file
 writetable(combined_table_graphpad_power, 'PeakPower_NE_RR_PSD.csv');
+
 
 %% HRB Generation
 suffixes = {'387', '403', '412', '414', '416', '408', '420'}; % Add more suffixes as needed

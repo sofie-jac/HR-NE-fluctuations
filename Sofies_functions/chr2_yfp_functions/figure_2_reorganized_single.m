@@ -38,6 +38,7 @@ function figure_2_reorganized_single(results, epoc_start, epoc_end, main_title, 
             % Determine the length of time vectors dynamically from data if available
             lenNE = length(results.(event_name).NE.mean);
             epoc_FPtime_NE = linspace(-epoc_start, epoc_end, lenNE);
+
             plot(epoc_FPtime_NE, results.(event_name).NE.mean, 'Color', colors{i}); % Event specific color
             legend_entries{end+1} = currentTitle; % Add current title to legend entries
         end
@@ -49,16 +50,16 @@ function figure_2_reorganized_single(results, epoc_start, epoc_end, main_title, 
         if isfield(results.(event_name), 'NE') && isfield(results.(event_name).NE, 'mean') && isfield(results.(event_name).NE, 'sem')
             lenNE = length(results.(event_name).NE.mean);
             epoc_FPtime_NE = linspace(-epoc_start, epoc_end, lenNE);
-
+            n_events = results.(event_name).NE.num_events;
             lineProps = {'Color', colors{i}, 'HandleVisibility', 'off'}; % Sets line color and width
             shadedErrorBar(epoc_FPtime_NE, results.(event_name).NE.mean, results.(event_name).NE.sem, lineProps, 1);
         end
     end
     plot([0 0], ylim, 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'LineStyle', '--');
     hold off;
-    n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), 'NE') && isfield(results.(event_var_names{i}).NE, 'num_events') && results.(event_var_names{i}).NE.num_events, 1:numEventVars);
-    n_events_str = format_num_events(n_events_all);
-    title(sprintf('NE (%s Events)', n_events_str));
+    % n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), 'NE') && isfield(results.(event_var_names{i}).NE, 'num_events') && results.(event_var_names{i}).NE.num_events, 1:numEventVars);
+    % n_events_str = format_num_events(n_events_all);
+    title(sprintf('NE (%d Events)', n_events));
     ylabel('Delta F/F');
     xlim([-epoc_start, epoc_end]);
     legend(legend_entries, 'Location', 'best');
@@ -85,7 +86,7 @@ function figure_2_reorganized_single(results, epoc_start, epoc_end, main_title, 
     hold off;
     n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), 'RR') && isfield(results.(event_var_names{i}).RR, 'num_events') && results.(event_var_names{i}).RR.num_events, 1:numEventVars);
     n_events_str = format_num_events(n_events_all);
-    title(sprintf('RR (%s Events)', n_events_str));
+    title(sprintf('RR (%d Events)', n_events));
     ylabel('RR Intervals (s)');
     xlim([-epoc_start, epoc_end]);
     grid on;
@@ -151,7 +152,7 @@ function figure_2_reorganized_single(results, epoc_start, epoc_end, main_title, 
         band_title = strrep(eeg_bands{k}, '_', ' '); % Replace underscores with spaces for titles
         n_events_all = arrayfun(@(i) isfield(results.(event_var_names{i}), eeg_bands{k}) && isfield(results.(event_var_names{i}).(eeg_bands{k}), 'num_events') && results.(event_var_names{i}).(eeg_bands{k}).num_events, 1:numEventVars);
         n_events_str = format_num_events(n_events_all);
-        title(sprintf('%s (%s Events)', band_title, n_events_str));
+        title(sprintf('%s (%d Events)', band_title, n_events));
         ylabel('Power');
         xlim([-epoc_start, epoc_end]);
         grid on;

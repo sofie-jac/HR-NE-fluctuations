@@ -11,7 +11,7 @@ pacman::p_load(knitr, optimx, MuMIn, tidyverse, emmeans, MASS, boot, robustlmm, 
 
 setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/AUC of Traces")
 
-set_emm_options(pbkrtest.limit = 5000, lmerTest.limit = 5000)
+#set_emm_options(pbkrtest.limit = 5000, lmerTest.limit = 5000)
 
 ```
 
@@ -507,13 +507,29 @@ bootstrap_pairwise_contrasts <- function(data, formula, group_var, subject_var, 
 
 # Define the block bootstrapping function
 bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject_var, R = 1000) {
-  # Fit the initial model
-  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  # Check if 'BoutLength' column exists in data
+  use_weights <- 'BoutLength' %in% names(data)
+  
+  # Fit the initial model with or without weights
+  if (use_weights) {
+    initial_model <- lmer(
+      formula,
+      data = data,
+      weights = BoutLength,
+      control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
+    )
+  } else {
+    initial_model <- lmer(
+      formula,
+      data = data,
+      control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
+    )
+  }
   
   # Check the number of estimates to be returned
-  emm <- emmeans(initial_model, ~ LaserLevel * GT)
+  emm <- emmeans(initial_model, ~ LaserLevel * group)
   contrast_within_laser <- contrast(emm, interaction = "pairwise", by = "LaserLevel")
-  contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT")
+  contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "group")
   n_estimates <- length(c(summary(contrast_within_laser)$estimate, summary(contrast_within_GT)$estimate))
   
   # Define the bootstrapping function
@@ -522,23 +538,44 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
     sampled_subjects <- unique_subjects[indices]
     d <- data[data[[subject_var]] %in% sampled_subjects, ]
     
-    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    # Fit the model with or without weights
+    if (use_weights) {
+      model <- try(
+        lmer(
+          formula,
+          data = d,
+          weights = BoutLength,
+          control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
+        ),
+        silent = TRUE
+      )
+    } else {
+      model <- try(
+        lmer(
+          formula,
+          data = d,
+          control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))
+        ),
+        silent = TRUE
+      )
+    }
+    
     if (inherits(model, "try-error")) {
       return(rep(NA, n_estimates))  # Return NA if model fails
     } else {
-      emm <- try(emmeans(model, ~ LaserLevel * GT), silent = TRUE)
+      emm <- try(emmeans(model, ~ LaserLevel * group), silent = TRUE)
       if (inherits(emm, "try-error")) {
         return(rep(NA, n_estimates))  # Return NA if emmeans fails
       }
       
-      # Perform pairwise comparisons within LaserLevel for each GT
+      # Perform pairwise comparisons within LaserLevel for each group
       contrast_within_laser <- try(contrast(emm, interaction = "pairwise", by = "LaserLevel"), silent = TRUE)
       if (inherits(contrast_within_laser, "try-error")) {
         return(rep(NA, n_estimates))  # Return NA if contrast fails
       }
       
-      # Perform pairwise comparisons within GT for each LaserLevel
-      contrast_within_GT <- try(contrast(emm, interaction = "pairwise", by = "GT"), silent = TRUE)
+      # Perform pairwise comparisons within group for each LaserLevel
+      contrast_within_GT <- try(contrast(emm, interaction = "pairwise", by = "group"), silent = TRUE)
       if (inherits(contrast_within_GT, "try-error")) {
         return(rep(NA, n_estimates))  # Return NA if contrast fails
       }
@@ -547,7 +584,10 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
       contrast_summary_within_GT <- summary(contrast_within_GT)
       
       # Combine estimates from both comparisons
-      combined_estimates <- c(contrast_summary_within_laser$estimate, contrast_summary_within_GT$estimate)
+      combined_estimates <- c(
+        contrast_summary_within_laser$estimate,
+        contrast_summary_within_GT$estimate
+      )
       
       # Ensure the length of combined_estimates matches n_estimates
       if (length(combined_estimates) != n_estimates) {
@@ -578,7 +618,13 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
   set.seed(123)
   subject_indices <- 1:length(unique(data[[subject_var]]))
   results <- tryCatch({
-    boot(data = data, statistic = boot_model_wrapper, R = R, strata = data[[subject_var]], sim = "ordinary")
+    boot(
+      data = data,
+      statistic = boot_model_wrapper,
+      R = R,
+      strata = data[[subject_var]],
+      sim = "ordinary"
+    )
   }, error = function(e) {
     cat("Bootstrap error: ", e$message, "\n")
     return(NULL)
@@ -589,7 +635,7 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
   }
   
   # Filter out NA results due to non-converging models
-  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))),]
+  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))), ]
   
   # Check the number of valid bootstrap samples
   cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
@@ -627,44 +673,49 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
 RR peak power
 
 ```{r}
-RR_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/combined_RR_peakPower_psd.csv")
+RR_peakPower_2min <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/combined_RR_peakPower_psd.csv")
+RR_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_RR_peakPower_psd.csv")
+RR_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/RR_psd_peak.csv")
+RR_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/w. bout duration/RR_psd_peak.csv")
 
   RR_peakPower <- RR_peakPower %>%
     mutate(Suffix = as.factor(Suffix),
            LaserLevel = as.factor(LaserLevel),
-           GT = as.factor(GT))
+           group = as.factor(group))
 
-m1_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel * GT + (1|Suffix), data = RR_peakPower, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m3_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel * GT + (LaserLevel|Suffix), data = RR_peakPower, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m2_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel + GT + (1|Suffix), data = RR_peakPower)
+m1_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel * group + (1|Suffix), data = RR_peakPower, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), , weights = BoutLength)
+m3_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel * group + (LaserLevel|Suffix), data = RR_peakPower, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_RR_peakPower <- lmer(formula = PeakPower ~  LaserLevel + group + (1|Suffix), data = RR_peakPower)
 
 anova(m1_RR_peakPower, m2_RR_peakPower) # M1
 
 check_lmm_assumptions(m1_RR_peakPower) #problems with everything
 
 # Calculate estimated marginal means
-emm <- emmeans(m1_RR_peakPower, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+emm <- emmeans(m1_RR_peakPower, ~ LaserLevel * group, pbkrtest.limit = 3737, lmerTest.limit = 3737)
 
-# Perform pairwise comparisons within each GT for all LaserLevels
-contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons within each group for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "group", adjust = "tukey")
 # Perform pairwise comparisons between the two levels of GT for each LaserLevel
 contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
 # Combine the results
 pairwise_comparisons_RR_peakPower <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
 
-pairwise_ci_RR_peakPower <- bootstrap_block_pairwise_contrasts(RR_peakPower, PeakPower ~ LaserLevel * GT + (1 | Suffix), "GT", "Suffix", R = 1000)
+pairwise_ci_RR_peakPower <- bootstrap_block_pairwise_contrasts(RR_peakPower, PeakPower ~ LaserLevel * group + (1 | Suffix), "group", "Suffix", R = 1000)
 # print(pairwise_ci)
 
 # Print pairwise comparisons
 print(pairwise_ci_RR_peakPower)
 print(pairwise_comparisons_RR_peakPower)
-print(summary(m1_RR_peakPower))  
+print(summary(m1_RR_peakPower))
 ```
 
 NE peak power
 
 ```{r}
 NE_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/combined_NE_peakPower_psd.csv")
+
+NE_peakPower <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_NE_peakPower_psd.csv")
 
   NE_peakPower <- NE_peakPower %>%
     mutate(Suffix = as.factor(Suffix),
@@ -702,31 +753,34 @@ RR peak freq
 
 ```{r}
 RR_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/combined_RR_peakfreq_psd.csv")
+RR_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_RR_peakfreq_psd.csv")
+RR_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/RR_psd_freq.csv")
+RR_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/w. bout duration/RR_psd_freq.csv")
 
   RR_peakfreq <- RR_peakfreq %>%
     mutate(Suffix = as.factor(Suffix),
            LaserLevel = as.factor(LaserLevel),
-           GT = as.factor(GT))
+           group = as.factor(group))
 
-m1_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel * GT + (1|Suffix), data = RR_peakfreq, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m3_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel * GT + (LaserLevel|Suffix), data = RR_peakfreq, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m2_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel + GT + (1|Suffix), data = RR_peakfreq)
+m1_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel * group + (1|Suffix), data = RR_peakfreq, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+m3_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel * group + (LaserLevel|Suffix), data = RR_peakfreq, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_RR_peakfreq <- lmer(formula = PeakFrequency ~  LaserLevel + group + (1|Suffix), data = RR_peakfreq)
 
 anova(m1_RR_peakfreq, m2_RR_peakfreq) # M1
 
-check_lmm_assumptions(m1_RR_peakfreq) #problems with everything
+check_lmm_assumptions(m1_RR_peakfreq) #problems with everything except herterosca
 
 # Calculate estimated marginal means
-emm <- emmeans(m1_RR_peakfreq, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+emm <- emmeans(m1_RR_peakfreq, ~ LaserLevel * group, pbkrtest.limit = 3737, lmerTest.limit = 3737)
 
-# Perform pairwise comparisons within each GT for all LaserLevels
-contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
-# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+# Perform pairwise comparisons within each group for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "group", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of group for each LaserLevel
 contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
 # Combine the results
 pairwise_comparisons_RR_peakfreq <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
 
-pairwise_ci_RR_peakfreq <- bootstrap_block_pairwise_contrasts(RR_peakfreq, PeakFrequency ~ LaserLevel * GT + (1 | Suffix), "GT", "Suffix", R = 1000)
+pairwise_ci_RR_peakfreq <- bootstrap_block_pairwise_contrasts(RR_peakfreq, PeakFrequency ~ LaserLevel * group + (1 | Suffix), "GT", "Suffix", R = 1000)
 # print(pairwise_ci)
 
 # Print pairwise comparisons
@@ -739,6 +793,7 @@ NE peak freq
 
 ```{r}
 NE_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/combined_NE_peakfreq_psd.csv")
+NE_peakfreq <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_NE_peakfreq_psd.csv")
 
   NE_peakfreq <- NE_peakfreq %>%
     mutate(Suffix = as.factor(Suffix),
@@ -777,25 +832,34 @@ print(summary(m1_NE_peakfreq))
 RR PSD AUC
 
 ```{r}
-m1_RR_PSD_AUC <- lmer(formula = AUC_RR ~  LaserLevel * GT + (1|Suffix), data = PSD_AUC, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m3_RR_PSD_AUC <- lmer(formula = AUC_RR ~  LaserLevel * GT + (LaserLevel|Suffix), data = PSD_AUC, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m2_RR_PSD_AUC <- lmer(formula = AUC_RR ~  LaserLevel + GT + (1|Suffix), data = PSD_AUC)
+PSD_AUC_RR <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_RR_AUC_psd.csv")
+PSD_AUC_RR <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/RR_psd_AUC.csv")
+PSD_AUC_RR <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_3/w. bout duration/RR_psd_AUC.csv")
+
+  PSD_AUC_RR <- PSD_AUC_RR %>%
+    mutate(Suffix = as.factor(Suffix),
+           LaserLevel = as.factor(LaserLevel),
+           group = as.factor(group))
+
+m1_RR_PSD_AUC <- lmer(formula = AUC ~  LaserLevel * group + (1|Suffix), data = PSD_AUC_RR, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+m3_RR_PSD_AUC <- lmer(formula = AUC ~  LaserLevel * group + (LaserLevel|Suffix), data = PSD_AUC_RR, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+m2_RR_PSD_AUC <- lmer(formula = AUC ~  LaserLevel + group + (1|Suffix), data = PSD_AUC_RR, weights = BoutLength)
 
 anova(m1_RR_PSD_AUC, m2_RR_PSD_AUC) # M1
 
 check_lmm_assumptions(m1_RR_PSD_AUC) #problems with everything
 
 # Calculate estimated marginal means
-emm <- emmeans(m1_RR_PSD_AUC, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+emm <- emmeans(m1_RR_PSD_AUC, ~ LaserLevel * group, pbkrtest.limit = 3737, lmerTest.limit = 3737)
 
-# Perform pairwise comparisons within each GT for all LaserLevels
-contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
-# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+# Perform pairwise comparisons within each group for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "group", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of group for each LaserLevel
 contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
 # Combine the results
 pairwise_comparisons_RR_PSD_AUC <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
 
-pairwise_ci_RR_PSD_AUC <- bootstrap_block_pairwise_contrasts(PSD_AUC, AUC_RR ~ LaserLevel * GT + (1 | Suffix), "GT", "Suffix", R = 1000)
+pairwise_ci_RR_PSD_AUC <- bootstrap_block_pairwise_contrasts(PSD_AUC_RR, AUC ~ LaserLevel * group + (1 | Suffix), "group", "Suffix", R = 1000)
 # print(pairwise_ci)
 
 # Print pairwise comparisons
@@ -815,12 +879,19 @@ chr2_PSD_AUC <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MA
 
 PSD_AUC <- process_and_combine(chr2_PSD_AUC, yfp_PSD_AUC)
 
+PSD_AUC_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/PSD_round_2/combined_NE_AUC_psd.csv")
 
-m1_NE_PSD_AUC <- lmer(formula = AUC_NE ~  LaserLevel * GT + (1|Suffix), data = PSD_AUC, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m3_NE_PSD_AUC <- lmer(formula = AUC_NE ~  LaserLevel * GT + (LaserLevel|Suffix), data = PSD_AUC, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
-m2_NE_PSD_AUC <- lmer(formula = AUC_NE ~  LaserLevel + GT + (1|Suffix), data = PSD_AUC)
+  PSD_AUC_NE <- PSD_AUC_NE %>%
+    mutate(Suffix = as.factor(Suffix),
+           LaserLevel = as.factor(LaserLevel),
+           GT = as.factor(GT))
 
-anova(m1_NE_PSD_AUC, m3_NE_PSD_AUC) # M1
+
+m1_NE_PSD_AUC <- lmer(formula = AUC ~  LaserLevel * GT + (1|Suffix), data = PSD_AUC_NE, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_NE_PSD_AUC <- lmer(formula = AUC ~  LaserLevel * GT + (LaserLevel|Suffix), data = PSD_AUC_NE, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_NE_PSD_AUC <- lmer(formula = AUC ~  LaserLevel + GT + (1|Suffix), data = PSD_AUC_NE)
+
+anova(m1_NE_PSD_AUC, m2_NE_PSD_AUC) # M1
 
 check_lmm_assumptions(m1_NE_PSD_AUC) #problems with everything
 
@@ -834,7 +905,7 @@ contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel"
 # Combine the results
 pairwise_comparisons_NE_PSD_AUC <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
 
-pairwise_ci_NE_PSD_AUC <- bootstrap_block_pairwise_contrasts(PSD_AUC, AUC_NE ~ LaserLevel * GT + (1 | Suffix), "GT", "Suffix", R = 1000)
+pairwise_ci_NE_PSD_AUC <- bootstrap_block_pairwise_contrasts(PSD_AUC_NE, AUC ~ LaserLevel * GT + (1 | Suffix), "GT", "Suffix", R = 1000)
 # print(pairwise_ci)
 
 # Print pairwise comparisons
@@ -842,6 +913,13 @@ print(pairwise_ci_NE_PSD_AUC)
 print(pairwise_comparisons_NE_PSD_AUC)
 print(summary(m1_NE_PSD_AUC))
 ```
+
+
+
+
+
+
+
 
 RR AUC prepost
 ```{r}
@@ -1147,6 +1225,9 @@ r.squaredGLMM(m_h1)
 print(ci_NE_AUC)
 pearson(m_h1, AUC_prepost$RR)
 ```
+
+
+
 ```{r}
 RR_AUC_prepost_chr2_filtered <- RR_AUC_prepost_chr2 %>%
   filter(is.na(RR_LaserLevel_4) & is.na(RR_LaserLevel_5))
@@ -1196,3 +1277,306 @@ print(ci_NE_AUC_simple)
 pearson(m_h1, AUC_prepost$RR)
 ```
 
+
+
+
+
+
+
+
+
+SUPLEMENTARY
+Delta
+```{r}
+
+Delta_yfp <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Delta_yfp_combined_both_table.csv')
+Delta_chr2 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Delta_chr2_combined_both_table.csv")
+
+Delta <- reshape_and_combine(Delta_chr2, Delta_yfp)
+
+m1_Delta_AUC_prepost <- lmer(formula = data ~  LaserLevel * GT + (1|SubjectID), data = Delta, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_Delta_AUC_prepost <- lmer(formula = data ~  LaserLevel + GT + (1|SubjectID), data = Delta)
+
+anova(m1_Delta_AUC_prepost, m2_Delta_AUC_prepost) # M1
+
+check_lmm_assumptions(m1_Delta_AUC_prepost) #Normality slightly off
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_Delta_AUC_prepost, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
+# Combine the results
+pairwise_comparisons <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_Delta_AUC_prepost <- bootstrap_pairwise_contrasts(Delta, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_Delta_AUC_prepost)
+print(pairwise_comparisons)
+print(summary(m1_Delta_AUC_prepost))
+
+means_data <- aggregate(data ~ LaserLevel + GT, data = Delta, FUN = mean)
+print(means_data)
+# Create the plot
+p <- ggplot(summary_data, aes(x = LaserLevel, y = mean_value, color = GT, group = GT)) +
+  geom_point(position = position_dodge(width = 0.2), size = 3) +
+  geom_line(position = position_dodge(width = 0.2), size = 1) +
+  labs(title = "Mean by Laser Level and GT",
+       x = "Laser Level",
+       y = "Mean Value",
+       color = "GT") +
+  theme_minimal()
+
+
+# Create the plot
+p <- ggplot(summary_data, aes(x = LaserLevel, y = mean_value, color = GT, group = GT)) +
+  geom_point(position = position_dodge(width = 0.2), size = 3) +
+  geom_errorbar(aes(ymin = mean_value - SEM, ymax = mean_value + SEM), 
+                width = 0.2, position = position_dodge(width = 0.2)) +
+  geom_line(position = position_dodge(width = 0.2), size = 1) +
+  labs(title = "Mean and SEM by Laser Level and GT",
+       x = "Laser Level",
+       y = "Mean Value",
+       color = "GT") +
+  theme_minimal()
+
+# Print the plot
+print(p)
+```
+Theta
+
+```{r}
+
+Theta_yfp <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Theta_yfp_combined_both_table.csv')
+Theta_chr2 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Theta_chr2_combined_both_table.csv")
+
+Theta <- reshape_and_combine(Theta_chr2, Theta_yfp)
+
+m1_Theta_AUC_prepost <- lmer(formula = data ~  LaserLevel * GT + (1|SubjectID), data = Theta, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_Theta_AUC_prepost <- lmer(formula = data ~  LaserLevel + GT + (1|SubjectID), data = Theta)
+
+anova(m1_Theta_AUC_prepost, m2_Theta_AUC_prepost) # M1
+
+check_lmm_assumptions(m1_Theta_AUC_prepost) #heteroscacedicity
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_Theta_AUC_prepost, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
+# Combine the results
+pairwise_comparisons <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_Theta_AUC_prepost <- bootstrap_pairwise_contrasts(Theta, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_Theta_AUC_prepost)
+print(pairwise_comparisons)
+print(summary(m1_Theta_AUC_prepost))
+```
+
+
+Sigma
+
+
+```{r}
+
+Sigma_yfp <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Sigma_yfp_combined_both_table.csv')
+Sigma_chr2 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Sigma_chr2_combined_both_table.csv")
+
+Sigma <- reshape_and_combine(Sigma_chr2, Sigma_yfp)
+
+m1_Sigma_AUC_prepost <- lmer(formula = data ~  LaserLevel * GT + (1|SubjectID), data = Sigma, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_Sigma_AUC_prepost <- lmer(formula = data ~  LaserLevel + GT + (1|SubjectID), data = Sigma)
+
+anova(m1_Sigma_AUC_prepost, m2_Sigma_AUC_prepost) # M1
+
+check_lmm_assumptions(m1_Sigma_AUC_prepost) #heteroscacedicity
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_Sigma_AUC_prepost, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
+# Combine the results
+pairwise_comparisons <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_Sigma_AUC_prepost <- bootstrap_pairwise_contrasts(Sigma, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_Sigma_AUC_prepost)
+print(pairwise_comparisons)
+print(summary(m1_Sigma_AUC_prepost))
+
+
+```
+
+
+Beta
+SUPLEMENTARY
+
+```{r}
+
+Beta_yfp <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Beta_yfp_combined_both_table.csv')
+Beta_chr2 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Beta_chr2_combined_both_table.csv")
+
+Beta <- reshape_and_combine(Beta_chr2, Beta_yfp)
+
+m1_Beta_AUC_prepost <- lmer(formula = data ~  LaserLevel * GT + (1|SubjectID), data = Beta, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_Beta_AUC_prepost <- lmer(formula = data ~  LaserLevel + GT + (1|SubjectID), data = Beta)
+
+anova(m1_Beta_AUC_prepost, m2_Beta_AUC_prepost) # M1
+
+check_lmm_assumptions(m1_Beta_AUC_prepost) #heteroscacedicity
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_Beta_AUC_prepost, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
+# Combine the results
+pairwise_comparisons <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_Beta_AUC_prepost <- bootstrap_pairwise_contrasts(Beta, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_Beta_AUC_prepost)
+print(pairwise_comparisons)
+print(summary(m1_Beta_AUC_prepost))
+```
+
+Gamma
+SUPLEMENTARY
+
+```{r}
+
+Gamma_high_yfp <- read_csv('C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Gamma_high_yfp_combined_both_table.csv')
+Gamma_high_chr2 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/yfp data/AUC recalculated/Gamma_high_chr2_combined_both_table.csv")
+
+Gamma_high <- reshape_and_combine(Gamma_high_chr2, Gamma_high_yfp)
+
+m1_Gamma_high_AUC_prepost <- lmer(formula = data ~  LaserLevel * GT + (1|SubjectID), data = Gamma_high, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_Gamma_high_AUC_prepost <- lmer(formula = data ~  LaserLevel + GT + (1|SubjectID), data = Gamma_high)
+
+anova(m1_Gamma_high_AUC_prepost, m2_Gamma_high_AUC_prepost) # M1
+
+check_lmm_assumptions(m1_Gamma_high_AUC_prepost) #slight normality
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_Gamma_high_AUC_prepost, ~ LaserLevel * GT, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel", adjust = "tukey")
+# Combine the results
+pairwise_comparisons <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_Gamma_high_AUC_prepost <- bootstrap_pairwise_contrasts(Gamma_high, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_Gamma_high_AUC_prepost)
+print(pairwise_comparisons)
+print(summary(m1_Gamma_high_AUC_prepost))
+```
+
+SUPLEMENTARY YFP (ChR2 figure)
+RR AUC vs NE AUC
+```{r}
+# Combine the columns directly
+AUC_prepost_yfp <- cbind(NE_AUC_prepost_yfp %>% select(SubjectID, NE), RR_AUC_prepost_yfp %>% select(RR))
+
+# Remove duplicate SubjectID column if it exists
+AUC_prepost_yfp <- AUC_prepost_yfp[, !duplicated(colnames(AUC_prepost_yfp))]
+
+m_h1 <- lmer(formula = RR ~  NE + (1|SubjectID), data = AUC_prepost_yfp)
+m_h2 <- lmer(formula = RR ~  NE + (NE|SubjectID), data = AUC_prepost_yfp, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1, m_h2) # M1 better
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1)
+
+# Example initialization with a continuous predictor
+ci_NE_AUC <- perform_bootstrap_pearson_correlation(AUC_prepost_yfp, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1)
+r.squaredGLMM(m_h1)
+print(ci_NE_AUC)
+pearson(m_h1, AUC_prepost_yfp$RR)
+```
+
+
+
+```{r}
+RR_AUC_prepost_yfp_filtered <- RR_AUC_prepost_yfp %>%
+  filter(is.na(RR_LaserLevel_4) & is.na(RR_LaserLevel_5))
+
+# Filter out rows where NE_LaserLevel_4 or NE_LaserLevel_5 are not NA
+NE_AUC_prepost_yfp_filtered <- NE_AUC_prepost_yfp %>%
+  filter(is.na(NE_LaserLevel_4) & is.na(NE_LaserLevel_5))
+
+# Ensure both dataframes have the same length
+min_length <- min(nrow(RR_AUC_prepost_yfp_filtered), nrow(NE_AUC_prepost_yfp_filtered))
+RR_AUC_prepost_yfp_filtered <- RR_AUC_prepost_yfp_filtered[1:min_length, ]
+NE_AUC_prepost_yfp_filtered <- NE_AUC_prepost_yfp_filtered[1:min_length, ]
+
+# Combine the columns directly
+AUC_prepost <- cbind(NE_AUC_prepost_yfp_filtered %>% select(SubjectID, NE), 
+                     RR_AUC_prepost_yfp_filtered %>% select(RR))
+
+# Remove duplicate SubjectID column if it exists
+AUC_prepost <- AUC_prepost[, !duplicated(colnames(AUC_prepost))]
+
+m_h1 <- lmer(formula = RR ~  NE + (1|SubjectID), data = AUC_prepost)
+m_h2 <- lmer(formula = RR ~  NE + (NE|SubjectID), data = AUC_prepost, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1, m_h2) # M1 better
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1)
+
+# Transformations
+# df$RR_log <- log(df$RR + 1)  # Adding 1 to avoid log(0)
+# df$RR_sqrt <- sqrt(df$RR)
+# df$RR_inv <- 1 / (df$RR + 1)
+# # Fit Models with Transformations
+# m_h1_transformed <- lmer(formula = RR_log ~ Delta + (Delta|SubjectID), data = df)
+# m_sqrt <- lmer(RR_sqrt ~ Delta + (Delta|SubjectID), data = df)
+# m_inv <- lmer(RR_inv ~ Delta + (Delta|SubjectID), data = df)
+# 
+# # Check Assumptions for all transformations
+# check_lmm_assumptions(m_inv)
+
+# Example initialization with a continuous predictor
+ci_NE_AUC_simple <- perform_bootstrap_pearson_correlation(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1)
+r.squaredGLMM(m_h1)
+print(ci_NE_AUC_simple)
+pearson(m_h1, AUC_prepost$RR)
+```

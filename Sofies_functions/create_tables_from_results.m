@@ -1,4 +1,4 @@
-function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results)
+function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high, table_x_corr] = create_tables_from_results(results)
     % Function to subtract the mean value of the trace from -40 to -30 seconds
     function aligned_data = subtract_baseline(data, time_vector)
         baseline_indices = time_vector >= -40 & time_vector <= -30;
@@ -24,6 +24,7 @@ function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, t
     table_Beta = table();
     table_Gamma_low = table();
     table_Gamma_high = table();
+    table_x_corr = table();
     
     event_var_names = fieldnames(results);
 
@@ -75,6 +76,24 @@ function [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, t
                 'NewVariableNames', {sprintf('%s_mean', event_name), sprintf('%s_sem', event_name)});
         end
     end
+
+        % Process RR data
+    for i = 1:length(event_var_names)
+        event_name = event_var_names{i};
+
+        if isfield(results.(event_name), 'x_corr')
+            lenx_corr = length(results.(event_name).x_corr.mean);
+            epoc_FPtime_x_corr = linspace(plot_start, plot_end, lenx_corr)';
+           % aligned_mean_x_corr = subtract_baseline(results.(event_name).x_corr.mean, epoc_FPtime_x_corr)';
+
+            if isempty(table_x_corr)
+                table_x_corr.Time = epoc_FPtime_x_corr;
+            end
+            table_x_corr = addvars(table_x_corr, results.(event_name).x_corr.mean', results.(event_name).x_corr.sem', ...
+                'NewVariableNames', {sprintf('%s_mean', event_name), sprintf('%s_sem', event_name)});
+        end
+    end
+
 
     % Process EEG bands data
     for k = 1:length(eeg_bands)

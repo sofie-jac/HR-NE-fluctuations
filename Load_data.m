@@ -32,11 +32,11 @@ clear workspaceVars varName shouldClear k i suffixes onset_FP REM_onset Rpeaks R
 
 %% Load files with certain suffixes
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\Burst_periods';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Traces';
 
 % List of 3-digit elements to look for in file names
 % suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
-suffixes = {'522'};
+% suffixes = {'408', '420', '484', '468', '015' '079', '089', '387', '403', '412', '414', '416', '013', '019'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '*', '*.mat'));  % '**' enables recursive search in subfolders
@@ -84,7 +84,7 @@ clear matFiles filePath folderPath varNames varData data k shouldLoad i suffixes
 
 %% Load all
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data_HRB\amplitudes';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\RR_updated';
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders

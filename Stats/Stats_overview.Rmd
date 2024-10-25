@@ -800,3 +800,54 @@ pairwise_ci <- boot_ci(valid_results)
 print(pairwise_ci)
 ```
 
+RR/NE PSD peak frequency
+```{r}
+peakfreq_RR <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/psd_peakfreq_VLF_for_NE.csv")
+peakfreq_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/psd_peakfreq_NE.csv")
+
+#New version of the data with bout lenght
+peakfreq_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_NE.csv")
+peakfreq_RR <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_VLF_for_NE.csv")
+
+peakfreq_RR$Suffix <- as.factor(peakfreq_RR$Suffix)
+peakfreq_NE$Suffix <- as.factor(peakfreq_NE$Suffix)
+peakfreq_RR <- peakfreq_RR[-1, ]
+
+suffix_counts <- table(peakfreq_NE$Suffix)
+
+
+# Rename the 'PeakFrequency' columns to distinguish them
+peakfreq_RR <- dplyr::rename(peakfreq_RR, PeakFrequency_RR = PeakFrequency)
+peakfreq_NE <- dplyr::rename(peakfreq_NE, PeakFrequency_NE = PeakFrequency)
+
+# Sort both dataframes by the 'Suffix' column
+peakfreq_RR <- peakfreq_RR %>% arrange(Suffix)
+peakfreq_NE <- peakfreq_NE %>% arrange(Suffix)
+
+# Add the RR PeakFrequency column to the NE dataframe
+# Ensure the dataframes have the same number of rows after sorting
+peakfreq <- cbind(peakfreq_NE, PeakFrequency_RR = peakfreq_RR$PeakFrequency_RR)
+
+# Convert the combined dataframe to long format using pivot_longer from the tidyr package
+peakfreq_long <- pivot_longer(
+  peakfreq,
+  cols = c("PeakFrequency_NE", "PeakFrequency_RR"),
+  names_to = "data_type",
+  values_to = "data"
+)
+
+peakfreq_long$data_type <- as.factor(peakfreq_long$data_type)
+
+
+m1_freq <- lmer(formula = data ~ data_type + (1|Suffix), data = peakfreq_long, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_freq) #Normality + heteroscat
+
+pairwise_ci_freq <- bootstrap_difference_estimate(peakfreq_long, data ~ data_type + (1|Suffix), "data_type", "1|Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_freq)
+print(summary(m1_freq))
+```
+

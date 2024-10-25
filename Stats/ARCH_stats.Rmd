@@ -1,0 +1,1643 @@
+---
+title: "arch_stats"
+author: "SJ"
+date: "2024-08-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(pacman)
+pacman::p_load(knitr, optimx, MuMIn, tidyverse, emmeans, MASS, boot, robustlmm, dplyr, lmtest, fitdistrplus, car, ggpubr, ggplot2, ggthemes, plyr, lme4, RColorBrewer, reshape2, afex, emmeans, psych, lmerTest, compare, rstatix, ggExtra, gridExtra, ggeffects, modelr, boot, stats, dbplyr,broom.mixed)
+
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/Graphpad")
+#set_emm_options(pbkrtest.limit = 5000, lmerTest.limit = 5000)
+
+```
+
+
+
+```{r pressure, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Function to check assumptions of linear mixed effects model
+# Define the data processing function
+
+check_lmm_assumptions <- function(model) {
+  # Linearity
+  print("Checking linearity...")
+  plot(model)
+  
+  # Normality of residuals
+  print("Checking normality of residuals...")
+  residuals <- resid(model)
+  
+  # Debugging: Simple histogram of residuals
+  hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue", border = "black")
+  
+  # Create histogram with density fits
+  hist_data <- data.frame(residuals = residuals)
+  ggplot(hist_data, aes(x = residuals)) +
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", alpha = 0.5) +
+    stat_function(fun = dnorm, args = list(mean = mean(hist_data$residuals), sd = sd(hist_data$residuals)), color = "red", linewidth = 1) +
+    stat_function(fun = function(x) dgamma(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "green", linewidth = 1) +
+    stat_function(fun = function(x) dweibull(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "purple", linewidth = 1) +
+    stat_function(fun = function(x) dunif(x, min = min(hist_data$residuals), max = max(hist_data$residuals)), color = "orange", linewidth = 1) +
+    ggtitle("Histogram of Residuals with Distribution Fits") +
+    theme_minimal()
+  
+  # Homoscedasticity
+  print("Checking homoscedasticity...")
+  fitted_values <- fitted(model)
+  plot(fitted_values, residuals, main = "Residuals vs Fitted Values")
+  abline(h = 0, col = "red")
+  
+  # Breusch-Pagan Test for homoscedasticity
+  bptest_result <- bptest(residuals ~ fitted_values)
+  print(bptest_result)
+  
+  # Independence
+  print("Checking independence of residuals...")
+  acf(residuals, main = "ACF of residuals")
+  
+  # Random effects
+  print("Checking random effects...")
+  ranef_model <- ranef(model, condVar = TRUE)
+  qqnorm(unlist(ranef_model$SubjectID))
+  qqline(unlist(ranef_model$SubjectID))
+  
+  print("Assumptions check completed.")
+}
+
+perform_bootstrap_pairwise <- function(data, formula, group_var, subject_var, R = 1000) {
+  # Fit the initial model
+  initial_model <- lmer(formula, data = data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(rep(NA, choose(length(levels(data[[group_var]])), 2)))  # Return NA if model fails
+    } else {
+      emm <- emmeans(model, as.formula(paste("~", group_var)))
+      contrast <- pairs(emm)
+      contrast_summary <- summary(contrast)
+      print(contrast_summary)  # Print to verify the order of comparisons
+      return(contrast_summary$estimate)  # Return pairwise differences
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- boot(data = data, statistic = boot_model, R = R)
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))),]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- nrow(valid_results)
+  
+  # Calculate bootstrap confidence intervals for pairwise comparisons
+  boot_ci <- function(estimates) {
+    apply(estimates, 2, function(col) {
+      quantile(col, c(0.025, 0.975))
+    })
+  }
+  
+  pairwise_ci <- boot_ci(valid_results)
+  
+  # Return the bootstrap confidence intervals for pairwise comparisons
+  return(pairwise_ci)
+}
+
+perform_bootstrap_fixed_effects_correlation <- function(data, formula, subject_var, R = 1000) {
+  # Fit the initial model with a specified optimizer
+  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if model fails
+    } else {
+      cor_matrix <- vcov(model) / (sqrt(diag(vcov(model))) %*% t(sqrt(diag(vcov(model)))))
+      cor_fixed_effects <- cor_matrix["(Intercept)", "NE"]
+      return(cor_fixed_effects)  # Return the correlation of fixed effects
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- boot(data = data, statistic = boot_model, R = R)
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the correlation of fixed effects
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+
+perform_bootstrap_fixed_effects_NAs <- function(data, formula, subject_var, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Debug: Check data after NA removal
+  print(paste("Data rows after NA removal:", nrow(data)))
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    # Debug: Check the sampled data
+    print(paste("Sampled data rows:", nrow(d)))
+    
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(NA)  # Return NA if model fails
+    } else {
+      cor_matrix <- tryCatch({
+        vcov_matrix <- vcov(model)
+        cor_matrix <- vcov_matrix / (sqrt(diag(vcov_matrix)) %*% t(sqrt(diag(vcov_matrix))))
+        cor_matrix
+      }, error = function(e) {
+        # Debug: Print error message
+        print(paste("Error in calculating correlation matrix:", e$message))
+        return(NULL)
+      })
+      
+      if (is.null(cor_matrix)) {
+        return(NA)  # Return NA if correlation matrix calculation fails
+      }
+      
+      # Debug: Check the correlation matrix
+      print(cor_matrix)
+      
+      cor_fixed_effects <- tryCatch({
+        cor_fixed_effects <- cor_matrix["(Intercept)", "Sigma"]
+        cor_fixed_effects
+      }, error = function(e) {
+        # Debug: Print error message
+        print(paste("Error in accessing correlation matrix elements:", e$message))
+        return(NA)
+      })
+      
+      return(cor_fixed_effects)  # Return the correlation of fixed effects
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the correlation of fixed effects
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+library(lme4)
+library(boot)
+
+perform_bootstrap_pearson_correlation <- function(data, formula, subject_var, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(NA)  # Return NA if model fails
+    } else {
+      fitted_values <- fitted(model)
+      observed_values <- d$RR  # Assuming RR is the response variable
+      if (length(fitted_values) != length(observed_values)) {
+        return(NA)  # Return NA if lengths do not match
+      }
+      correlation <- cor(observed_values, fitted_values)
+      return(correlation)  # Return the Pearson correlation coefficient
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the Pearson correlation coefficient
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+
+pearson <- function(model, y) { 
+  # Extract fitted values from the model
+fitted_values <- fitted(model)
+
+# Get the indices of the non-NA values used in the model
+used_indices <- as.numeric(names(fitted_values))
+
+# Extract the corresponding observed values
+observed_values <- y[used_indices]
+
+# Calculate Pearson correlation between observed and fitted values
+correlation <- cor(observed_values, fitted_values)
+print(correlation)
+}
+
+reshape_and_combine <- function(df_chr2, df_yfp) {
+  library(dplyr)
+  library(tidyr)
+  
+  process_dataframe <- function(df, gt_value) {
+    # Identify columns with 'LaserLevel_' in the name
+    laser_cols <- grep("LaserLevel_", colnames(df), value = TRUE)
+    
+    # Rename columns by removing anything prior to 'LaserLevel'
+    new_names <- gsub("^.*?(LaserLevel_\\d+)$", "\\1", laser_cols)
+    colnames(df)[match(laser_cols, colnames(df))] <- new_names
+    
+    # Convert to long format and handle NaNs
+    df_long <- df %>%
+      pivot_longer(cols = starts_with("LaserLevel_"), 
+                   names_to = "LaserLevel", 
+                   values_to = "data") %>%
+      filter(!is.na(data)) %>%
+      mutate(data = as.numeric(data), 
+             LaserLevel = as.factor(LaserLevel))
+    
+    # Convert 'SubjectID' to factor if it exists
+    if ("SubjectID" %in% colnames(df_long)) {
+      df_long <- df_long %>%
+        mutate(SubjectID = as.factor(SubjectID))
+    }
+    
+    # Add 'GT' column
+    df_long <- df_long %>%
+      mutate(GT = as.factor(gt_value))
+    
+    return(df_long)
+  }
+  
+  # Process each dataframe
+  df_chr2_long <- process_dataframe(df_chr2, "chr2")
+  df_yfp_long <- process_dataframe(df_yfp, "yfp")
+  
+  # Combine the dataframes
+  combined_df <- bind_rows(df_chr2_long, df_yfp_long) %>%
+    select(SubjectID, GT, data, LaserLevel)
+  
+  return(combined_df)
+}
+
+# Example usage
+# combined_df <- reshape_and_combine(NE_AUC_pre_chr2, NE_AUC_pre_yfp)
+  preprocess_dataframe <- function(df) {
+    # Identify columns with 'LaserLevel_' in the name
+    laser_cols <- grep("LaserLevel_", colnames(df), value = TRUE)
+    
+    # Rename columns by removing anything prior to 'LaserLevel'
+    new_names <- gsub("^.*?(LaserLevel_\\d+)$", "\\1", laser_cols)
+    colnames(df)[match(laser_cols, colnames(df))] <- new_names
+    
+    # Convert to long format and handle NaNs
+    df_long <- df %>%
+      pivot_longer(cols = starts_with("LaserLevel_"), 
+                   names_to = "LaserLevel", 
+                   values_to = "data") %>%
+      filter(!is.na(data)) %>%
+      mutate(data = as.numeric(data), 
+             LaserLevel = as.factor(LaserLevel))
+    
+    # Convert 'SubjectID' to factor if it exists
+    if ("SubjectID" %in% colnames(df_long)) {
+      df_long <- df_long %>%
+        mutate(SubjectID = as.factor(SubjectID))
+    }
+    
+    return(df_long)
+  }
+  
+  
+  library(lme4)
+library(emmeans)
+library(boot)
+
+library(lme4)
+library(emmeans)
+library(boot)
+
+bootstrap_pairwise_contrasts <- function(data, formula, group_var, subject_var, R = 1000) {
+  # Fit the initial model
+  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(rep(NA, 2 * length(levels(d[[group_var]])) - 2))  # Return NA if model fails
+    } else {
+      emm <- emmeans(model, as.formula(paste("~", group_var)))
+      
+      # Perform pairwise comparisons within each GT for all LaserLevels
+      contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT")
+      
+      # Perform pairwise comparisons between the two levels of GT for each LaserLevel
+      contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "LaserLevel")
+      
+      # Combine the results
+      contrast_summary_within_GT <- summary(contrast_within_GT)
+      contrast_summary_between_GT <- summary(contrast_between_GT)
+      
+      # Combine estimates from both comparisons
+      combined_estimates <- c(contrast_summary_within_GT$estimate, contrast_summary_between_GT$estimate)
+      
+      # Print the first successful iteration's results
+      if (!exists("printed_first")) {
+        print(combined_estimates)
+        assign("printed_first", TRUE, envir = .GlobalEnv)
+      }
+      
+      return(combined_estimates)
+    }
+  }
+  
+  # Counter to track the number of iterations
+  counter <- 0
+  
+  # Wrapper function to increment the counter
+  boot_model_wrapper <- function(data, indices) {
+    counter <<- counter + 1
+    cat("Iteration:", counter, "\n")
+    boot_model(data, indices)
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- boot(data = data, statistic = boot_model_wrapper, R = R)
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))),]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- nrow(valid_results)
+  
+  # Calculate bootstrap confidence intervals for pairwise comparisons
+  boot_ci <- function(estimates) {
+    apply(estimates, 2, function(col) {
+      quantile(col, c(0.025, 0.975))
+    })
+  }
+  
+  pairwise_ci <- boot_ci(valid_results)
+  
+  # Remove the printed_first variable from the global environment
+  if (exists("printed_first", envir = .GlobalEnv)) {
+    rm("printed_first", envir = .GlobalEnv)
+  }
+  
+  # Return the bootstrap confidence intervals for pairwise comparisons
+  return(pairwise_ci)
+}
+
+# Example usage
+# pairwise_ci <- bootstrap_pairwise_contrasts(NE_AUC_pre, data ~ LaserLevel * GT + (1|SubjectID), "LaserLevel * GT", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Define the block bootstrapping function
+bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject_var, R = 1000) {
+  # Fit the initial model
+  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  
+  # Check the number of estimates to be returned
+  emm <- emmeans(initial_model, ~ LaserLevel * GT)
+  contrast_within_laser <- contrast(emm, interaction = "pairwise", by = "LaserLevel")
+  contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "GT")
+  n_estimates <- length(c(summary(contrast_within_laser)$estimate, summary(contrast_within_GT)$estimate))
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    unique_subjects <- unique(data[[subject_var]])
+    sampled_subjects <- unique_subjects[indices]
+    d <- data[data[[subject_var]] %in% sampled_subjects, ]
+    
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(rep(NA, n_estimates))  # Return NA if model fails
+    } else {
+      emm <- try(emmeans(model, ~ LaserLevel * GT), silent = TRUE)
+      if (inherits(emm, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if emmeans fails
+      }
+      
+      # Perform pairwise comparisons within LaserLevel for each GT
+      contrast_within_laser <- try(contrast(emm, interaction = "pairwise", by = "LaserLevel"), silent = TRUE)
+      if (inherits(contrast_within_laser, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if contrast fails
+      }
+      
+      # Perform pairwise comparisons within GT for each LaserLevel
+      contrast_within_GT <- try(contrast(emm, interaction = "pairwise", by = "GT"), silent = TRUE)
+      if (inherits(contrast_within_GT, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if contrast fails
+      }
+      
+      contrast_summary_within_laser <- summary(contrast_within_laser)
+      contrast_summary_within_GT <- summary(contrast_within_GT)
+      
+      # Combine estimates from both comparisons
+      combined_estimates <- c(contrast_summary_within_laser$estimate, contrast_summary_within_GT$estimate)
+      
+      # Ensure the length of combined_estimates matches n_estimates
+      if (length(combined_estimates) != n_estimates) {
+        return(rep(NA, n_estimates))
+      }
+      
+      # Print the first successful iteration's results
+      if (!exists("printed_first", envir = .GlobalEnv)) {
+        print(combined_estimates)
+        assign("printed_first", TRUE, envir = .GlobalEnv)
+      }
+      
+      return(combined_estimates)
+    }
+  }
+  
+  # Counter to track the number of iterations
+  counter <- 0
+  
+  # Wrapper function to increment the counter
+  boot_model_wrapper <- function(data, indices) {
+    counter <<- counter + 1
+    cat("Iteration:", counter, "\n")
+    boot_model(data, indices)
+  }
+  
+  # Apply block bootstrapping with R replications
+  set.seed(123)
+  subject_indices <- 1:length(unique(data[[subject_var]]))
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model_wrapper, R = R, strata = data[[subject_var]], sim = "ordinary")
+  }, error = function(e) {
+    cat("Bootstrap error: ", e$message, "\n")
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    stop("Bootstrap process failed.")
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))),]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  if (nrow(valid_results) == 0) {
+    stop("No valid bootstrap samples were obtained.")
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- nrow(valid_results)
+  
+  # Calculate bootstrap confidence intervals for pairwise comparisons
+  boot_ci <- function(estimates) {
+    apply(estimates, 2, function(col) {
+      quantile(col, c(0.025, 0.975))
+    })
+  }
+  
+  pairwise_ci <- boot_ci(valid_results)
+  
+  # Remove the printed_first variable from the global environment
+  if (exists("printed_first", envir = .GlobalEnv)) {
+    rm("printed_first", envir = .GlobalEnv)
+  }
+  
+  # Return the bootstrap confidence intervals for pairwise comparisons
+  return(pairwise_ci)
+}
+
+bootstrap_difference_estimate <- function(data, formula, group_var, subject_var, R = 1000) {
+  # Check if 'BoutLength' column exists in data
+  use_weights <- 'BoutLength' %in% names(data)
+  
+  # Fit the initial model with or without weights
+  initial_model <- if (use_weights) {
+    lmer(formula, data = data, weights = BoutLength,
+         control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  } else {
+    lmer(formula, data = data,
+         control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  }
+  
+  # Extract the estimate for the second level of the group factor
+  group_levels <- levels(as.factor(data[[group_var]]))
+  second_level <- group_levels[2]
+  # Construct the name of the fixed effect coefficient
+  coef_name <- paste0(group_var, second_level)
+  
+  # Adjust for the case where group_var is a factor and the coefficient names include the group_var
+  fixef_names <- names(fixef(initial_model))
+  coef_index <- grep(paste0("^", group_var), fixef_names)
+  estimate_second_level <- fixef(initial_model)[coef_index]
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    # Fit the model with or without weights
+    model <- tryCatch({
+      if (use_weights) {
+        lmer(formula, data = d, weights = BoutLength,
+             control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+      } else {
+        lmer(formula, data = d,
+             control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+      }
+    }, error = function(e) {
+      NA  # Return NA if model fails
+    })
+    
+    if (inherits(model, "merMod")) {
+      # Extract the estimate for the second level of the group factor
+      fixef_names <- names(fixef(model))
+      coef_index <- grep(paste0("^", group_var), fixef_names)
+      estimate_second_level <- fixef(model)[coef_index]
+      # Return the estimate for the second level
+      return(estimate_second_level)
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Counter to track the number of iterations
+  counter <- 0
+  
+  # Wrapper function to increment the counter
+  boot_model_wrapper <- function(data, indices) {
+    counter <<- counter + 1
+    cat("Iteration:", counter, "\n")
+    boot_model(data, indices)
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- boot(data = data, statistic = boot_model_wrapper, R = R)
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the fixed effect estimate
+  boot_ci <- quantile(valid_results, c(0.025, 0.975), na.rm = TRUE)
+  
+  # Return the bootstrap confidence intervals and the initial estimate for the second level
+  return(list(
+    initial_estimate = estimate_second_level,
+    boot_ci = boot_ci
+  ))
+}
+
+lm_bootstrap_pearson_correlation <- function(data, formula, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    model <- try(lm(formula, data = d), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if model fails
+    } else {
+      fitted_values <- fitted(model)
+      observed_values <- d$mean_RR  # Assuming RR is the response variable
+      if (length(fitted_values) != length(observed_values)) {
+        return(NA)  # Return NA if lengths do not match
+      }
+      correlation <- cor(observed_values, fitted_values)
+      return(correlation)  # Return the Pearson correlation coefficient
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the Pearson correlation coefficient
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+bootstrap_block_arch_psd <- function(data, formula, group_var, subject_var, R = 1000) {
+  # Fit the initial model
+  initial_model <- lmer(formula, data = data, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+  
+  # Check the number of estimates to be returned
+  emm <- emmeans(initial_model, ~ EventVar * Condition)
+  contrast_within_laser <- contrast(emm, interaction = "pairwise", by = "EventVar")
+  contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "Condition")
+  n_estimates <- length(c(summary(contrast_within_laser)$estimate, summary(contrast_within_GT)$estimate))
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    unique_subjects <- unique(data[[subject_var]])
+    sampled_subjects <- unique_subjects[indices]
+    d <- data[data[[subject_var]] %in% sampled_subjects, ]
+    
+    model <- try(lmer(formula, data = d, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5))), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(rep(NA, n_estimates))  # Return NA if model fails
+    } else {
+      emm <- try(emmeans(model, ~ EventVar * Condition), silent = TRUE)
+      if (inherits(emm, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if emmeans fails
+      }
+      
+      # Perform pairwise comparisons within LaserLevel for each GT
+      contrast_within_laser <- try(contrast(emm, interaction = "pairwise", by = "EventVar"), silent = TRUE)
+      if (inherits(contrast_within_laser, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if contrast fails
+      }
+      
+      # Perform pairwise comparisons within GT for each LaserLevel
+      contrast_within_GT <- try(contrast(emm, interaction = "pairwise", by = "Condition"), silent = TRUE)
+      if (inherits(contrast_within_GT, "try-error")) {
+        return(rep(NA, n_estimates))  # Return NA if contrast fails
+      }
+      
+      contrast_summary_within_laser <- summary(contrast_within_laser)
+      contrast_summary_within_GT <- summary(contrast_within_GT)
+      
+      # Combine estimates from both comparisons
+      combined_estimates <- c(contrast_summary_within_laser$estimate, contrast_summary_within_GT$estimate)
+      
+      # Ensure the length of combined_estimates matches n_estimates
+      if (length(combined_estimates) != n_estimates) {
+        return(rep(NA, n_estimates))
+      }
+      
+      # Print the first successful iteration's results
+      if (!exists("printed_first", envir = .GlobalEnv)) {
+        print(combined_estimates)
+        assign("printed_first", TRUE, envir = .GlobalEnv)
+      }
+      
+      return(combined_estimates)
+    }
+  }
+  
+  # Counter to track the number of iterations
+  counter <- 0
+  
+  # Wrapper function to increment the counter
+  boot_model_wrapper <- function(data, indices) {
+    counter <<- counter + 1
+    cat("Iteration:", counter, "\n")
+    boot_model(data, indices)
+  }
+  
+  # Apply block bootstrapping with R replications
+  set.seed(123)
+  subject_indices <- 1:length(unique(data[[subject_var]]))
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model_wrapper, R = R, strata = data[[subject_var]], sim = "ordinary")
+  }, error = function(e) {
+    cat("Bootstrap error: ", e$message, "\n")
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    stop("Bootstrap process failed.")
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!apply(results$t, 1, function(x) any(is.na(x))),]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  if (nrow(valid_results) == 0) {
+    stop("No valid bootstrap samples were obtained.")
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- nrow(valid_results)
+  
+  # Calculate bootstrap confidence intervals for pairwise comparisons
+  boot_ci <- function(estimates) {
+    apply(estimates, 2, function(col) {
+      quantile(col, c(0.025, 0.975))
+    })
+  }
+  
+  pairwise_ci <- boot_ci(valid_results)
+  
+  # Remove the printed_first variable from the global environment
+  if (exists("printed_first", envir = .GlobalEnv)) {
+    rm("printed_first", envir = .GlobalEnv)
+  }
+  
+  # Return the bootstrap confidence intervals for pairwise comparisons
+  return(pairwise_ci)
+}
+
+```
+```
+RR AUC
+```{r}
+#AUC <- read_csv("AUC_for_R.csv")
+#AUC_New <- AUC_for_R_new <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/AUC_for_R_new.csv")
+AUC_old_batch_1 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/AUC_for_R_batch_1_old.csv")
+
+  AUC_old_batch_1 <- AUC_old_batch_1 %>%
+    mutate(SubjectID = as.factor(SubjectID),
+           Condition = as.factor(Condition),
+           Condition = relevel(Condition, ref = "yfp"))
+        
+m1_RR_AUC_prepost <- lmer(formula = RR ~ Condition + (1|SubjectID), data = AUC_old_batch_1, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_RR_AUC_prepost) #Normality slightly off
+
+pairwise_ci_RR_AUC_prepost <- bootstrap_difference_estimate(AUC_old_batch_1, RR ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_AUC_prepost)
+print(summary(m1_RR_AUC_prepost))
+```
+
+NE AUC
+```{r}
+#AUC_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/AUC New Times/AUC_for_R.csv")
+
+m1_NE_AUC_prepost <- lmer(formula = NE ~ Condition + (1|SubjectID), data = AUC_old_batch_1, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_NE_AUC_prepost) #slight normality issues
+#UPDATE - also heterscacedicity
+
+pairwise_ci_NE_AUC_prepost <-  bootstrap_difference_estimate(AUC_old_batch_1, NE ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_AUC_prepost)
+print(summary(m1_NE_AUC_prepost))
+```
+Sigma AUC
+
+```{r}
+        
+m1_Sigma_AUC_prepost <- lmer(formula = Sigma ~ Condition + (1|SubjectID), data = AUC_old_batch_1, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_Sigma_AUC_prepost) #slight normality issues
+
+
+pairwise_ci_Sigma_AUC_prepost <-  bootstrap_difference_estimate(AUC_old_batch_1, Sigma ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+
+# Print pairwise comparisons
+print(pairwise_ci_Sigma_AUC_prepost)
+print(summary(m1_Sigma_AUC_prepost))
+```
+
+Beta AUC
+
+```{r}
+        
+m1_Beta_AUC_prepost <- lmer(formula = Beta ~ Condition + (1|SubjectID), data = AUC_old_batch_1, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_Beta_AUC_prepost) #slight normality issues
+#Update: also slight heteroscacedicity
+
+pairwise_ci_Beta_AUC_prepost <-  bootstrap_difference_estimate(AUC_old_batch_1, Beta ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+
+# Print pairwise comparisons
+print(pairwise_ci_Beta_AUC_prepost)
+print(summary(m1_Beta_AUC_prepost))
+```
+
+Theta AUC
+
+```{r}
+        
+m1_Theta_AUC_prepost <- lmer(formula = Theta ~ Condition + (1|SubjectID), data = AUC_old_batch_1, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_Theta_AUC_prepost) #slight normality issues + heteroscacedicity
+
+
+pairwise_ci_Theta_AUC_prepost <-  bootstrap_difference_estimate(AUC_old_batch_1, Theta ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+
+# Print pairwise comparisons
+print(pairwise_ci_Theta_AUC_prepost)
+print(summary(m1_Theta_AUC_prepost))
+```
+
+NE / RR AUC corr
+```{r}
+#AUC_NE_arch = filter(AUC_NE, AUC_NE$Condition == 'arch')
+#AUC_New_arch = filter(AUC_New, AUC_New$Condition == 'arch')
+AUC_old_batch_1_arch = filter(AUC_old_batch_1, AUC_old_batch_1$Condition == 'arch')
+
+m_h1_NE <- lmer(formula = RR ~  NE + (1|SubjectID), data = AUC_old_batch_1_arch)
+m_h2 <- lmer(formula = RR ~  NE + (NE|SubjectID), data = AUC_old_batch_1_arch, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1_NE, m_h2) # M1 better as it doesn't have signular fit
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1_NE) #normality issues and heteroscacedicity
+
+# Example initialization with a continuous predictor
+ci_NE_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1_NE)
+r.squaredGLMM(m_h1)
+print(ci_NE_AUC)
+pearson(m_h1_NE, AUC_old_batch_1_arch$RR)
+```
+
+RR/sigma AUC corr
+```{r}
+m_h1_sigma <- lmer(formula = RR ~  Sigma + (1|SubjectID), data = AUC_old_batch_1_arch)
+m_h2 <- lmer(formula = RR ~  Sigma + (Sigma|SubjectID), data = AUC_old_batch_1_arch, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1_sigma, m_h2) # M1 better as it doesn't have signular fit
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1_sigma) #normality issues
+
+# Example initialization with a continuous predictor
+ci_Sigma_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Sigma + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1_sigma)
+r.squaredGLMM(m_h1_sigma)
+print(ci_Sigma_AUC)
+pearson(m_h1_sigma, AUC_old_batch_1_arch$RR)
+```
+
+RR/Beta AUC corr
+```{r}
+m_h1_beta <- lmer(formula = RR ~  Beta + (1|SubjectID), data = AUC_old_batch_1_arch)
+m_h2 <- lmer(formula = RR ~  Beta + (Beta|SubjectID), data = AUC_old_batch_1_arch, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1_beta, m_h2) # M1 better as it doesn't have signular fit
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1_beta) #slight normality issues and slight heteroscacedicity
+
+# Example initialization with a continuous predictor
+ci_Beta_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Beta + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1_beta)
+r.squaredGLMM(m_h1_beta)
+print(ci_Beta_AUC)
+pearson(m_h1_beta, AUC_old_batch_1_arch$RR)
+```
+
+RR/Theta AUC corr
+```{r}
+m_h1theta <- lmer(formula = RR ~  Theta + (1|SubjectID), data = AUC_old_batch_1_arch)
+m_h2 <- lmer(formula = RR ~  Theta + (Theta|SubjectID), data = AUC_old_batch_1_arch, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+anova(m_h1theta, m_h2) # M1 better as it doesn't have signular fit
+summary(m_h1)
+
+# Example usage with your model
+check_lmm_assumptions(m_h1theta) #slight normality issues
+
+# Example initialization with a continuous predictor
+ci_Theta_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Theta + (1|SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1theta)
+r.squaredGLMM(m_h1theta)
+print(ci_Theta_AUC)
+pearson(m_h1theta, AUC_old_batch_1_arch$RR)
+```
+
+Memory 
+```{r}
+memory_table <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/memory_table.csv")
+
+# Subset the dataframe to the desired columns
+memory_table <- memory_table[, c("mean_RR", "mean_NE", "novel_familiar_ratio")]
+# Remove rows with NaN values
+memory_table <- memory_table[complete.cases(subset_memory_table), ]
+
+memory_model <- lm(formula = mean_RR ~  novel_familiar_ratio, data = memory_table)
+
+summary(memory_model)
+
+# Example usage with your model
+check_lmm_assumptions(memory_model) #slight normality issues
+
+# Example initialization with a continuous predictor
+memeory_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_RR ~  novel_familiar_ratio, R = 1000)
+
+summary(memory_model)
+r.squaredGLMM(memory_model)
+print(memeory_ci)
+pearson(memory_model, memory_table$mean_RR)
+
+memory_model_2 <- lm(formula = mean_RR ~  mean_NE, data = memory_table)
+
+## RR and NE
+summary(memory_model_2)
+
+# Example usage with your model
+check_lmm_assumptions(memory_model_2) #slight normality issues
+
+# Example initialization with a continuous predictor
+memeory_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_RR ~  mean_NE, R = 1000)
+
+summary(memory_model_2)
+r.squaredGLMM(memory_model_2)
+print(memeory_ci)
+pearson(memory_model_2, memory_table$mean_RR)
+```
+
+```{r}
+memory_model_NE <- lm(formula = mean_NE ~  novel_familiar_ratio, data = memory_table)
+
+# Example usage with your model
+check_lmm_assumptions(memory_model_NE) #slight normality issues
+
+# Example initialization with a continuous predictor
+memory_model_NE_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_NE ~  novel_familiar_ratio, R = 1000)
+
+summary(memory_model_NE)
+r.squaredGLMM(memory_model_NE)
+print(memory_model_NE_ci)
+pearson(memory_model_NE, memory_table$mean_NE)
+```
+
+
+RR PSD AUC
+
+```{r}
+
+RR_AUC_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/RR_AUC_PSD_for_R.csv")
+
+  RR_AUC_PSD <- RR_AUC_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+           
+m1_RR_PSD_AUC <- lmer(formula = AUC ~  EventVar + Condition + (1|Suffix), data = RR_AUC_PSD, control = lmerControl(optimizer = "nloptwrap", optCtrl = list(maxfun = 2e5)))
+m3_RR_PSD_AUC <- lmer(formula = AUC ~   EventVar * Condition + (EventVar|Suffix), data = RR_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_RR_PSD_AUC <- lmer(formula = AUC ~  EventVar + Condition + (1|Suffix), data = RR_AUC_PSD)
+m2_RR_PSD_AUC <- lmer(formula = AUC ~  EventVar + Condition + (1|Suffix), data = RR_AUC_PSD)
+
+anova(m1_RR_PSD_AUC, m3_RR_PSD_AUC) # M1
+
+check_lmm_assumptions(m1_RR_PSD_AUC) #problems with everything - ACF only slight
+
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_RR_PSD_AUC, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each Condition for all EventVars
+contrast_within_Condition <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of Condition for each EventVar
+contrast_between_Condition <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_RR_PSD_AUC <- list(within_Condition = contrast_within_Condition, between_Condition = contrast_between_Condition)
+
+pairwise_ci_RR_PSD_AUC <- bootstrap_block_arch_psd(RR_AUC_PSD, AUC ~ EventVar * Condition + (1 | Suffix), "EventVar * Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_PSD_AUC)
+print(pairwise_comparisons_RR_PSD_AUC)
+print(summary(m1_RR_PSD_AUC))
+```
+
+
+
+NE PSD AUC
+
+```{r}
+
+NE_AUC_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/NE_AUC_PSD_for_R.csv")
+
+  NE_AUC_PSD <- NE_AUC_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+
+m1_NE_PSD_AUC <- lmer(formula = AUC ~  EventVar * Condition + (1|Suffix), data = NE_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_NE_PSD_AUC <- lmer(formula = AUC ~  EventVar * Condition + (EventVar|Suffix), data = NE_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m2_NE_PSD_AUC <- lmer(formula = AUC ~  EventVar + Condition + (1|Suffix), data = NE_AUC_PSD)
+
+anova(m1_NE_PSD_AUC, m3_NE_PSD_AUC) # M1
+
+check_lmm_assumptions(m1_NE_PSD_AUC) ##problems with everything - ACF only slight
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_NE_PSD_AUC, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each Condition for all EventVars
+contrast_within_Condition <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of Condition for each EventVar
+contrast_between_Condition <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_NE_PSD_AUC <- list(within_Condition = contrast_within_Condition, between_Condition = contrast_between_Condition)
+
+pairwise_ci_NE_PSD_AUC <- bootstrap_block_arch_psd(NE_AUC_PSD, AUC ~ EventVar * Condition + (1 | Suffix), "Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_PSD_AUC)
+print(pairwise_comparisons_NE_PSD_AUC)
+print(summary(m1_NE_PSD_AUC))
+```
+
+RR peak freq
+
+```{r}
+RR_peakfreq_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/RR_PeakFrequency_table_for_R.csv")
+
+  RR_peakfreq_PSD <- RR_peakfreq_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+
+m1_RR_peakfreq <- lmer(formula = PeakFrequency ~ EventVar * Condition + (1|Suffix), data = RR_peakfreq_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_RR_peakfreq <- lmer(formula = PeakFrequency ~  EventVar * Condition + (EventVar|Suffix), data = RR_peakfreq_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+anova(m1_RR_peakfreq, m3_RR_peakfreq) # M1
+
+check_lmm_assumptions(m1_RR_peakfreq) #problems normality and acf
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_RR_peakfreq, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_RR_peakfreq <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_RR_peakfreq <- bootstrap_block_arch_psd(RR_peakfreq_PSD, PeakFrequency ~ EventVar * Condition + (1 | Suffix), "Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_peakfreq)
+print(pairwise_comparisons_RR_peakfreq)
+print(summary(m1_RR_peakfreq))  
+```
+
+NE peak freq
+
+```{r}
+
+NE_peakfreq_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/NE_PeakFrequency_table_for_R.csv")
+
+  NE_peakfreq_PSD <- NE_peakfreq_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+           
+m1_NE_peakfreq <- lmer(formula = PeakFrequency ~ EventVar * Condition + (1|Suffix), data = NE_peakfreq_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_NE_peakfreq <- lmer(formula = PeakFrequency ~  EventVar * Condition + (EventVar|Suffix), data = NE_peakfreq_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+anova(m1_NE_peakfreq, m3_NE_peakfreq) # M1
+
+check_lmm_assumptions(m1_NE_peakfreq) #problems with normality and slight acf
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_NE_peakfreq, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_NE_peakfreq <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_NE_peakfreq <- bootstrap_block_arch_psd(NE_peakfreq_PSD, PeakFrequency ~ EventVar * Condition + (1 | Suffix), "Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_peakfreq)
+print(pairwise_comparisons_NE_peakfreq)
+print(summary(m1_NE_peakfreq))  
+```
+
+RR peak power
+```{r}
+RR_peakpower_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/RR_PeakPower_table_for_R.csv")
+
+  RR_peakpower_PSD <- RR_peakpower_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+
+m1_RR_peakpower <- lmer(formula = PeakPower ~ EventVar * Condition + (1|Suffix), data = RR_peakpower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_RR_peakpower <- lmer(formula = PeakPower ~  EventVar * Condition + (EventVar|Suffix), data = RR_peakpower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+anova(m1_RR_peakpower, m3_RR_peakpower) # M1
+
+check_lmm_assumptions(m1_RR_peakpower) #problems with everything (acf is only very slight)
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_RR_peakpower, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_RR_peakpower <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_RR_peakpower <- bootstrap_block_arch_psd(RR_peakpower_PSD, PeakPower ~ EventVar * Condition + (1 | Suffix), "Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_peakpower)
+print(pairwise_comparisons_RR_peakpower)
+print(summary(m1_RR_peakpower))  
+```
+
+NE peak power
+```{r}
+NE_peakpower_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/batch 1 only export/for R/NE_PeakPower_table_for_R.csv")
+
+  NE_peakpower_PSD <- NE_peakpower_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           Condition = as.factor(Condition),
+           EventVar = as.factor(EventVar),
+           Condition = relevel(Condition, ref = "Yfp"))
+
+m1_NE_peakpower <- lmer(formula = PeakPower ~ EventVar * Condition + (1|Suffix), data = NE_peakpower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+m3_NE_peakpower <- lmer(formula = PeakPower ~  EventVar * Condition + (EventVar|Suffix), data = NE_peakpower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+anova(m1_NE_peakpower, m3_NE_peakpower) # M1
+
+check_lmm_assumptions(m1_NE_peakpower) #problems with everything
+
+# Calculate estimated marginal means
+emm <- emmeans(m1_NE_peakpower, ~ EventVar * Condition, pbkrtest.limit = 3737, lmerTest.limit = 3737)
+
+# Perform pairwise comparisons within each GT for all LaserLevels
+contrast_within_GT <- contrast(emm, interaction = "pairwise", by = "Condition", adjust = "tukey")
+# Perform pairwise comparisons between the two levels of GT for each LaserLevel
+contrast_between_GT <- contrast(emm, interaction = "pairwise", by = "EventVar", adjust = "tukey")
+# Combine the results
+pairwise_comparisons_NE_peakpower <- list(within_GT = contrast_within_GT, between_GT = contrast_between_GT)
+
+pairwise_ci_NE_peakpower <- bootstrap_block_arch_psd(NE_peakpower_PSD, PeakPower ~ EventVar * Condition + (1 | Suffix), "Condition", "Suffix", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_peakpower)
+print(pairwise_comparisons_NE_peakpower)
+print(summary(m1_NE_peakpower))  
+```
+
+NE AUC PSD (no laser)
+```{r}
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/PSD_no_laser")
+
+NE_AUC_PSD <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/PSD_no_laser/NE_AUC_PSD_for_R.csv")
+
+  NE_AUC_PSD <- NE_AUC_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_NE_AUC_PSD <- lmer(formula = AUC ~ EventVar + (1|Suffix), data = NE_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
+
+check_lmm_assumptions(m1_NE_AUC_PSD) #Normality slightly off
+
+pairwise_ci_NE_AUC_PSD <- bootstrap_difference_estimate(NE_AUC_PSD, AUC ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_AUC_PSD)
+print(summary(m1_NE_AUC_PSD))
+```
+
+NE AUC PSD (no laser)
+```{r}
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/PSD_no_laser")
+
+NE_AUC_PSD <- read_csv("NE_AUC_PSD_for_R.csv")
+
+  NE_AUC_PSD <- NE_AUC_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_NE_AUC_PSD <- lmer(formula = AUC ~ EventVar + (1|Suffix), data = NE_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_NE_AUC_PSD) #Normality + heteroscacedicity slightly off
+
+pairwise_ci_NE_AUC_PSD <- bootstrap_difference_estimate(NE_AUC_PSD, AUC ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+emmeans(m1_NE_AUC_PSD, pairwise ~ EventVar)
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_AUC_PSD)
+print(summary(m1_NE_AUC_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(NE_AUC_PSD, aes(x = EventVar, y = AUC, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "AUC Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "AUC") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+RR AUC PSD (no laser)
+```{r}
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/PSD_no_laser")
+
+RR_AUC_PSD <- read_csv("RR_AUC_PSD_for_R.csv")
+
+  RR_AUC_PSD <- RR_AUC_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_RR_AUC_PSD <- lmer(formula = AUC ~ EventVar + (1|Suffix), data = RR_AUC_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), , weights = BoutLength)
+
+check_lmm_assumptions(m1_RR_AUC_PSD) #Normality slightly off
+
+pairwise_ci_RR_AUC_PSD <- bootstrap_difference_estimate(RR_AUC_PSD, AUC ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+emmeans(m1_RR_AUC_PSD, pairwise ~ EventVar)
+
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_AUC_PSD)
+print(summary(m1_RR_AUC_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(RR_AUC_PSD, aes(x = EventVar, y = AUC, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "AUC Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "AUC") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+NE PeakFrequency PSD (no laser)
+```{r}
+
+NE_PeakFrequency_PSD <- read_csv("NE_PeakFrequency_table_for_R.csv")
+
+  NE_PeakFrequency_PSD <- NE_PeakFrequency_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_NE_PeakFrequency_PSD <- lmer(formula = PeakFrequency ~ EventVar + (1|Suffix), data = NE_PeakFrequency_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_NE_PeakFrequency_PSD) #Normality slightly off
+
+pairwise_ci_NE_PeakFrequency_PSD <- bootstrap_difference_estimate(NE_PeakFrequency_PSD, PeakFrequency ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+emmeans(m1_NE_PeakFrequency_PSD, pairwise ~ EventVar)
+
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_PeakFrequency_PSD)
+print(summary(m1_NE_PeakFrequency_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(NE_PeakFrequency_PSD, aes(x = EventVar, y = PeakFrequency, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "PeakFrequency Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "PeakFrequency") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+RR PeakFrequency PSD (no laser)
+```{r}
+
+RR_PeakFrequency_PSD <- read_csv("RR_PeakFrequency_table_for_R.csv")
+
+  RR_PeakFrequency_PSD <- RR_PeakFrequency_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_RR_PeakFrequency_PSD <- lmer(formula = PeakFrequency ~ EventVar + (1|Suffix), data = RR_PeakFrequency_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_RR_PeakFrequency_PSD) #Normality slightly off
+
+pairwise_ci_RR_PeakFrequency_PSD <- bootstrap_difference_estimate(RR_PeakFrequency_PSD, PeakFrequency ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+emmeans(m1_RR_PeakFrequency_PSD, pairwise ~ EventVar)
+
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_PeakFrequency_PSD)
+print(summary(m1_RR_PeakFrequency_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(RR_PeakFrequency_PSD, aes(x = EventVar, y = PeakFrequency, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "PeakFrequency Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "PeakFrequency") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+NE PeakPower PSD (no laser)
+```{r}
+
+NE_PeakPower_PSD <- read_csv("NE_PeakPower_table_for_R.csv")
+
+  NE_PeakPower_PSD <- NE_PeakPower_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_NE_PeakPower_PSD <- lmer(formula = PeakPower ~ EventVar + (1|Suffix), data = NE_PeakPower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_NE_PeakPower_PSD) #Normality slightly off
+
+pairwise_ci_NE_PeakPower_PSD <- bootstrap_difference_estimate(NE_PeakPower_PSD, PeakPower ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+# print(pairwise_ci)
+
+emmeans(m1_NE_PeakPower_PSD, pairwise ~ EventVar)
+
+
+# Print pairwise comparisons
+print(pairwise_ci_NE_PeakPower_PSD)
+print(summary(m1_NE_PeakPower_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(NE_PeakPower_PSD, aes(x = EventVar, y = PeakPower, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "PeakPower Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "PeakPower") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+RR PeakPower PSD (no laser)
+```{r}
+
+RR_PeakPower_PSD <- read_csv("RR_PeakPower_table_for_R.csv")
+
+  RR_PeakPower_PSD <- RR_PeakPower_PSD %>%
+    mutate(Suffix = as.factor(Suffix),
+           EventVar = as.factor(EventVar),
+           EventVar = relevel(EventVar, ref = "YFP"))
+        
+m1_RR_PeakPower_PSD <- lmer(formula = PeakPower ~ EventVar + (1|Suffix), data = RR_PeakPower_PSD, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)), weights = BoutLength)
+
+check_lmm_assumptions(m1_RR_PeakPower_PSD) #Normality slightly off
+
+pairwise_ci_RR_PeakPower_PSD <- bootstrap_difference_estimate(RR_PeakPower_PSD, PeakPower ~ EventVar + (1|Suffix), "EventVar", "SubjectID", R = 1000)
+
+emmeans(m1_RR_PeakPower_PSD, pairwise ~ EventVar)
+
+# print(pairwise_ci)
+
+# Print pairwise comparisons
+print(pairwise_ci_RR_PeakPower_PSD)
+print(summary(m1_RR_PeakPower_PSD))
+
+# Create a plot of the AUC data with raw data points and mean ± SEM
+ggplot(RR_PeakPower_PSD, aes(x = EventVar, y = PeakPower, color = EventVar)) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +  # Jittered points for individual data
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +  # Mean point
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 0.2) +  # Mean ± SEM
+  theme_minimal() +
+  labs(title = "PeakPower Values by EventVar (Arch vs YFP)",
+       x = "EventVar", y = "PeakPower") +
+  scale_color_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+
+# Ensure EventVar is a factor in each dataset
+NE_AUC_PSD$EventVar <- as.factor(NE_AUC_PSD$EventVar)
+RR_AUC_PSD$EventVar <- as.factor(RR_AUC_PSD$EventVar)
+NE_PeakFrequency_PSD$EventVar <- as.factor(NE_PeakFrequency_PSD$EventVar)
+RR_PeakFrequency_PSD$EventVar <- as.factor(RR_PeakFrequency_PSD$EventVar)
+NE_PeakPower_PSD$EventVar <- as.factor(NE_PeakPower_PSD$EventVar)
+RR_PeakPower_PSD$EventVar <- as.factor(RR_PeakPower_PSD$EventVar)
+
+# NE AUC PSD plot
+plot1 <- NE_AUC_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(AUC, na.rm = TRUE),
+    SEM = sd(AUC, na.rm = TRUE) / sqrt(length(AUC))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "NE AUC PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# RR AUC PSD plot
+plot2 <- RR_AUC_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(AUC, na.rm = TRUE),
+    SEM = sd(AUC, na.rm = TRUE) / sqrt(length(AUC))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "RR AUC PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# NE PeakFrequency PSD plot
+plot3 <- NE_PeakFrequency_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(PeakFrequency, na.rm = TRUE),
+    SEM = sd(PeakFrequency, na.rm = TRUE) / sqrt(length(PeakFrequency))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "NE PeakFrequency PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# RR PeakFrequency PSD plot
+plot4 <- RR_PeakFrequency_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(PeakFrequency, na.rm = TRUE),
+    SEM = sd(PeakFrequency, na.rm = TRUE) / sqrt(length(PeakFrequency))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "RR PeakFrequency PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# NE PeakPower PSD plot
+plot5 <- NE_PeakPower_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(PeakPower, na.rm = TRUE),
+    SEM = sd(PeakPower, na.rm = TRUE) / sqrt(length(PeakPower))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "NE PeakPower PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# RR PeakPower PSD plot
+plot6 <- RR_PeakPower_PSD %>%
+  group_by(EventVar) %>%
+  summarise(
+    Mean = mean(PeakPower, na.rm = TRUE),
+    SEM = sd(PeakPower, na.rm = TRUE) / sqrt(length(PeakPower))
+  ) %>%
+  ggplot(aes(x = EventVar, y = Mean, fill = EventVar)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = Mean - SEM, ymax = Mean + SEM), width = 0.2) +
+  theme_minimal() +
+  labs(title = "RR PeakPower PSD", y = "Mean ± SEM") +
+  scale_fill_manual(values = c("YFP" = "#56B4E9", "Arch" = "#E69F00"))
+
+# Arrange the plots in a 2x3 grid
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 2)
+plot1
+
+```
+

@@ -1,4 +1,4 @@
-function [PXX_chr2, PXX_yfp, f, resultTable_chr2, resultTable_yfp] = PSD_chr2(chr2, yfp)
+function [PXX_chr2, PXX_yfp, f, resultTable_chr2, resultTable_yfp, RR_table_chr2, RR_table_yfp] = PSD_chr2(chr2, yfp)
     fs = 64; % Specify sampling frequency of your signal trace
     sampling_hz = 0.002;
     dataDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\Figure_4_data';
@@ -8,9 +8,9 @@ function [PXX_chr2, PXX_yfp, f, resultTable_chr2, resultTable_yfp] = PSD_chr2(ch
     PXX_yfp = cell(5, 2);
     
     % Process chr2 group
-    [PXX_chr2, f] = process_group(chr2, 'chr2', PXX_chr2);
+    [PXX_chr2, f, RR_table_chr2] = process_group_RR_30sec(chr2, 'chr2', PXX_chr2);
     % Process yfp group
-    [PXX_yfp, f] = process_group(yfp, 'yfp', PXX_yfp);
+    [PXX_yfp, f, RR_table_yfp] = process_group_RR_30sec(yfp, 'yfp', PXX_yfp);
     
     % Initialize tables for returning mean and SEM
     resultTable_chr2 = table(f(:), 'VariableNames', {'f'});

@@ -399,7 +399,7 @@ MeanFilterOrder = 1000; % Order for smoothing
 MeanFilter = ones(MeanFilterOrder, 1) / MeanFilterOrder; % Define the mean filter
 ds_factor_FP = 100; % Downsample factor
 
-Suffixes = {'403'};
+Suffixes = {'412'};
 % Loop through each mouse entry in the 'mice' cell array
 for idx = 1:length(Suffixes)
     mouse = Suffixes{idx};
@@ -1288,6 +1288,7 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_026, time_spectrogram_zero_026, F_026, band_powers_026, EEG_bands_fs_026] = PowerAnalysisEEG(EEG_026, EEG_fs_026, frw, window_in_sec, power_bands);
 
 [mean_spectrogram_522, time_spectrogram_zero_522, F_522, band_powers_522, EEG_bands_fs_522] = PowerAnalysisEEG(EEG_522, EEG_fs_522, frw, window_in_sec, power_bands);
+[mean_spectrogram_412, time_spectrogram_zero_412, F_412, band_powers_412, EEG_bands_fs_412] = PowerAnalysisEEG(EEG_412, EEG_fs_412, frw, window_in_sec, power_bands);
 
 clear power_bands frw window_in_sec
 %% Save power
@@ -1939,6 +1940,8 @@ end
 
         %% Figure 2 all animals 4real
 data_types = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high', 'x_corr'};
+data_types = {'x_corr'};
+
 titles = {'NREM', 'NREM to short MA', 'NREM to long MA', 'NREM to Wake'};
 main_title = ('Averaged Activity During NE Trough for Cortical NE');
 o = {'205', '207', '209', '420', '588', '201', '213'};
@@ -1949,7 +1952,7 @@ epoc_start = 60;
 epoc_end = 60; 
 
 results = aggregate_event_data(saveDirectory, event_var, o, data_types);
-[table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
+[table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high, table_x_corr] = create_tables_from_results(results);
 writetable(table_NE, 'figure_2_NE_traces_ds.csv')
 writetable(table_RR, 'figure_2_RR_traces.csv')
 writetable(table_SO, 'figure_2_table_SO.csv')
@@ -1959,6 +1962,7 @@ writetable(table_Sigma, 'figure_2_table_Sigma.csv')
 writetable(table_Beta, 'figure_2_table_Beta.csv')
 writetable(table_Gamma_low, 'figure_2_table_Gamma_low.csv')
 writetable(table_Gamma_high, 'figure_2_table_Gamma_high.csv')
+writetable(table_x_corr, 'figure_2_x_corr_traces.csv')
 
 figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles)
 figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles);
@@ -1967,6 +1971,43 @@ figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, ti
 
 [global_max, global_min] = compute_global_extremes(results, data_types);
 figure_2_cross_animals(results, global_max, global_min, 60, 60, main_title, titles)
+%% x-corr minimum values
+% Find the columns that contain '_mean' in their names
+mean_columns = contains(table_x_corr.Properties.VariableNames, '_mean');
+
+% Initialize an array to store the results
+lowest_time_values = cell(sum(mean_columns), 2); % Two columns: one for the event name and one for the corresponding time
+
+% Iterate through each column with '_mean' in its name
+index = 1;
+for i = 1:length(mean_columns)
+    if mean_columns(i)
+        column_name = table_x_corr.Properties.VariableNames{i};
+        
+        % Get the mean data for the current event
+        mean_data = table_x_corr.(column_name);
+        
+        % Find the index of the minimum value in the mean data
+        [~, min_index] = min(mean_data);
+        
+        % Find the corresponding time value
+        min_time = table_x_corr.Time(min_index);
+        
+        % Store the results
+        lowest_time_values{index, 1} = column_name; % Event name
+        lowest_time_values{index, 2} = min_time; % Time of minimum value
+        index = index + 1;
+    end
+end
+
+% Convert the results to a table for display
+result_table = cell2table(lowest_time_values, 'VariableNames', {'EventName', 'TimeOfMinValue'});
+
+% Display the results
+disp(result_table);
+
+
+
 %% Get HRB in NREM and MA
 suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'}; % Add more suffixes as needed
 %
@@ -2141,6 +2182,7 @@ end
 
 % List of suffixes for each animal
 suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'}; % Add more suffixes as needed
+suffixes = {'205', '207', '209', '420', '588', '201', '213'}; % Add more suffixes as needed
 
 % Loop through each suffix
 for s = 1:length(suffixes)
@@ -2179,7 +2221,8 @@ end
 clear baseVariables suffixes s suffix sws_varName MA_varName sws_binary_vector MA_binary_vector NREMinclMA_binary NREMinclMA_onset NREMinclMA_offset NREMinclMA_periods NREMinclMA_binary_name NREMinclMA_periods_name;
 %% Get RR from NREMiclMA
 % List of suffixes for each animal
-suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213', '_115', '_122', '_124'}; % Add more suffixes as needed
+suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213'}; % Add more suffixes as needed
+% '_115', '_122', '_124'
 
 % Initialize the cell array to store results
 RR_data_NREM = {};
@@ -2193,13 +2236,19 @@ for s = 1:length(suffixes)
     NREMinclMA_periods_name = ['NREMinclMA_periods', suffix];
     RR_name = ['RR', suffix];
     RR_time_name = ['RR_time', suffix];
+    delta465_name = ['delta465_filt_2', suffix];
+    sec_signal_name = ['sec_signal_2', suffix];
     
     % Check if the variables exist in the environment
-    if exist(NREMinclMA_periods_name, 'var') && exist(RR_name, 'var') && exist(RR_time_name, 'var')
+    if exist(NREMinclMA_periods_name, 'var') && exist(RR_name, 'var') && exist(RR_time_name, 'var') && ...
+       exist(delta465_name, 'var') && exist(sec_signal_name, 'var')
+        
         % Retrieve the variables from the workspace
         NREMinclMA_periods = eval(NREMinclMA_periods_name);
         RR = eval(RR_name);
         RR_time = eval(RR_time_name);
+        delta465_filt_2 = eval(delta465_name);
+        sec_signal_2 = eval(sec_signal_name);
         
         % Loop through each period in NREMinclMA_periods
         for i = 1:size(NREMinclMA_periods, 1)
@@ -2207,32 +2256,78 @@ for s = 1:length(suffixes)
             endTime = NREMinclMA_periods(i, 2);
             
             % Find indices in RR_time corresponding to the current period
-            periodIndices = find(RR_time >= startTime & RR_time <= endTime);
+            RR_periodIndices = find(RR_time >= startTime & RR_time <= endTime);
             
             % Extract the corresponding RR values
-            RR_values = RR(periodIndices);
+            RR_values = RR(RR_periodIndices);
             
-            % Store the suffix and the extracted RR values in the cell array
+            % Find indices in sec_signal_2 corresponding to the current period
+            NE_periodIndices = find(sec_signal_2 >= startTime & sec_signal_2 <= endTime);
+            
+            % Extract the corresponding NE values
+            NE_values = delta465_filt_2(NE_periodIndices);
+            
+            % Store the suffix, the extracted RR values, and NE values in the cell array
             RR_data_NREM{end+1, 1} = suffix_str; % Store suffix without initial underscore
             RR_data_NREM{end, 2} = RR_values;    % Store the extracted RR values
+            RR_data_NREM{end, 3} = NE_values;    % Store the extracted NE values
         end
     else
-        warning('Variables %s, %s, and/or %s do not exist in the workspace.', ...
-            NREMinclMA_periods_name, RR_name, RR_time_name);
+        warning('Variables %s, %s, %s, %s, and/or %s do not exist in the workspace.', ...
+            NREMinclMA_periods_name, RR_name, RR_time_name, delta465_name, sec_signal_name);
     end
 end
 
 % Convert the cell array to a table for better visualization (optional)
-RR_data_NREM_table = cell2table(RR_data_NREM, 'VariableNames', {'MouseID', 'RR_Values'});
+RR_data_NREM_table = cell2table(RR_data_NREM, 'VariableNames', {'MouseID', 'RR_Values', 'NE_Values'});
+
 
 % Clear temporary variables
-clear suffixes s suffix suffix_str NREMinclMA_periods_name RR_name RR_time_name NREMinclMA_periods RR RR_time i startTime endTime periodIndices RR_values;
+clear NE_periodIndices NE_values delta465_filt_2 sec_signal_2 suffixes s suffix suffix_str NREMinclMA_periods_name RR_name RR_time_name NREMinclMA_periods RR RR_time i startTime endTime periodIndices RR_values;
+%% PSD for RR/NE
+[psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = NE_PSD_fig2(RR_data_NREM_table, 60);
+[psd_table_RR, AUC_table_RR, PeakFrequency_table_RR, PeakPower_table_RR] = RR_PSD_fig2(RR_data_NREM_table, 60, 0, 5);
+[psd_table_RR_VLF, AUC_table_RR_VLF, PeakFrequency_table_RR_VLF, PeakPower_table_RR_VLF] = RR_PSD_fig2(RR_data_NREM_table, 60, 0, 0.15);
+[psd_table_RR_LF, AUC_table_RR_LF, PeakFrequency_table_RR_LF, PeakPower_table_RR_LF] = RR_PSD_fig2(RR_data_NREM_table, 60, 0.15, 1.5);
+[psd_table_RR_for_NE, AUC_table_RR_for_NE, PeakFrequency_table_RR_for_NE, PeakPower_table_RR_for_NE] = RR_PSD_fig2(RR_data_NREM_table, 60, 0, 0.1);
+
+writetable(psd_table_RR, 'psd_RR_trace.csv');
+writetable(AUC_table_RR_VLF, 'psd_auc_VLF.csv');
+writetable(AUC_table_RR_LF, 'psd_auc_LF.csv');
+writetable(PeakFrequency_table_RR_VLF, 'psd_peakfreq_VLF.csv');
+writetable(PeakFrequency_table_RR_LF, 'psd_peakfreq_LF.csv');
+writetable(PeakPower_table_RR_VLF, 'psd_peakpower_VLF.csv');
+writetable(PeakPower_table_RR_LF, 'psd_peakpower_LF.csv');
+
+writetable(psd_table, 'psd_NE_trace.csv');
+writetable(PeakFrequency_table, 'psd_peakfreq_NE.csv');
+writetable(PeakFrequency_table_RR_for_NE, 'psd_peakfreq_VLF_for_NE.csv');
+%% Created weigthed mean/SEM for PSD quantification export
+
+% Extract data and weights
+data = PeakPower_table_RR_LF.PeakPower;
+weights = PeakPower_table_RR_LF.BoutLength;
+n = length(data); % Number of events (rows) in the data
+
+% Calculate weighted mean
+weighted_mean = sum(weights .* data) / sum(weights);
+
+% Calculate weighted variance
+weighted_variance = sum(weights .* (data - weighted_mean).^2) / sum(weights);
+
+% Calculate weighted standard error of the mean (SEM)
+% SEM is the square root of the weighted variance divided by sqrt(n)
+weighted_sem = sqrt(weighted_variance) / sqrt(n);
+
+% Display the results
+fprintf('Weighted Mean PeakFrequency: %.10f\n', weighted_mean);
+fprintf('Weighted SEM: %.10f\n', weighted_sem);
 
 %% Get PSD from RR
 % Define the sampling frequency and other parameters
 fs = 64; % Specify sampling frequency of your signal trace
-min_period_dur = 180; % Specify minimum bout duration for bout to be included in the analysis
-sampling_hz = 0.0002;
+min_period_dur = 60; % Specify minimum bout duration for bout to be included in the analysis
+sampling_hz = 0.002;
 
 % Initialize the cell array to store the results
 PSD_results = {};
@@ -2605,7 +2700,7 @@ set(gcf,'color','white');
 
     %% 588 figure 2 
 
-    uniqueId = '522'; % Extract mouse ID as a string
+    uniqueId = '412'; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     % Access the variables dynamically
@@ -2620,12 +2715,12 @@ set(gcf,'color','white');
     EMG = eval(sprintf('EMG_%s', uniqueId));
     RR = eval(sprintf('RR_%s', uniqueId));
     RR_time = eval(sprintf('RR_time_%s', uniqueId));
-    Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
-    Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
+    % Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
+    % Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
     signal_fs = eval(sprintf('signal_fs_%s', uniqueId));
-    mean_spectrogram = eval(sprintf('mean_spectrogram_%s', uniqueId));
-    F = eval(sprintf('F_%s', uniqueId));
-    EEG_bands_fs = eval(sprintf('EEG_bands_fs_%s', uniqueId));
+    % mean_spectrogram = eval(sprintf('mean_spectrogram_%s', uniqueId));
+    % F = eval(sprintf('F_%s', uniqueId));
+    % EEG_bands_fs = eval(sprintf('EEG_bands_fs_%s', uniqueId));
 
     
     power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}; % define SO, delta, theta, sigma, and beta, respectively
@@ -2640,39 +2735,48 @@ set(gcf,'color','white');
     RR = filtfilt(MeanFilter, 1, RR);
 
     % Define x-axis range
-    x_start = 8740;
-    x_end = 9215;
-    
-    % % Plot EEG data
-    % figure;
-    % plot(sec_signal_EEG, EEG, 'k-');
-    % xlim([x_start, x_end]);
-    % set(gcf,'color','white');
-    % 
-    % % Plot EMG and sleep state data
-    % figure;
-    % hold on
-    % plot(sec_signal_EEG, -emg_fhp);   
-    % hold off
-    % xlim([x_start, x_end]);
-    % set(gcf,'color','white');
-    % 
-    % % Plot RR interval data
-    % figure;
-    % plot(RR_time, RR, 'k-');
-    % xlim([x_start, x_end]);
-    % set(gcf,'color','white');
+    x_start = 3400;
+    x_end = 4200;
 
-    %     % Plot RR interval data
-    % figure;
-    % plot(ds_sec_signal_2, ds_delta465_filt_2_smooth);    
-    % xlim([x_start, x_end]);
-    % set(gcf,'color','white');
-
-        figure;
-    plot_sleep(sec_signal_EEG, sec_signal_EEG, sleepscore_time, wake_woMA_binary_vector, zeros(1, 36437), REM_binary_vector, MA_binary_vector);    
+    % Plot EEG data
+    figure;
+    plot(sec_signal_EEG, EEG, 'k-');
     xlim([x_start, x_end]);
     set(gcf,'color','white');
+
+    % Plot EMG and sleep state data
+    figure;
+    hold on
+    plot(sec_signal_EEG, -EMG);   
+    hold off
+    xlim([x_start, x_end]);
+    set(gcf,'color','white');
+
+    % Plot RR interval data
+    figure;
+    plot(RR_time, RR, 'k-');
+    xlim([x_start, x_end]);
+    set(gcf,'color','white');
+
+        % Plot RR interval data
+    figure;
+    plot(sec_signal_2_412, laser_binary_412);    
+    xlim([x_start, x_end]);
+    set(gcf,'color','white');
+   
+    figure;
+            plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+
+        set(gcf,'color','white')
+    xlim([x_start, x_end]);
+    set(gcf,'color','white');
+
+            plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+
+    %     figure;
+    % plot_sleep(sec_signal_EEG, sec_signal_EEG, sleepscore_time, wake_woMA_binary_vector, zeros(1, 36437), REM_binary_vector, MA_binary_vector);    
+    % xlim([x_start, x_end]);
+    % set(gcf,'color','white');
     %             % Extract power for specified bands
     %     band_powers = cell(1, length(power_bands));
     %     for b = 1:length(power_bands)
@@ -2681,27 +2785,27 @@ set(gcf,'color','white');
     %     end
     % 
     % % Plot for the current mouse
-    % figure;
-    % % 
-    % a = subplot(4, 1, 1);
-    %     plot(sec_signal_EEG, EEG);    
+    figure;
     % 
-    % b = subplot(4, 1, 2);
-    %     plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
-    % 
-    % c = subplot(4, 1, 3);
-    %     hold on
-    %     plot(sec_signal_EEG, emg_fhp);    
-    %     scatter(Rpeaks_time, Rpeaks, 'r', 'filled');
-    %     hold off
-    % 
-    % d = subplot(4, 1, 4);
-    %     plot(RR_time, RR);
-    % 
-    %     set(gcf,'color','white')
-    % 
-    % % Linking axes for synchronized zooming
-    % linkaxes([a, b, c, d], 'x');
+    a = subplot(5, 1, 1);
+        plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+
+    b = subplot(5, 1, 2);
+        plot(sec_signal_EEG, EEG);
+
+    c = subplot(5, 1, 3);
+        plot(sec_signal_EEG, EMG);
+
+    d = subplot(5, 1, 4);
+        plot(RR_time, RR);
+
+    e = subplot(5, 1, 5);
+        plot(sec_signal_2_412, laser_binary_412);
+
+        set(gcf,'color','white')
+
+    % Linking axes for synchronized zooming
+    linkaxes([a, b, c, d, e], 'x');
 %% 
 
 % Find the maximum length among the variables
@@ -7639,3 +7743,243 @@ for idx = 1:length(o)
     clear sec_signal_EEG EMG EEG delta465_filt_2 sec_signal_2 signal_fs EEG_fs signal_fs_var_name EEG_fs_var_name sec_signal_EEG_var_name EEG_var_name delta465_filt_2 sec_signal_2_var_name delta465_var_name
 end
 
+%% Get mean/SD of RRs
+% List of suffixes for each animal
+suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213'}; % Add more suffixes as needed
+
+suffixes = {'_584', '_577', '_512', '_513'}; %YFP for CHr2
+suffixes = {'_489', '_480', '_491', '_497', '_511', '_522'}; %ChR2
+
+suffixes = {'_408', '_420', '_484', '_468'}; %yfp for Arch
+suffixes = {'_387', '_412', '_414', '_416'}; %arch
+
+% Initialize an array to store all RR values
+all_RR_values = [];
+
+% Loop through each suffix to access raw RR values
+for s = 1:length(suffixes)
+    suffix = suffixes{s};
+    
+    % Construct the variable name for RR with the current suffix
+    RR_name = ['RR', suffix];
+    
+    % Check if the RR variable exists in the workspace
+    if exist(RR_name, 'var')
+        % Retrieve the RR values from the workspace
+        RR = eval(RR_name);
+        
+        % Concatenate the current RR values to the array
+        all_RR_values = [all_RR_values; RR'];
+    else
+        warning('Variable %s does not exist in the workspace.', RR_name);
+    end
+end
+
+% Calculate the overall statistics for all concatenated RR values
+if ~isempty(all_RR_values)
+    overall_mean = mean(all_RR_values);
+    overall_sd = std(all_RR_values);
+    overall_min = min(all_RR_values);
+    overall_max = max(all_RR_values);
+
+    % Display the results
+    fprintf('Overall Mean: %.2f\n', overall_mean);
+    fprintf('Overall SD: %.2f\n', overall_sd);
+    fprintf('Overall Min: %.2f\n', overall_min);
+    fprintf('Overall Max: %.2f\n', overall_max);
+
+
+else
+    disp('No RR values were found. Please check the workspace for missing variables.');
+end
+%% same but in BPM
+% List of suffixes for each animal
+suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213'}; % Add more suffixes as needed
+
+% Initialize an array to store all RR values converted to BPM
+all_RR_BPM = [];
+
+% Loop through each suffix to access raw RR values
+for s = 1:length(suffixes)
+    suffix = suffixes{s};
+    
+    % Construct the variable name for RR with the current suffix
+    RR_name = ['RR', suffix];
+    
+    % Check if the RR variable exists in the workspace
+    if exist(RR_name, 'var')
+        % Retrieve the RR values from the workspace
+        RR = eval(RR_name);
+        
+        % Convert RR values (seconds between beats) to BPM
+        RR_BPM = 60 ./ RR; % Reciprocal of RR in seconds gives beats per minute
+        
+        % Concatenate the current RR values to the array
+        all_RR_BPM = [all_RR_BPM; RR_BPM'];
+    else
+        warning('Variable %s does not exist in the workspace.', RR_name);
+    end
+end
+
+% Calculate the overall statistics for all concatenated RR values in BPM
+if ~isempty(all_RR_BPM)
+    overall_mean_BPM = mean(all_RR_BPM);
+    overall_sd_BPM = std(all_RR_BPM);
+    overall_min_BPM = min(all_RR_BPM);
+    overall_max_BPM = max(all_RR_BPM);
+
+    % Display the results
+    fprintf('Overall Mean (BPM): %.2f\n', overall_mean_BPM);
+    fprintf('Overall SD (BPM): %.2f\n', overall_sd_BPM);
+    fprintf('Overall Min (BPM): %.2f\n', overall_min_BPM);
+    fprintf('Overall Max (BPM): %.2f\n', overall_max_BPM);
+else
+    disp('No RR values were found. Please check the workspace for missing variables.');
+end
+
+%% Find mean RR during NREM
+% List of suffixes for each animal
+suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213'}; % Add more suffixes as needed
+% '_115', '_122', '_124'
+
+% Initialize the arrays to store all RR times and values during NREM periods
+all_RR_times = [];
+all_RR_values = [];
+
+% Loop through each suffix
+for s = 1:length(suffixes)
+    suffix = suffixes{s};
+    suffix_str = suffix(2:end); % Remove the initial underscore for storing in the cell
+    
+    % Construct variable names with the current suffix
+    NREMinclMA_periods_name = ['NREMinclMA_periods', suffix];
+    RR_name = ['RR', suffix];
+    RR_time_name = ['RR_time', suffix];
+    
+    % Check if the variables exist in the environment
+    if exist(NREMinclMA_periods_name, 'var') && exist(RR_name, 'var') && exist(RR_time_name, 'var')
+        
+        % Retrieve the variables from the workspace
+        NREMinclMA_periods = eval(NREMinclMA_periods_name);
+        RR = eval(RR_name);
+        RR_time = eval(RR_time_name);
+        
+        % Loop through each period in NREMinclMA_periods
+        for i = 1:size(NREMinclMA_periods, 1)
+            startTime = NREMinclMA_periods(i, 1);
+            endTime = NREMinclMA_periods(i, 2);
+            
+            % Find indices in RR_time corresponding to the current period
+            RR_periodIndices = find(RR_time >= startTime & RR_time <= endTime);
+            
+            % Extract the corresponding RR times and values
+            RR_values = RR(RR_periodIndices);
+            RR_times = RR_time(RR_periodIndices);
+            
+            % Store the extracted RR times and values
+            all_RR_times = [all_RR_times; RR_times']; %#ok<AGROW>
+            all_RR_values = [all_RR_values; RR_values']; %#ok<AGROW>
+        end
+    else
+        warning('Variables %s, %s, and/or %s do not exist in the workspace.', ...
+            NREMinclMA_periods_name, RR_name, RR_time_name);
+    end
+end
+
+% Calculate the mean and standard deviation of the RR intervals during NREM periods (in seconds)
+mean_RR_time = mean(all_RR_values); % Mean RR interval in seconds
+std_RR_time = std(all_RR_values);   % Standard deviation of RR interval in seconds
+
+% Convert RR intervals to BPM (beats per minute)
+mean_RR_BPM = 60 / mean_RR_time;   % Mean RR in BPM
+std_RR_BPM = 60 / mean_RR_time^2 * std_RR_time;  % Approximate standard deviation in BPM using propagation of error
+
+% Display the results for RR intervals
+fprintf('Mean RR interval during NREM periods: %.4f seconds\n', mean_RR_time);
+fprintf('Standard Deviation of RR interval during NREM periods: %.4f seconds\n', std_RR_time);
+
+% Display the results for BPM
+fprintf('Mean RR in BPM during NREM periods: %.4f BPM\n', mean_RR_BPM);
+fprintf('Standard Deviation of RR in BPM during NREM periods: %.4f BPM\n', std_RR_BPM);
+
+% Optional: clear temporary variables
+clear suffixes s suffix suffix_str NREMinclMA_periods_name RR_name RR_time_name NREMinclMA_periods RR RR_time i startTime endTime RR_periodIndices RR_values RR_times;
+
+%% Find RR for REM
+% List of suffixes for each animal
+suffixes = {'_209', '_207', '_205', '_420', '_588', '_201', '_213'}; % Add more suffixes as needed
+
+% Initialize arrays to store all RR times and values during REM periods
+all_RR_times_REM = [];
+all_RR_values_REM = [];
+
+% Loop through each suffix
+for s = 1:length(suffixes)
+    suffix = suffixes{s};
+    suffix_str = suffix(2:end); % Remove the initial underscore for storing in the cell
+    
+    % Construct variable names with the current suffix
+    REM_vector_name = ['REM_binary_vector', suffix];
+    RR_name = ['RR', suffix];
+    RR_time_name = ['RR_time', suffix];
+    
+    % Check if the variables exist in the environment
+    if exist(REM_vector_name, 'var') && exist(RR_name, 'var') && exist(RR_time_name, 'var')
+        
+        % Retrieve the variables from the workspace
+        REM_binary_vector = eval(REM_vector_name); % Binary vector indicating REM periods
+        RR = eval(RR_name); % RR intervals in seconds
+        RR_time = eval(RR_time_name); % Corresponding time points for RR intervals
+
+        % Ensure REM_binary_vector is a column vector
+        REM_binary_vector = REM_binary_vector(:); 
+        
+        % Identify the start and end times of each REM period
+        REM_start_indices = find(diff([0; REM_binary_vector]) == 1); % Indices where REM starts
+        REM_end_indices = find(diff([REM_binary_vector; 0]) == -1); % Indices where REM ends
+        
+        % Loop through each identified REM period
+        for i = 1:length(REM_start_indices)
+            start_time = REM_start_indices(i); % Start time of REM period
+            end_time = REM_end_indices(i); % End time of REM period
+            
+            % Convert REM period indices to actual time (since sampling is 1 Hz, times are equal to indices)
+            REM_start_time = start_time; % Start time in seconds
+            REM_end_time = end_time; % End time in seconds
+            
+            % Find indices in RR_time corresponding to the current REM period
+            RR_periodIndices = find(RR_time >= REM_start_time & RR_time <= REM_end_time);
+            
+            % Extract the corresponding RR values
+            RR_values_REM = RR(RR_periodIndices);
+            
+            % Store the extracted RR times and values
+            if ~isempty(RR_periodIndices)
+                all_RR_times_REM = [all_RR_times_REM; RR_time(RR_periodIndices)']; %#ok<AGROW>
+                all_RR_values_REM = [all_RR_values_REM; RR_values_REM']; %#ok<AGROW>
+            end
+        end
+    else
+        warning('Variables %s, %s, and/or %s do not exist in the workspace.', ...
+            REM_vector_name, RR_name, RR_time_name);
+    end
+end
+
+% Calculate the mean and standard deviation of the RR intervals during REM periods (in seconds)
+mean_RR_time_REM = mean(all_RR_values_REM); % Mean RR interval in seconds during REM
+std_RR_time_REM = std(all_RR_values_REM);   % Standard deviation of RR interval in seconds during REM
+
+% Convert RR intervals to BPM (beats per minute)
+mean_RR_BPM_REM = 60 / mean_RR_time_REM;   % Mean RR in BPM during REM
+std_RR_BPM_REM = 60 / mean_RR_time_REM^2 * std_RR_time_REM;  % Approximate standard deviation in BPM during REM using propagation of error
+
+% Display the results for RR intervals
+fprintf('Mean RR interval during REM periods: %.4f seconds\n', mean_RR_time_REM);
+fprintf('Standard Deviation of RR interval during REM periods: %.4f seconds\n', std_RR_time_REM);
+
+% Display the results for BPM
+fprintf('Mean RR in BPM during REM periods: %.4f BPM\n', mean_RR_BPM_REM);
+fprintf('Standard Deviation of RR in BPM during REM periods: %.4f BPM\n', std_RR_BPM_REM);
+
+% Optional: clear temporary variables
+clear suffixes s suffix suffix_str REM_vector_name RR_name RR_time_name REM_binary_vector RR RR_time REM_start_indices REM_end_indices start_time end_time i RR_periodIndices RR_values_REM;

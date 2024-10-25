@@ -8,9 +8,9 @@ function [PXX_chr2, PXX_yfp, f, resultTable_chr2, resultTable_yfp] = PSD_chr2_NE
     PXX_yfp = cell(5, 2);
     
     % Process chr2 group
-    [PXX_chr2, f] = process_group_NE(chr2, 'chr2', PXX_chr2);
+    [PXX_chr2, f] = process_group_NE_30sec(chr2, 'chr2', PXX_chr2);
     % Process yfp group
-    [PXX_yfp, f] = process_group_NE(yfp, 'yfp', PXX_yfp);
+    [PXX_yfp, f] = process_group_NE_30sec(yfp, 'yfp', PXX_yfp);
     
     % Initialize tables for returning mean and SEM
     resultTable_chr2 = table(f(:), 'VariableNames', {'f'});

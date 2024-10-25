@@ -775,7 +775,7 @@ saveDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2
 epoc_start = 60;
 epoc_end = 60; 
 
-results = aggregate_event_data(saveDirectory, event_var, yfp, data_types);
+results_yfp = aggregate_event_data(saveDirectory, event_var, yfp, data_types);
 [table_NE, table_RR, table_SO, table_Delta, table_Theta, table_Sigma, table_Beta, table_Gamma_low, table_Gamma_high] = create_tables_from_results(results);
 table_NE_ds = table_NE(1:5:end, :);
 table_RR_ds = table_RR(1:5:end, :);
@@ -789,6 +789,7 @@ writetable(table_Beta, 'yfp_table_Beta.csv')
 writetable(table_Gamma_low, 'yfp_table_Gamma_low.csv')
 writetable(table_Gamma_high, 'yfp_table_Gamma_high.csv')
 
+results_chr2 = aggregate_event_data(saveDirectory, event_var, chr2, data_types);
 [NE_table, RR_table, SO_table, Delta_table, Theta_table, Sigma_table, Beta_table, Gamma_low_table, Gamma_high_table] = figure_2_reorganized(results, epoc_start, epoc_end, main_title, titles);
 figure_2_reorganized_mean_centered(results, epoc_start, epoc_end, main_title, titles);
 
@@ -829,9 +830,9 @@ times_matrix_pre.EEG.range = [-40, -20];
 % Call the function with the specified time range
 %auc_data = extract_auc_and_plot(o, event_var, saveDirectory, times_matrix_post, outputDirectory, titles);
 
-auc_data_yfp = extract_auc_and_plot_3(yfp, event_var, saveDirectory, times_matrix_pre, times_matrix_post); %This is the right one
-auc_diff_table = plot_auc_bar(auc_data_yfp, event_var, yfp, titles);
-writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
+auc_data_yfp = extract_auc_and_plot_3(chr2, event_var, saveDirectory, times_matrix_pre, times_matrix_post); %This is the right one
+auc_diff_table = plot_auc_bar(auc_data_yfp, event_var, chr2, titles);
+writetable(auc_diff_table, 'chr2_auc_diff_pre_table.csv')
 
 % PRE is -20 to 0 with -40 to -20 baseline
 %POST is 0 to 20 with 20 to 40 as baseline
@@ -840,7 +841,7 @@ writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
 %% continued - change table to graphpad format
 
     % Define the file path
-    file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_pre_table.csv';
+    file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\AUC recalculated\chr2_auc_diff_post_table.csv';
     
     % Load the CSV file into a table
     data_table = readtable(file_path);
@@ -849,10 +850,10 @@ writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
     data_table.SubjectID = string(data_table.SubjectID);
     
     % List of columns to process
-    data_columns = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
+    data_columns = {'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_high'};
         
     % Define the output directory
-    output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC of Traces');
+    output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC recalculated');
     
     % Create the directory if it doesn't exist
     if ~exist(output_dir, 'dir')
@@ -864,7 +865,7 @@ writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
         column_name = data_columns{i};
         
         % Filter data for chr2 subjects
-        chr2_data = data_table(ismember(data_table.SubjectID, yfp), :);
+        chr2_data = data_table(ismember(data_table.SubjectID, chr2), :);
         
         % Initialize an empty table to store the results
         combined_table = table(chr2_data.SubjectID, 'VariableNames', {'SubjectID'});
@@ -886,14 +887,14 @@ writetable(auc_diff_table, 'yfp_auc_diff_pre_table.csv')
         end
         
         % Save the combined table to a CSV file
-        output_file = fullfile(output_dir, sprintf('%s_combined_pre_yfp.csv', column_name));
+        output_file = fullfile(output_dir, sprintf('%s_combined_post_chr2.csv', column_name));
         writetable(combined_table, output_file);
     end
 
     %% Make a pre-post table
     % Define the pre and post file paths
-pre_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_pre_table.csv';
-post_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\yfp_auc_diff_post_table.csv';
+pre_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\AUC recalculated\chr2_auc_diff_pre_table.csv';
+post_file_path = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data\AUC recalculated\chr2_auc_diff_post_table.csv';
 
 % Load the CSV files into tables
 pre_data_table = readtable(pre_file_path);
@@ -904,10 +905,10 @@ pre_data_table.SubjectID = string(pre_data_table.SubjectID);
 post_data_table.SubjectID = string(post_data_table.SubjectID);
 
 % List of columns to process
-data_columns = {'NE', 'RR', 'SO', 'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_low', 'Gamma_high'};
+data_columns = {'Delta', 'Theta', 'Sigma', 'Beta', 'Gamma_high'};
 
 % Define the output directory
-output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC of Traces');
+output_dir = fullfile('C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\yfp data', 'AUC recalculated');
 
 % Create the directory if it doesn't exist
 if ~exist(output_dir, 'dir')
@@ -919,8 +920,8 @@ for i = 1:length(data_columns)
     column_name = data_columns{i};
     
     % Load pre and post tables for each data type
-    pre_table_path = fullfile(output_dir, sprintf('%s_combined_pre_yfp.csv', column_name));
-    post_table_path = fullfile(output_dir, sprintf('%s_combined_post_yfp.csv', column_name));
+    pre_table_path = fullfile(output_dir, sprintf('%s_combined_pre_chr2.csv', column_name));
+    post_table_path = fullfile(output_dir, sprintf('%s_combined_post_chr2.csv', column_name));
     
     pre_table = readtable(pre_table_path);
     post_table = readtable(post_table_path);
@@ -941,20 +942,191 @@ for i = 1:length(data_columns)
     end
     
     % Save the combined table to a CSV file
-    output_file = fullfile(output_dir, sprintf('%s_combined_both_table.csv', column_name));
+    output_file = fullfile(output_dir, sprintf('%s_chr2_combined_both_table.csv', column_name));
     writetable(combined_table, output_file);
 end
     
     %% PSD prep
 %% Extract RR during NREM for each laser level (new PSD version)
+uniqueIDs = {'480', '489', '491', '497', '511', '522', '512', '513', '577', '584'};
 RR_intervals = extract_RR_intervals_chr2(uniqueIDs);
 [AUC_RR_PSD_chr2_all, AUC_RR_PSD_yfp_all] = PSD_RR_chr2_all_NREM(RR_intervals, chr2, yfp);
+[AUC_table_RR, PeakFrequency_table_RR, PeakPower_table_RR, mean_psd_chr2_table_RR, sem_psd_chr2_table_RR, mean_psd_yfp_table_RR, sem_psd_yfp_table_RR, f] = PSD_RR_chr2_all_NREM(RR_intervals, chr2, yfp);
 
+f = f'
 NE_intervals = extract_NE_intervals_chr2(uniqueIDs);
 [AUC_NE_PSD_chr2_all, AUC_NE_PSD_yfp_all] = PSD_NE_chr2_all_NREM(NE_intervals, chr2, yfp);
 
 plot_relative_perc_auc_chr2(AUC_RR_PSD_chr2_all, AUC_RR_PSD_yfp_all, 'AUC of PSD RR for chr2 and yfp');
 plot_relative_perc_auc_chr2(AUC_NE_PSD_chr2_all, AUC_NE_PSD_yfp_all, 'AUC of PSD NE for chr2 and yfp');
+
+writetable(AUC_table_RR, 'RR_psd_AUC.csv')
+writetable(PeakFrequency_table_RR, 'RR_psd_freq.csv')
+writetable(PeakPower_table_RR, 'RR_psd_peak.csv')
+
+%% Created weigthed mean/SEM for PSD quantification export
+
+% Assuming 'AUC_table_RR' is your data table with columns:
+% - 'AUC': The variable you want to calculate the weighted mean and SEM for
+% - 'EventVar': The first grouping variable with values like 'Arch' and 'YFP'
+% - 'LaserLevel': The second grouping variable, integer values from 0 to 5
+% - 'BoutLength': The weights for each observation
+
+% Get the unique groups for 'EventVar' and 'LaserLevel'
+eventVars = unique(PeakPower_table_RR.group);
+laserLevels = unique(PeakPower_table_RR.LaserLevel);
+
+% Initialize a table to store the results
+result_table = table();
+
+% Counter for rows in the result table
+row_counter = 1;
+
+% Loop over each combination of 'EventVar' and 'LaserLevel'
+for i = 1:length(eventVars)
+    for j = 1:length(laserLevels)
+        % Get current group values
+        eventVar = eventVars{i};
+        laserLevel = laserLevels(j);
+        
+        % Select data for the current group combination
+        idx = strcmp(PeakPower_table_RR.group, eventVar) & PeakPower_table_RR.LaserLevel == laserLevel;
+        
+        % Check if there is data for this combination
+        if sum(idx) > 0
+            data = PeakPower_table_RR.PeakPower(idx);
+            weights = PeakPower_table_RR.BoutLength(idx);
+            n = sum(idx); % Number of events (rows) in the data for this group
+            
+            % Calculate weighted mean
+            weighted_mean = sum(weights .* data) / sum(weights);
+            
+            % Calculate weighted variance
+            weighted_variance = sum(weights .* (data - weighted_mean).^2) / sum(weights);
+            
+            % Calculate weighted standard error of the mean (SEM)
+            % SEM is the square root of the weighted variance divided by sqrt(n)
+            weighted_sem = sqrt(weighted_variance) / sqrt(n);
+            
+            % Store the results in the table
+            result_table(row_counter, :) = {eventVar, laserLevel, weighted_mean, weighted_sem, n};
+            row_counter = row_counter + 1;
+        end
+    end
+end
+
+% Assign variable names to the result table
+result_table.Properties.VariableNames = {'EventVar', 'LaserLevel', 'WeightedMean', 'WeightedSEM', 'N'};
+
+% Display the results
+disp(result_table);
+
+
+%% Reshape mean/SEM traces
+
+% Get the number of rows expected in the final table
+numRows = length(mean_psd_chr2_table_RR{1, 1}{1});
+
+% Unnest mean_psd_chr2_table_RR
+unnested_mean_psd_chr2_table_RR = table();  % Create an empty table to store the results
+for i = 1:width(mean_psd_chr2_table_RR)
+    nestedData = mean_psd_chr2_table_RR{1, i}{1};  % Extract the 1501x1 array from the nested cell
+    unnested_mean_psd_chr2_table_RR(:, i) = array2table(nestedData);  % Store in the new table
+end
+
+% Unnest sem_psd_chr2_table_RR
+unnested_sem_psd_chr2_table_RR = table();  % Create an empty table to store the results
+for i = 1:width(sem_psd_chr2_table_RR)
+    nestedData = sem_psd_chr2_table_RR{1, i}{1};  % Extract the 1501x1 array from the nested cell
+    unnested_sem_psd_chr2_table_RR(:, i) = array2table(nestedData);  % Store in the new table
+end
+
+% Unnest mean_psd_yfp_table_RR
+unnested_mean_psd_yfp_table_RR = table();  % Create an empty table to store the results
+for i = 1:width(mean_psd_yfp_table_RR)
+    nestedData = mean_psd_yfp_table_RR{1, i}{1};  % Extract the 1501x1 array from the nested cell
+    unnested_mean_psd_yfp_table_RR(:, i) = array2table(nestedData);  % Store in the new table
+end
+
+% Unnest sem_psd_yfp_table_RR
+unnested_sem_psd_yfp_table_RR = table();  % Create an empty table to store the results
+for i = 1:width(sem_psd_yfp_table_RR)
+    nestedData = sem_psd_yfp_table_RR{1, i}{1};  % Extract the 1501x1 array from the nested cell
+    unnested_sem_psd_yfp_table_RR(:, i) = array2table(nestedData);  % Store in the new table
+end
+%% Resharpe AUC, peak, peak hz
+
+AUC_table_RR = sortrows(AUC_table_RR, {'LaserLevel', 'group'});
+
+% Get unique combinations of LaserLevel and group
+[uniqueComb, ~, idx] = unique([AUC_table_RR.LaserLevel, string(AUC_table_RR.group)], 'rows');
+
+% Initialize a structure to store results
+grouped_AUC = struct();
+
+% Loop through unique combinations and store the AUC values in each group
+for i = 1:size(uniqueComb, 1)
+    % Get the current combination
+    laserLevel = uniqueComb(i, 1);
+    groupType = uniqueComb(i, 2);
+    
+    % Create a field name based on the combination
+    fieldName = strcat('LaserLevel_', string(laserLevel), '_', groupType);
+    
+    % Find the corresponding rows in the original table
+    AUC_values = AUC_table_RR.AUC(idx == i);
+    
+    % Store the AUC values in the structure under this field name
+    grouped_AUC.(fieldName) = AUC_values;
+end
+
+PeakFrequency_table_RR = sortrows(PeakFrequency_table_RR, {'LaserLevel', 'group'});
+
+% Get unique combinations of LaserLevel and group
+[uniqueComb, ~, idx] = unique([PeakFrequency_table_RR.LaserLevel, string(PeakFrequency_table_RR.group)], 'rows');
+
+% Initialize a structure to store results
+grouped_hz = struct();
+
+% Loop through unique combinations and store the AUC values in each group
+for i = 1:size(uniqueComb, 1)
+    % Get the current combination
+    laserLevel = uniqueComb(i, 1);
+    groupType = uniqueComb(i, 2);
+    
+    % Create a field name based on the combination
+    fieldName = strcat('LaserLevel_', string(laserLevel), '_', groupType);
+    
+    % Find the corresponding rows in the original table
+    peak_hz = PeakFrequency_table_RR.PeakFrequency(idx == i);
+    
+    % Store the AUC values in the structure under this field name
+    grouped_hz.(fieldName) = peak_hz;
+end
+
+PeakPower_table_RR = sortrows(PeakPower_table_RR, {'LaserLevel', 'group'});
+
+% Get unique combinations of LaserLevel and group
+[uniqueComb, ~, idx] = unique([PeakPower_table_RR.LaserLevel, string(PeakPower_table_RR.group)], 'rows');
+
+% Initialize a structure to store results
+grouped_power = struct();
+
+% Loop through unique combinations and store the AUC values in each group
+for i = 1:size(uniqueComb, 1)
+    % Get the current combination
+    laserLevel = uniqueComb(i, 1);
+    groupType = uniqueComb(i, 2);
+    
+    % Create a field name based on the combination
+    fieldName = strcat('LaserLevel_', string(laserLevel), '_', groupType);
+    
+    % Find the corresponding rows in the original table
+    peak_power = PeakPower_table_RR.PeakPower(idx == i);
+    
+    % Store the AUC values in the structure under this field name
+    grouped_power.(fieldName) = peak_power;
+end
 
 %% Continued - 'new' PSD AUC plot for RR
 num_laser_levels = 6;
@@ -1149,29 +1321,287 @@ clear uniqueIDs u uniqueId id_with_M sleepDirectory NREMinclMA_periods_file rrDi
 clear NREMinclMA_periods RR RR_time shiftTimes start_time end_time overlap_startTime overlap_endTime;
 clear periodIndices RR_values laser_level i;
 
+%% Get BPM for baseline
+% Define unique IDs for chr2 and yfp
+uniqueIDs_chr2 = {'489', '480', '491', '497', '511', '522'};
+uniqueIDs_yfp = {'584', '577', '512', '513'};
+
+% Directories for RR and sleep data
+RRDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\RR';
+sleepDirectory = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\chr2_yfp\Sleep';
+
+% Define the laser shift timestamps
+laser_shift_480 = {'03:46:16', '04:46:16', '05:46:16', '06:46:16', '07:53:15', '08:55:07'};
+laser_shift_489 = {'02:50:55', '03:51:55', '04:52:20', '05:52:57', '06:50:52', '07:50:50'};
+laser_shift_491 = {'03:05:05', '04:05:08', '05:05:50', '06:06:30', '07:05:07', '08:06:37'};
+laser_shift_497 = {'02:52:09', '03:52:09', '04:52:09', '05:52:09', '06:52:09', '07:52:10'};
+laser_shift_511 = {'02:26:30', '03:30:59', '04:26:29', '05:26:25', '06:26:23', '07:26:22'};
+laser_shift_522 = {'02:43:00', '03:50:00', '04:50:00', '05:48:00', '06:48:00', '07:48:00'};
+laser_shift_577 = {'03:02:25', '04:02:58', '05:03:37', '06:03:58', '07:04:30', '08:05:51'};
+laser_shift_584 = {'02:31:00', '03:32:05', '04:32:30', '05:33:10', '06:33:25', '07:32:40'};
+laser_shift_586 = {'02:49:33', '03:49:47', '04:50:06', '05:49:35', '06:49:35', '07:49:34'};
+laser_shift_512 = {'02:43:49', '03:43:51', '04:43:49', '05:44:18', '06:44:12', '07:44:20'};
+laser_shift_513 = {'02:43:00', '03:50:00', '04:50:00', '05:48:00', '06:48:00', '07:48:00'};
+
+% Convert laser shift timestamps to seconds
+convertToSeconds = @(t) cellfun(@(x) sum(sscanf(x, '%d:%d:%d').*[3600; 60; 1]), t);
+
+laser_shift_seconds = struct();
+laser_shift_seconds.('M480') = convertToSeconds(laser_shift_480);
+laser_shift_seconds.('M489') = convertToSeconds(laser_shift_489);
+laser_shift_seconds.('M491') = convertToSeconds(laser_shift_491);
+laser_shift_seconds.('M497') = convertToSeconds(laser_shift_497);
+laser_shift_seconds.('M511') = convertToSeconds(laser_shift_511);
+laser_shift_seconds.('M522') = convertToSeconds(laser_shift_522);
+laser_shift_seconds.('M577') = convertToSeconds(laser_shift_577);
+laser_shift_seconds.('M584') = convertToSeconds(laser_shift_584);
+laser_shift_seconds.('M586') = convertToSeconds(laser_shift_586);
+laser_shift_seconds.('M512') = convertToSeconds(laser_shift_512);
+laser_shift_seconds.('M513') = convertToSeconds(laser_shift_513);
+
+% Initialize result containers for baseline RR intervals
+RR_chr2_baseline = [];
+RR_yfp_baseline = [];
+
+% Process ChR2 group
+for i = 1:length(uniqueIDs_chr2)
+    uniqueId = uniqueIDs_chr2{i};
+    RRFile = fullfile(RRDirectory, sprintf('RR_%s.mat', uniqueId));
+    RRTimeFile = fullfile(RRDirectory, sprintf('RR_time_%s.mat', uniqueId));
+    sleepFile = fullfile(sleepDirectory, sprintf('NREMinclMA_periods_%s.mat', uniqueId));
+
+    if exist(RRFile, 'file') && exist(RRTimeFile, 'file') && exist(sleepFile, 'file')
+        RR_data = load(RRFile);
+        RR_time_data = load(RRTimeFile);
+        sleep_data = load(sleepFile);
+
+        RR = RR_data.(sprintf('RR_%s', uniqueId));
+        RR_time = RR_time_data.(sprintf('RR_time_%s', uniqueId));
+        NREM_periods = sleep_data.(sprintf('NREMinclMA_periods_%s', uniqueId));
+
+        % Get laser shifts for the current subject
+        laser_shifts = laser_shift_seconds.(sprintf('M%s', uniqueId));
+
+        % Pre-laser and post-laser baseline extraction
+        start_time_pre = 0; % Start time (before first laser)
+        end_time_pre = laser_shifts(1); % First laser starts
+        start_time_post = laser_shifts(end); % End of last laser
+        end_time_post = RR_time(end); % End of recording
+
+        % Extract RR intervals in pre-laser period
+        for j = 1:size(NREM_periods, 1)
+            onset = NREM_periods(j, 1);
+            offset = NREM_periods(j, 2);
+            if onset < end_time_pre && offset > start_time_pre
+                RR_segment_pre = RR(RR_time >= max(onset, start_time_pre) & RR_time <= min(offset, end_time_pre));
+                RR_chr2_baseline = [RR_chr2_baseline; RR_segment_pre']; %#ok<AGROW>
+            end
+        end
+
+    end
+end
+
+% Process YFP group
+for i = 1:length(uniqueIDs_yfp)
+    uniqueId = uniqueIDs_yfp{i};
+    RRFile = fullfile(RRDirectory, sprintf('RR_%s.mat', uniqueId));
+    RRTimeFile = fullfile(RRDirectory, sprintf('RR_time_%s.mat', uniqueId));
+    sleepFile = fullfile(sleepDirectory, sprintf('NREMinclMA_periods_%s.mat', uniqueId));
+
+    if exist(RRFile, 'file') && exist(RRTimeFile, 'file') && exist(sleepFile, 'file')
+        RR_data = load(RRFile);
+        RR_time_data = load(RRTimeFile);
+        sleep_data = load(sleepFile);
+
+        RR = RR_data.(sprintf('RR_%s', uniqueId));
+        RR_time = RR_time_data.(sprintf('RR_time_%s', uniqueId));
+        NREM_periods = sleep_data.(sprintf('NREMinclMA_periods_%s', uniqueId));
+
+        % Get laser shifts for the current subject
+        laser_shifts = laser_shift_seconds.(sprintf('M%s', uniqueId));
+
+        % Pre-laser and post-laser baseline extraction
+        start_time_pre = 0; % Start time (before first laser)
+        end_time_pre = laser_shifts(1); % First laser starts
+        start_time_post = laser_shifts(end); % End of last laser
+        end_time_post = RR_time(end); % End of recording
+
+        % Extract RR intervals in pre-laser period
+        for j = 1:size(NREM_periods, 1)
+            onset = NREM_periods(j, 1);
+            offset = NREM_periods(j, 2);
+            if onset < end_time_pre && offset > start_time_pre
+                RR_segment_pre = RR(RR_time >= max(onset, start_time_pre) & RR_time <= min(offset, end_time_pre));
+                RR_yfp_baseline = [RR_yfp_baseline; RR_segment_pre']; %#ok<AGROW>
+            end
+        end
+    end
+end
+
+% Calculate mean and SD for RR intervals and BPM for ChR2
+mean_RR_chr2 = mean(RR_chr2_baseline);
+std_RR_chr2 = std(RR_chr2_baseline);
+mean_BPM_chr2 = 60 / mean_RR_chr2;
+std_BPM_chr2 = (60 / mean_RR_chr2) * (std_RR_chr2 / mean_RR_chr2);
+
+% Calculate mean and SD for RR intervals and BPM for YFP
+mean_RR_yfp = mean(RR_yfp_baseline);
+std_RR_yfp = std(RR_yfp_baseline);
+mean_BPM_yfp = 60 / mean_RR_yfp;
+std_BPM_yfp = (60 / mean_RR_yfp) * (std_RR_yfp / mean_RR_yfp);
+
+% Print the results
+fprintf('ChR2 Baseline Mean RR: %.2f, SD RR: %.2f\n', mean_RR_chr2, std_RR_chr2);
+fprintf('ChR2 Baseline Mean BPM: %.2f, SD BPM: %.2f\n', mean_BPM_chr2, std_BPM_chr2);
+
+fprintf('YFP Baseline Mean RR: %.2f, SD RR: %.2f\n', mean_RR_yfp, std_RR_yfp);
+fprintf('YFP Baseline Mean BPM: %.2f, SD BPM: %.2f\n', mean_BPM_yfp, std_BPM_yfp);
+
+
+
+%% Get mean/SD RR/BPM for each laser level
+
+[results_chr2_table, results_yfp_table] = extract_and_calculate_RR();
+
+chr2 = {'489', '480', '491', '497', '511', '522'};
+yfp = {'584', '577', '512', '513'};
+
+% Initialize result tables
+results_chr2 = [];
+results_yfp = [];
+
+% Function to calculate the mean and SD for RR and BPM
+calculateStats = @(RR_values) struct('mean_RR', mean(RR_values), ...
+                                     'std_RR', std(RR_values), ...
+                                     'mean_BPM', 60./mean(RR_values), ...
+                                     'std_BPM', 60./mean(RR_values) * std(RR_values)/mean(RR_values));
+
+% Calculate baseline data (before laser level 1 and after laser level 5)
+baseline_chr2 = RR_data_NREM_laser_table(ismember(RR_data_NREM_laser_table.MouseID, chr2) & ...
+                                         (RR_data_NREM_laser_table.Laser_level == 0 | ...
+                                          RR_data_NREM_laser_table.Laser_level == 6), :);
+baseline_yfp = RR_data_NREM_laser_table(ismember(RR_data_NREM_laser_table.MouseID, yfp) & ...
+                                        (RR_data_NREM_laser_table.Laser_level == 0 | ...
+                                         RR_data_NREM_laser_table.Laser_level == 6), :);
+
+% Calculate statistics for baseline chr2
+if ~isempty(baseline_chr2)
+    RR_values_baseline_chr2 = [];
+    for idx = 1:height(baseline_chr2)
+        RR_values_baseline_chr2 = [RR_values_baseline_chr2; baseline_chr2.RR_Values{idx}'];
+    end
+    
+    stats_baseline_chr2 = calculateStats(RR_values_baseline_chr2);
+    results_chr2 = [results_chr2; {0, stats_baseline_chr2.mean_RR, stats_baseline_chr2.std_RR, stats_baseline_chr2.mean_BPM, stats_baseline_chr2.std_BPM}];
+end
+
+% Calculate statistics for baseline yfp
+if ~isempty(baseline_yfp)
+    RR_values_baseline_yfp = [];
+    for idx = 1:height(baseline_yfp)
+        RR_values_baseline_yfp = [RR_values_baseline_yfp; baseline_yfp.RR_Values{idx}'];
+    end
+    
+    stats_baseline_yfp = calculateStats(RR_values_baseline_yfp);
+    results_yfp = [results_yfp; {0, stats_baseline_yfp.mean_RR, stats_baseline_yfp.std_RR, stats_baseline_yfp.mean_BPM, stats_baseline_yfp.std_BPM}];
+end
+
+% Loop through each laser level (1 to 5)
+for laser_level = 1:5
+    % Filter data for the current laser level
+    data_chr2 = RR_data_NREM_laser_table(ismember(RR_data_NREM_laser_table.MouseID, chr2) & ...
+                                         RR_data_NREM_laser_table.Laser_level == laser_level, :);
+    data_yfp = RR_data_NREM_laser_table(ismember(RR_data_NREM_laser_table.MouseID, yfp) & ...
+                                        RR_data_NREM_laser_table.Laser_level == laser_level, :);
+    
+    % Calculate statistics for chr2
+    if ~isempty(data_chr2)
+        % Concatenate RR values handling different lengths
+        RR_values_chr2 = [];
+        for idx = 1:height(data_chr2)
+            RR_values_chr2 = [RR_values_chr2; data_chr2.RR_Values{idx}'];
+        end
+        
+        stats_chr2 = calculateStats(RR_values_chr2);
+        results_chr2 = [results_chr2; {laser_level, stats_chr2.mean_RR, stats_chr2.std_RR, stats_chr2.mean_BPM, stats_chr2.std_BPM}];
+    end
+    
+    % Calculate statistics for yfp
+    if ~isempty(data_yfp)
+        % Concatenate RR values handling different lengths
+        RR_values_yfp = [];
+        for idx = 1:height(data_yfp)
+            RR_values_yfp = [RR_values_yfp; data_yfp.RR_Values{idx}'];
+        end
+        
+        stats_yfp = calculateStats(RR_values_yfp);
+        results_yfp = [results_yfp; {laser_level, stats_yfp.mean_RR, stats_yfp.std_RR, stats_yfp.mean_BPM, stats_yfp.std_BPM}];
+    end
+end
+
+% Convert the results to tables for better readability
+results_chr2_table = cell2table(results_chr2, 'VariableNames', {'Laser_Level', 'Mean_RR', 'SD_RR', 'Mean_BPM', 'SD_BPM'});
+results_yfp_table = cell2table(results_yfp, 'VariableNames', {'Laser_Level', 'Mean_RR', 'SD_RR', 'Mean_BPM', 'SD_BPM'});
+
+% Display the results
+disp('Results for chr2 group:');
+disp(results_chr2_table);
+
+disp('Results for yfp group:');
+disp(results_yfp_table);
+
+% Clear temporary variables
+clear chr2 yfp data_chr2 data_yfp RR_values_chr2 RR_values_yfp stats_chr2 stats_yfp;
+
+
+
 %% Plot PSD
 chr2 = {'489', '480', '491', '497', '511', '522'};
 yfp = {'584', '577', '512', '513'};
 
 [PXX_NE_chr2, PXX_NE_yfp, f_NE, mean_sem_NE_PSD_chr2, mean_sem_NE_PSD_yfp] = PSD_chr2_NE(chr2, yfp);
-[PXX_RR_chr2, PXX_RR_yfp, f_RR, mean_sem_RR_PSD_chr2, mean_sem_RR_PSD_yfp] = PSD_chr2(chr2, yfp);
+[PXX_RR_chr2, PXX_RR_yfp, f_RR, mean_sem_RR_PSD_chr2, mean_sem_RR_PSD_yfp, RR_table_chr2, RR_table_yfp] = PSD_chr2(chr2, yfp);
 
+[RR_values, PSD_values] = Get_example_PSD_laser();
+writetable(RR_values, 'RR_values.csv')
+writetable(PSD_values, 'PSD_values.csv')
+
+%test
+PXX_group = cell(5, 2);
+[PXX_group, f, PXX_bouts] = process_group_RR_30sec(chr2, 'chr2', PXX_group);
 %% Make PSD into table for Graphpad export
 
 % % Process the nested cells for chr2 and yfp
 % resultTable_chr2_NE = processNestedCellsChr2(PXX_NE_chr2, [f_NE], 'chr2');
 % resultTable_chr2_RR = processNestedCellsChr2(PXX_RR_chr2, f_RR, 'chr2');
 
+%this table is defined in the process_group_RR_30sec function and is just
+%saved here for convenience
+writetable(RR_table, 'RR_distributions_chr2.csv')
+writetable(RR_table, 'RR_distributions_yfp.csv')
+
+writetable(mean_sem_NE_PSD_chr2, 'chr2_NE_PSD_trace.csv')
+writetable(mean_sem_RR_PSD_chr2, 'chr2_RR_PSD_trace.csv')
 writetable(mean_sem_NE_PSD_yfp, 'yfp_NE_PSD_trace.csv')
 writetable(mean_sem_RR_PSD_yfp, 'yfp_RR_PSD_trace.csv')
 %% AUC PSD NE
-[AUC_table_chr2, peak_psd_chr2, PeakPower_chr2_NE] = process_group_NE_AUC(chr2, 0.2);
-[AUC_table_yfp, peak_psd_yfp, PeakPower_yfp_NE] = process_group_NE_AUC(yfp, 0.2);
+[AUC_table_chr2, peak_psd_chr2, PeakPower_chr2_NE] = process_group_NE_AUC_30sec(chr2, 0.2);
+[AUC_table_yfp, peak_psd_yfp, PeakPower_yfp_NE] = process_group_NE_AUC_30sec(yfp, 0.2);
 
     %% AUC PSD RR
 
-[AUC_table_chr2_RR, peak_freq_chr2_RR, PeakPower_chr2_RR] = process_group_RR_AUC(chr2, 0.00, 0.15);
-[AUC_table_yfp_RR, peak_freq_yfp_RR, PeakPower_yfp_RR] = process_group_RR_AUC(yfp, 0.00, 0.15);
+[AUC_table_chr2_RR, peak_freq_chr2_RR, PeakPower_chr2_RR] = process_group_RR_AUC_30sec(chr2, 0.00, 0.15);
+[AUC_table_yfp_RR, peak_freq_yfp_RR, PeakPower_yfp_RR] = process_group_RR_AUC_30sec(yfp, 0.00, 0.15);
+
+average_AUC_by_suffix_chr2 = groupsummary(AUC_table_chr2_RR, 'Suffix', 'mean', 'AUC');
+average_AUC_by_suffix_yfp = groupsummary(AUC_table_yfp_RR, 'Suffix', 'mean', 'AUC');
+
+% Rename the 'AUC' column to 'PSD_RR_AUC' for the chr2 table
+average_AUC_by_suffix_chr2.Properties.VariableNames{'mean_AUC'} = 'PSD_RR_AUC';
+
+% Rename the 'AUC' column to 'PSD_RR_AUC' for the yfp table
+average_AUC_by_suffix_yfp.Properties.VariableNames{'mean_AUC'} = 'PSD_RR_AUC';
+
 %% Combine AUC PSD tables for R export
 
 % Add 'GT' column to peak_psd_chr2 table
@@ -1215,6 +1645,27 @@ combined_peak_freq_RR_table = [PeakPower_chr2_RR; PeakPower_yfp_RR];
 
 writetable(combined_peak_psd_table, 'combined_NE_peakPower_psd.csv');
 writetable(combined_peak_freq_RR_table, 'combined_RR_peakPower_psd.csv');
+
+% Add 'GT' column to AUC_table_chr2 table
+AUC_table_chr2.GT = repmat({'chr2'}, height(AUC_table_chr2), 1);
+
+% Add 'GT' column to AUC_table_yfp table
+AUC_table_yfp.GT = repmat({'yfp'}, height(AUC_table_yfp), 1);
+
+% Add 'GT' column to AUC_table_chr2_RR table
+AUC_table_chr2_RR.GT = repmat({'chr2'}, height(AUC_table_chr2_RR), 1);
+
+% Add 'GT' column to AUC_table_yfp_RR table
+AUC_table_yfp_RR.GT = repmat({'yfp'}, height(AUC_table_yfp_RR), 1);
+
+% Combine the AUC_table_chr2 and AUC_table_yfp tables
+combined_AUC_table_table = [AUC_table_chr2; AUC_table_yfp];
+
+% Combine the AUC_table_chr2_RR and AUC_table_yfp_RR tables
+combined_AUC_table_RR_table = [AUC_table_chr2_RR; AUC_table_yfp_RR];
+
+writetable(combined_AUC_table_table, 'combined_NE_AUC_psd.csv');
+writetable(combined_AUC_table_RR_table, 'combined_RR_AUC_psd.csv');
 
 %% Plot AUC for NE PSD
 
@@ -1337,19 +1788,27 @@ writetable(combined_peak_freq_RR_table, 'combined_RR_peakPower_psd.csv');
 
     %% Export peak psd to graphpad format
     
+% [AUC_table_chr2, peak_psd_chr2, PeakPower_chr2_NE] = process_group_NE_AUC_30sec(chr2, 0.2);
+% [AUC_table_yfp, peak_psd_yfp, PeakPower_yfp_NE] = process_group_NE_AUC_30sec(yfp, 0.2);
+% 
+% 
+% [AUC_table_chr2_RR, peak_freq_chr2_RR, PeakPower_chr2_RR] = process_group_RR_AUC_30sec(chr2, 0.00, 0.15);
+% [AUC_table_yfp_RR, peak_freq_yfp_RR, PeakPower_yfp_RR] = process_group_RR_AUC_30sec(yfp, 0.00, 0.15);
+
+
     % Initialize the combined table with AUC_NE_relative as the first column
-    combined_table_graphpad_peak = table(peak_psd_yfp.PeakFrequency, peak_freq_yfp_RR.PeakFrequency, 'VariableNames', {'peakfre_NE', 'peakfre_RR'});
+    combined_table_graphpad_peak = table(peak_psd_chr2.PeakFrequency, peak_freq_chr2_RR.PeakFrequency, 'VariableNames', {'peakfre_NE_chr2', 'peakfre_RR_chr2'});
     
     % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        peakfre_RR_column = NaN(height(peak_freq_yfp_RR), 1);
+        peakfre_RR_column = NaN(height(peak_freq_chr2_RR), 1);
         
         % Find the indices for the current laser level
-        indices = peak_freq_yfp_RR.LaserLevel == level;
+        indices = peak_freq_chr2_RR.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        peakfre_RR_column(indices) = peak_freq_yfp_RR.PeakFrequency(indices);
+        peakfre_RR_column(indices) = peak_freq_chr2_RR.PeakFrequency(indices);
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakfre_RR_column, 'VariableNames', {['peakfre_RR_LaserLevel_' num2str(level)]})];
@@ -1358,35 +1817,35 @@ writetable(combined_peak_freq_RR_table, 'combined_RR_peakPower_psd.csv');
         % Loop over laser levels 1 to 5
     for level = 1:5
         % Initialize the column for the current laser level with NaN
-        peakfre_NE_column = NaN(height(peak_psd_yfp), 1);
+        peakfre_NE_column = NaN(height(peak_psd_chr2), 1);
         
         % Find the indices for the current laser level
-        indices = peak_psd_yfp.LaserLevel == level;
+        indices = peak_psd_chr2.LaserLevel == level;
         
         % Convert the AUC values to relative percentages and place them in the column
-        peakfre_NE_column(indices) = peak_psd_yfp.PeakFrequency(indices);
+        peakfre_NE_column(indices) = peak_psd_chr2.PeakFrequency(indices);
         
         % Add the column to the combined table with the appropriate name
         combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakfre_NE_column, 'VariableNames', {['peakfre_NE_LaserLevel_' num2str(level)]})];
     end
 
-    writetable(combined_table_graphpad_peak, 'yfp_peakfreq_NE_RR_PSD.csv')
+    writetable(combined_table_graphpad_peak, 'chr2_peakfreq_NE_RR_PSD.csv')
 
       %% Export peak power to graphpad format
     
     % Initialize the combined table with AUC_NE_relative as the first column
-combined_table_graphpad_peak = table(PeakPower_chr2_NE.PeakPower, PeakPower_chr2_RR.PeakPower, 'VariableNames', {'PeakPower_NE', 'PeakPower_RR'});
+combined_table_graphpad_peak = table(PeakPower_yfp_NE.PeakPower, PeakPower_yfp_RR.PeakPower, 'VariableNames', {'PeakPower_NE_yfp', 'PeakPower_RR_yfp'});
 
 % Loop over laser levels 1 to 5 for RR
 for level = 1:5
     % Initialize the column for the current laser level with NaN
-    peakPower_RR_column = NaN(height(PeakPower_chr2_RR), 1);
+    peakPower_RR_column = NaN(height(PeakPower_yfp_RR), 1);
     
     % Find the indices for the current laser level
-    indices = PeakPower_chr2_RR.LaserLevel == level;
+    indices = PeakPower_yfp_RR.LaserLevel == level;
     
     % Place the peak power values in the column
-    peakPower_RR_column(indices) = PeakPower_chr2_RR.PeakPower(indices);
+    peakPower_RR_column(indices) = PeakPower_yfp_RR.PeakPower(indices);
     
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakPower_RR_column, 'VariableNames', {['PeakPower_RR_LaserLevel_' num2str(level)]})];
@@ -1395,19 +1854,62 @@ end
 % Loop over laser levels 1 to 5 for NE
 for level = 1:5
     % Initialize the column for the current laser level with NaN
-    peakPower_NE_column = NaN(height(PeakPower_chr2_NE), 1);
+    peakPower_NE_column = NaN(height(PeakPower_yfp_NE), 1);
     
     % Find the indices for the current laser level
-    indices = PeakPower_chr2_NE.LaserLevel == level;
+    indices = PeakPower_yfp_NE.LaserLevel == level;
     
     % Place the peak power values in the column
-    peakPower_NE_column(indices) = PeakPower_chr2_NE.PeakPower(indices);
+    peakPower_NE_column(indices) = PeakPower_yfp_NE.PeakPower(indices);
     
     % Add the column to the combined table with the appropriate name
     combined_table_graphpad_peak = [combined_table_graphpad_peak, table(peakPower_NE_column, 'VariableNames', {['PeakPower_NE_LaserLevel_' num2str(level)]})];
 end
 
-writetable(combined_table_graphpad_peak, 'chr2_peakpower_NE_RR_PSD.csv')
+writetable(combined_table_graphpad_peak, 'yfp_peakpower_NE_RR_PSD.csv')
+%% Export AUC to Graphpad
+
+% [AUC_table_chr2, peak_psd_chr2, PeakPower_chr2_NE] = process_group_NE_AUC_30sec(chr2, 0.2);
+% [AUC_table_yfp, peak_psd_yfp, PeakPower_yfp_NE] = process_group_NE_AUC_30sec(yfp, 0.2);
+% 
+% 
+% [AUC_table_chr2_RR, peak_freq_chr2_RR, PeakPower_chr2_RR] = process_group_RR_AUC_30sec(chr2, 0.00, 0.15);
+% [AUC_table_yfp_RR, peak_freq_yfp_RR, PeakPower_yfp_RR] = process_group_RR_AUC_30sec(yfp, 0.00, 0.15);
+
+    % Initialize the combined table with AUC_NE_relative as the first column
+    combined_table_graphpad_AUC = table(AUC_table_yfp.AUC, AUC_table_yfp_RR.AUC, 'VariableNames', {'AUC_NE_yfp', 'AUC_RR_yfp'});
+    
+    % Loop over laser levels 1 to 5
+    for level = 1:5
+        % Initialize the column for the current laser level with NaN
+        AUC_RR_column = NaN(height(AUC_table_yfp_RR), 1);
+        
+        % Find the indices for the current laser level
+        indices = AUC_table_yfp_RR.LaserLevel == level;
+        
+        % Convert the AUC values to relative percentages and place them in the column
+        AUC_RR_column(indices) = AUC_table_yfp_RR.AUC(indices);
+        
+        % Add the column to the combined table with the appropriate name
+        combined_table_graphpad_AUC = [combined_table_graphpad_AUC, table(AUC_RR_column, 'VariableNames', {['AUC_RR_LaserLevel_' num2str(level)]})];
+    end
+
+        % Loop over laser levels 1 to 5
+    for level = 1:5
+        % Initialize the column for the current laser level with NaN
+        AUC_NE_column = NaN(height(AUC_table_yfp), 1);
+        
+        % Find the indices for the current laser level
+        indices = AUC_table_yfp.LaserLevel == level;
+        
+        % Convert the AUC values to relative percentages and place them in the column
+        AUC_NE_column(indices) = AUC_table_yfp.AUC(indices);
+        
+        % Add the column to the combined table with the appropriate name
+        combined_table_graphpad_AUC = [combined_table_graphpad_AUC, table(AUC_NE_column, 'VariableNames', {['AUC_NE_LaserLevel_' num2str(level)]})];
+    end
+
+    writetable(combined_table_graphpad_AUC, 'yfp_AUC_NE_RR_PSD.csv')
 
     %% Plot relative % RR/NE PSD AUC (with burst onset data)
 plot_relative_auc_chr2_no_baseline(AUC_table_chr2_RR, AUC_table_yfp_RR, 'AUC of PSD RR for chr2 and yfp');
@@ -1522,7 +2024,7 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
 %% Example trace for figure
     %% 588 figure 2 
 
-    uniqueId = '403'; % Extract mouse ID as a string
+    uniqueId = '412'; % Extract mouse ID as a string
 
     % Dynamically generate variable names based on the mouse ID
     % Access the variables dynamically
@@ -1538,17 +2040,17 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
     EMG = eval(sprintf('EMG_%s', uniqueId));
     RR = eval(sprintf('RR_%s', uniqueId));
     RR_time = eval(sprintf('RR_time_%s', uniqueId));
-    Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
-    Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
+    % Rpeaks = eval(sprintf('Rpeaks_%s', uniqueId));
+    % Rpeaks_time = eval(sprintf('Rpeaks_time_%s', uniqueId));
     signal_fs = eval(sprintf('signal_fs_%s', uniqueId));
     laser_binary = eval(sprintf('laser_binary_%s', uniqueId));
-    mean_spectrogram = eval(sprintf('mean_spectrogram_%s', uniqueId));
-    F = eval(sprintf('F_%s', uniqueId));
-    EEG_bands_fs = eval(sprintf('EEG_bands_fs_%s', uniqueId));
-    MA_binary_vector = [MA_binary_vector, zeros(1, 2)];  % Append zeros horizontally
-    wake_woMA_binary_vector = [wake_woMA_binary_vector, zeros(1, 2)];  % Append zeros horizontally
-
-    
+    % mean_spectrogram = eval(sprintf('mean_spectrogram_%s', uniqueId));
+    % F = eval(sprintf('F_%s', uniqueId));
+    % EEG_bands_fs = eval(sprintf('EEG_bands_fs_%s', uniqueId));
+    % MA_binary_vector = [MA_binary_vector, zeros(1, 2)];  % Append zeros horizontally
+    % wake_woMA_binary_vector = [wake_woMA_binary_vector_403, zeros(1, 2)];  % Append zeros horizontally
+    % 
+    % 
     power_bands = {[0.5, 1], [1, 4], [4, 8], [8, 15], [15, 30], [60, 80], [80, 100]}; % define SO, delta, theta, sigma, and beta, respectively
 
     EEG_bands_time = (1:size(mean_spectrogram, 2))/EEG_bands_fs;
@@ -1564,42 +2066,50 @@ plot_relative_auc_chr2_no_baseline(AUC_table_chr2, AUC_table_yfp, 'AUC of PSD NE
     x_start = 15290;
     x_end = 15380;
 
-    % figure;
-    %     a = subplot(4, 1, 1);
-    %     hold on
-    %     plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
-    %     %plot(Rpeaks_time, Rpeaks, 'ro');
-    %     hold off
-    %     grid on
-    %     xlabel('Time (s)');
-    %     ylabel('EMG (V)');
-    % b = subplot(4, 1, 2);
-    %     hold on
-    %     plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
-    %     %plot(Rpeaks_time, Rpeaks, 'ro');
-    %     hold off
-    %     grid on
-    %     xlabel('Time (s)');
-    %     ylabel('EMG (V)');
-    % c = subplot(4, 1, 3);
-    %     plot(RR_time, RR, 'k-');
-    %     hold on;
-    %     grid on
-    %     xlabel('Time (s)');
-    %     ylabel('R-R Intervals');
-    % d = subplot(4, 1, 4);
-    %     plot(sec_signal_2, laser_binary, 'k-');
-    %     hold on;
-    %     grid on
-    %     xlabel('Time (s)');
-    %     ylabel('Laser');
-    %     %scatter(HRB_time, HRB, 'bo'); % Plotting HRB
-    %     hold off;
-    % 
-    %     set(gcf,'color','white')
-    % 
-    % % Linking axes for synchronized zooming
-    % linkaxes([a, b, c, d], 'x');
+    figure;
+        a = subplot(4, 1, 1);
+        hold on
+        plot_sleep(ds_sec_signal_2, ds_delta465_filt_2_smooth, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
+        %plot(Rpeaks_time, Rpeaks, 'ro');
+        hold off
+        grid on
+        xlabel('Time (s)');
+        ylabel('EMG (V)');
+    b = subplot(4, 1, 2);
+        hold on
+        plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
+        %plot(Rpeaks_time, Rpeaks, 'ro');
+        hold off
+        grid on
+        xlabel('Time (s)');
+        ylabel('EMG (V)');
+    c = subplot(4, 1, 3);
+        plot(RR_time, RR, 'k-');
+        hold on;
+        grid on
+        xlabel('Time (s)');
+        ylabel('R-R Intervals');
+    d = subplot(4, 1, 4);
+        plot(sec_signal_2, laser_binary, 'k-');
+        hold on;
+        grid on
+        xlabel('Time (s)');
+        ylabel('Laser');
+        %scatter(HRB_time, HRB, 'bo'); % Plotting HRB
+        hold off;
+ e = subplot(4, 1, 2);
+        hold on
+        plot_sleep(sec_signal_EEG, EMG, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);    
+        %plot(Rpeaks_time, Rpeaks, 'ro');
+        hold off
+        grid on
+        xlabel('Time (s)');
+        ylabel('EMG (V)');
+
+        set(gcf,'color','white')
+
+    % Linking axes for synchronized zooming
+    linkaxes([a, b, c, d], 'x');
     
     % Plot EEG data
     figure;

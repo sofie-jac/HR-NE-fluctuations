@@ -1,4 +1,4 @@
-function [psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = plot_PSD_with_laser_RR(RR_data_NREM_table, arch, yfp, min_period_dur)
+function [psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = plot_PSD_with_laser_RR(RR_data_NREM_table, arch, yfp, min_period_dur, max_val)
     sampling_hz = 0.0002;
     fs = 64;
 
@@ -48,7 +48,7 @@ function [psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = plot_PSD
             f_y = polyval(p, (1:numel(RR_Values))', [], mu);
             detrend_data = RR_Values - f_y'; % Detrend data
             
-            [pxx, f] = pwelch(detrend_data, [], [], [0:sampling_hz:3], fs); % Calculate PSD
+            [pxx, f] = pwelch(detrend_data, [], [], [0:sampling_hz:max_val], fs); % Calculate PSD
                 
 
             
