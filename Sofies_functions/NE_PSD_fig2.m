@@ -43,7 +43,7 @@ function [psd_table, AUC_table, PeakFrequency_table, PeakPower_table] = NE_PSD_f
             f_y = polyval(p, (1:numel(NE_Values))', [], mu);
             detrend_data = NE_Values - f_y'; % Detrend data
             
-            [pxx, f] = pwelch(detrend_data, [], [], [0:sampling_hz:0.1], fs); % Calculate PSD
+            [pxx, f] = pwelch(detrend_data, [], [], [0:sampling_hz:0.15], fs); % Calculate PSD
             AUC = trapz(f, pxx); % Calculate area under the curve
             
             % Store the PSD data and period durations

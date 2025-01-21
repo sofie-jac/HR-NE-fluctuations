@@ -1019,7 +1019,7 @@ figure;
     a = subplot(2, 1, 1);
     plot(sec_signal_EEG_117, EMG_117);
     b = subplot(2, 1, 2);
-    plot_sleep(RR_time_117, RR_117, sleepscore_time, wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117);
+    plot_sleep(RR_time_117, RR_117, sleepscore_time_117, wake_woMA_binary_vector_117, sws_binary_vector_117, REM_binary_vector_117, MA_binary_vector_117);
     linkaxes([a, b], 'x');
 
 %% Save RR
@@ -1291,6 +1291,305 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_412, time_spectrogram_zero_412, F_412, band_powers_412, EEG_bands_fs_412] = PowerAnalysisEEG(EEG_412, EEG_fs_412, frw, window_in_sec, power_bands);
 
 clear power_bands frw window_in_sec
+
+
+
+%% Get sigma peaks
+
+%sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
+
+% Define suffix variable with the file IDs
+suffix = [420, 588, 201, 213, 205, 207, 209];
+
+% Adjustable parameters (can be set for each file)
+window_size = 10; % Smoothing window size for sigma band
+peak_prominences = containers.Map({420, 588, 201, 213, 205, 207, 209}, ...
+                                  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]);
+
+% Loop over each file ID
+for i = 1:length(suffix)
+    % Generate variable names dynamically
+    file_id = suffix(i);
+    band_powers_var = sprintf('band_powers_%d', file_id);
+    time_var = sprintf('time_spectrogram_zero_%d', file_id);
+    sws_var = sprintf('sws_binary_vector_%d', file_id);
+    ma_var = sprintf('MA_binary_vector_%d', file_id);
+    wake_var = sprintf('wake_woMA_binary_vector_%d', file_id);
+    rem_var = sprintf('REM_binary_vector_%d', file_id);
+    NE_var = sprintf('ds_delta465_filt_2_%d', file_id);
+    NE_time_var = sprintf('ds_sec_signal_2_%d', file_id);
+
+
+    % Check if the variables exist in the workspace
+    if exist(band_powers_var, 'var') && exist(time_var, 'var') && exist(sws_var, 'var') && exist(ma_var, 'var')
+        % Retrieve the sigma band power (4th element in power_bands array)
+        band_powers = eval(band_powers_var);
+        time_spectrogram_zero = eval(time_var);
+        sws_binary_vector = eval(sws_var);
+        ma_binary_vector = eval(ma_var);
+        wake_binary_vector = eval(wake_var);
+        rem_binary_vector = eval(rem_var);
+        sleepscore_time = 0:length(wake_binary_vector)-1;
+        NE = eval(NE_var);
+        NE_time = eval(NE_time_var);
+
+        % Extract sigma band (8-15 Hz)
+        sigma_band_power = band_powers{4};
+
+        % Smooth the signal using a moving average filter
+        sigma_band_power_smoothed = movmean(sigma_band_power, window_size);
+
+        % Get prominence value for the current file
+        peak_prominence = peak_prominences(file_id);
+
+        % Restrict peak detection to times where SWS or MA is active
+        valid_times = (sws_binary_vector == 1 | ma_binary_vector == 1);
+        valid_indices = find(valid_times);
+        valid_sigma_smoothed = sigma_band_power(valid_indices);
+        valid_time_spectrogram = time_spectrogram_zero(valid_indices);
+
+        % Detect peaks in the smoothed sigma band power during valid times
+        [peaks_smoothed, locs_smoothed_rel] = findpeaks(valid_sigma_smoothed, valid_time_spectrogram, 'MinPeakProminence', peak_prominence);
+
+        % Convert relative locations back to full trace indices
+        locs_smoothed = locs_smoothed_rel;
+        original_NE_values_at_smoothed_peaks = interp1(NE_time, NE, locs_smoothed);
+
+        % Create a 3-row plot
+        figure;
+
+        % Top: Original sigma band power with circles at smoothed peak locations
+        subplot(3, 1, 1);
+        plot(time_spectrogram_zero, sigma_band_power, 'LineWidth', 1.5);
+        hold on;
+        plot(locs_smoothed, peaks_smoothed, 'ro', 'MarkerSize', 8, 'DisplayName', 'Peaks');
+        hold off;
+        ylabel('Power (log)');
+        title(sprintf('Original Sigma Band Power (8-15 Hz) with Smoothed Peak Locations for File %d', file_id));
+        legend;
+        grid on;
+
+        % Middle: Smoothed sigma band power with peaks
+        subplot(3, 1, 2);
+        plot(time_spectrogram_zero, sigma_band_power_smoothed, 'LineWidth', 1.5);
+        xlabel('Time (s)');
+        ylabel('Power (log)');
+        title(sprintf('Smoothed Sigma Band Power (8-15 Hz) with Peaks for File %d', file_id));
+        legend;
+        grid on;
+
+        % Bottom: Sleep scoring plot
+        subplot(3, 1, 3);
+        plot_sleep(NE_time, NE, sleepscore_time, wake_binary_vector, sws_binary_vector, rem_binary_vector, ma_binary_vector);
+        hold on;
+        plot(locs_smoothed, original_NE_values_at_smoothed_peaks, 'ro', 'MarkerSize', 8, 'DisplayName', 'Smoothed Peaks');
+        hold off;
+        title('Sleep Scoring');
+
+        % Link x-axes
+        linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+    else
+        fprintf('Variables for file %d do not exist in the workspace. Skipping...\n', file_id);
+    end
+end
+%% 
+% Define suffix variable with the file IDs
+suffix = [420, 588, 201, 213, 205, 207, 209];
+
+% Adjustable parameters (can be set for each file)
+window_size = 10; % Smoothing window size for sigma band
+peak_prominences = containers.Map({420, 588, 201, 213, 205, 207, 209}, ...
+                                  [2, 2, 2, 2, 1, 2, 2]);
+
+% Loop over each file ID
+for i = 1:length(suffix)
+    % Generate variable names dynamically
+    file_id = suffix(i);
+    band_powers_var = sprintf('band_powers_%d', file_id);
+    time_var = sprintf('time_spectrogram_zero_%d', file_id);
+    NREMinclMA_periods_var = sprintf('NREMinclMA_periods_%d', file_id);
+    NE_var = sprintf('ds_delta465_filt_2_%d', file_id);
+    NE_time_var = sprintf('ds_sec_signal_2_%d', file_id);
+    sws_var = sprintf('sws_binary_vector_%d', file_id);
+    ma_var = sprintf('MA_binary_vector_%d', file_id);
+    wake_var = sprintf('wake_woMA_binary_vector_%d', file_id);
+    rem_var = sprintf('REM_binary_vector_%d', file_id);
+
+    % Check if the necessary variables exist in the workspace
+    if exist(band_powers_var, 'var') && exist(time_var, 'var') && exist(NREMinclMA_periods_var, 'var')
+        % Retrieve the sigma band power (4th element in power_bands array)
+        band_powers = eval(band_powers_var);
+        time_spectrogram_zero = eval(time_var);
+        NREMinclMA_periods = eval(NREMinclMA_periods_var);
+        NE = eval(NE_var);
+        NE_time = eval(NE_time_var);
+        sws_binary_vector = eval(sws_var);
+        ma_binary_vector = eval(ma_var);
+        wake_binary_vector = eval(wake_var);
+        rem_binary_vector = eval(rem_var);
+        sleepscore_time = 0:length(wake_binary_vector)-1;
+
+        % Extract sigma band (8-15 Hz)
+        sigma_band_power = band_powers{4};
+
+        % Smooth the signal using a moving average filter
+        sigma_band_power_smoothed = movmean(sigma_band_power, window_size);
+
+        % Get prominence value for the current file
+        peak_prominence = peak_prominences(file_id);
+
+        % Restrict peak detection to times within NREMinclMA periods
+        valid_indices = false(size(time_spectrogram_zero));
+        for j = 1:size(NREMinclMA_periods, 1)
+            onset = NREMinclMA_periods(j, 1);
+            offset = NREMinclMA_periods(j, 2);
+            valid_indices = valid_indices | (time_spectrogram_zero >= onset & time_spectrogram_zero <= offset);
+        end
+
+        valid_times = time_spectrogram_zero(valid_indices);
+        valid_sigma_smoothed = sigma_band_power(valid_indices);
+
+        % Detect peaks in the smoothed sigma band power during valid times
+        [peaks_smoothed, locs_smoothed_rel] = findpeaks(valid_sigma_smoothed, valid_times, 'MinPeakProminence', peak_prominence);
+
+        % Convert relative locations back to full trace indices
+        locs_smoothed = locs_smoothed_rel;
+        original_NE_values_at_smoothed_peaks = interp1(NE_time, NE, locs_smoothed);
+
+        % Create a 3-row plot
+        figure;
+
+        % Top: Original sigma band power with circles at smoothed peak locations
+        subplot(3, 1, 1);
+        plot(time_spectrogram_zero, sigma_band_power, 'LineWidth', 1.5);
+        hold on;
+        plot(locs_smoothed, peaks_smoothed, 'ro', 'MarkerSize', 8, 'DisplayName', 'Peaks');
+        hold off;
+        ylabel('Power (log)');
+        title(sprintf('Original Sigma Band Power (8-15 Hz) with Smoothed Peak Locations for File %d', file_id));
+        legend;
+        grid on;
+
+        % Middle: Smoothed sigma band power with peaks
+        subplot(3, 1, 2);
+        plot(time_spectrogram_zero, sigma_band_power_smoothed, 'LineWidth', 1.5);
+        xlabel('Time (s)');
+        ylabel('Power (log)');
+        title(sprintf('Smoothed Sigma Band Power (8-15 Hz) with Peaks for File %d', file_id));
+        legend;
+        grid on;
+
+        % Bottom: Sleep scoring plot
+        subplot(3, 1, 3);
+        plot_sleep(NE_time, NE, sleepscore_time, wake_binary_vector, sws_binary_vector, rem_binary_vector, ma_binary_vector);
+        hold on;
+        plot(locs_smoothed, original_NE_values_at_smoothed_peaks, 'ro', 'MarkerSize', 8, 'DisplayName', 'Smoothed Peaks');
+        hold off;
+        title('Sleep Scoring');
+
+        % Link x-axes
+        linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+    else
+        fprintf('Variables for file %d do not exist in the workspace. Skipping...\n', file_id);
+    end
+end
+
+
+%% Plot sigma
+% Define suffix variable with the file IDs
+suffix = [117, 124, 122, 115, 420, 588, 201, 213, 205, 207, 209];
+
+% Loop over each file ID
+for i = 1:length(suffix)
+    % Generate variable names dynamically
+    file_id = suffix(i);
+    band_powers_var = sprintf('band_powers_%d', file_id);
+    time_var = sprintf('time_spectrogram_zero_%d', file_id);
+
+    % Check if the variables exist in the workspace
+    if exist(band_powers_var, 'var') && exist(time_var, 'var')
+        % Retrieve the sigma band power (4th element in power_bands array)
+        band_powers = eval(band_powers_var);
+        time_spectrogram_zero = eval(time_var);
+
+        % Extract sigma band (8-15 Hz)
+        sigma_band_power = band_powers{4};
+
+        % Smooth the signal using a moving average filter
+        window_size = 10; % Adjust the window size as needed
+        sigma_band_power_smoothed = movmean(sigma_band_power, window_size);
+
+        % Create a 2-row plot
+
+        % Create a 2-row plot
+        figure;
+
+        % Top: Original sigma band power
+        subplot(2, 1, 1);
+        plot(time_spectrogram_zero, sigma_band_power, 'LineWidth', 1.5);
+        ylabel('Power (log)');
+        title(sprintf('Original Sigma Band Power (8-15 Hz) for File %d', file_id));
+        grid on;
+
+        % Bottom: Smoothed sigma band power
+        subplot(2, 1, 2);
+        plot(time_spectrogram_zero, sigma_band_power_smoothed, 'LineWidth', 1.5);
+        xlabel('Time (s)');
+        ylabel('Power (log)');
+        title(sprintf('Smoothed Sigma Band Power (8-15 Hz) for File %d', file_id));
+        grid on;
+
+        % Link x-axes
+        linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+    else
+        fprintf('Variables for file %d do not exist in the workspace. Skipping...\n', file_id);
+    end
+end
+
+
+%% 
+
+% Compute spectrogram
+    [transition_spectrogram, F, T] = spectrogram(EEG_420, round(EEG_fs_420 * window_in_sec), [], frw, EEG_fs_420, 'yaxis');
+    mean_spectrogram = log(abs(transition_spectrogram));
+
+[transition_spectrogram, F, T] = spectrogram(EEG_420, round(EEG_fs_420 * window_in_sec), [], frw, EEG_fs_420, 'yaxis');
+    
+    % Handle potential -Inf values
+    small_positive_value = 1e-10;
+    mean_spectrogram(isinf(mean_spectrogram)) = small_positive_value;
+    
+    time_spectrogram_zero = T;
+    
+    % Create a Gaussian filter manually
+    sigma = 1; % Adjust the sigma as needed
+    filter_size = 5; % Adjust the size as needed
+    gaussian_filter = exp(-(1:filter_size).^2 / (2 * sigma^2));
+    gaussian_filter = gaussian_filter / sum(gaussian_filter);
+
+        % Handle potential -Inf values
+    small_positive_value = 1e-10;
+    mean_spectrogram(isinf(mean_spectrogram)) = small_positive_value;
+    
+    time_spectrogram_zero = T;
+    
+    % Create a Gaussian filter manually
+    sigma = 1; % Adjust the sigma as needed
+    filter_size = 5; % Adjust the size as needed
+    gaussian_filter = exp(-(1:filter_size).^2 / (2 * sigma^2));
+    gaussian_filter = gaussian_filter / sum(gaussian_filter);
+    
+    % Use conv to apply the filter
+    filtered_mean_spectrogram = conv2(mean_spectrogram, gaussian_filter, 'same');
+
+    band_powers = cell(1, length(power_bands));
+    for b = 1:length(power_bands)
+        freq_range = power_bands{b};
+        band_powers{b} = mean(mean_spectrogram(F >= freq_range(1) & F <= freq_range(2), :), 1);
+    end
+
+    EEG_bands_fs = length(T) / T(end); % for EEG bands
+
 %% Save power
 
 % List of base variable names
@@ -2300,7 +2599,7 @@ writetable(PeakPower_table_RR_VLF, 'psd_peakpower_VLF.csv');
 writetable(PeakPower_table_RR_LF, 'psd_peakpower_LF.csv');
 
 writetable(psd_table, 'psd_NE_trace.csv');
-writetable(PeakFrequency_table, 'psd_peakfreq_NE.csv');
+writetable(PeakFrequency_table, 'psd_peakfreq_NE_15.csv');
 writetable(PeakFrequency_table_RR_for_NE, 'psd_peakfreq_VLF_for_NE.csv');
 %% Created weigthed mean/SEM for PSD quantification export
 

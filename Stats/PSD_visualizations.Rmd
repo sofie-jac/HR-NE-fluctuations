@@ -1,0 +1,447 @@
+---
+title: "ChR2 visualizations"
+author: "SJ"
+date: "2024-10-25"
+output: pdf_document
+---¨
+```{r}
+#RR/NE peak freq fig 2
+# Plot
+plot <- ggplot(psd_RR_NE_peak , aes(x = factor(EventVar), y = PeakFrequency)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/fig2_NE_RR_PeakFreq.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+```{r}
+psd_peakfreq_VLF_for_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_VLF_for_NE.csv")
+psd_peakfreq_VLF_for_NE$EventVar <- '1_RR'
+
+psd_peakfreq_NE <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_NE.csv")
+psd_peakfreq_NE$EventVar <- '2_NE'
+
+
+psd_RR_NE_peak <- rbind(psd_peakfreq_VLF_for_NE, psd_peakfreq_NE)
+psd_RR_NE_peak$EventVar <- as.factor(psd_RR_NE_peak$EventVar)
+psd_RR_NE_peak$EventVar = relevel(psd_RR_NE_peak$EventVar, ref = '1_RR')
+```
+
+
+```{r}
+#RR psd AUC fig 1
+# Plot
+plot <- ggplot(psd_auc , aes(x = factor(EventVar), y = AUC)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+   ylim(0, 0.000085) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/fig1_RR_PSD_AUC.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+```{r}
+#RR peak freq fig 1
+# Plot
+plot <- ggplot(psd_peakfreq , aes(x = factor(EventVar), y = PeakFrequency)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+    ylim(0, 0.42) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/fig1_RR_PeakFrequency.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+```{r}
+#RR peak power fig 1
+# Plot
+plot <- ggplot(psd_peakpower , aes(x = factor(EventVar), y = PeakPower)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+    ylim(0, 0.0016) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/fig1_RR_PeakPower.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+#figure 1 data load
+```{r}
+psd_peakpower_VLF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakpower_VLF.csv")
+psd_peakpower_VLF$EventVar <- '1_VLF'
+
+psd_peakpower_LF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakpower_LF.csv")
+psd_peakpower_LF$EventVar <- '2_LF'
+
+psd_peakfreq_VLF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_VLF.csv")
+psd_peakfreq_VLF$EventVar <- '1_VLF'
+
+psd_peakfreq_LF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_peakfreq_LF.csv")
+psd_peakfreq_LF$EventVar <- '2_LF'
+
+psd_auc_VLF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_auc_VLF.csv")
+psd_auc_VLF$EventVar <- '1_VLF'
+
+psd_auc_LF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/saved_data/PSD/2nd round w. bout duration/psd_auc_LF.csv")
+psd_auc_LF$EventVar <- '2_LF'
+
+psd_auc <- rbind(psd_auc_VLF, psd_auc_LF)
+psd_auc$EventVar <- as.factor(psd_auc$EventVar)
+psd_auc$EventVar = relevel(psd_auc$EventVar, ref = "1_VLF")
+
+psd_peakfreq <- rbind(psd_peakfreq_VLF, psd_peakfreq_LF)
+psd_peakfreq$EventVar <- as.factor(psd_peakfreq$EventVar)
+psd_peakfreq$EventVar = relevel(psd_peakfreq$EventVar, ref = "1_VLF")
+
+psd_peakpower <- rbind(psd_peakpower_VLF, psd_peakpower_LF)
+psd_peakpower$EventVar <- as.factor(psd_peakpower$EventVar)
+psd_peakpower$EventVar = relevel(psd_peakpower$EventVar, ref = "1_VLF")
+```
+
+
+
+```{r}
+#NE PSD AUC arch
+# Plot
+plot <- ggplot(NE_AUC_PSD , aes(x = factor(EventVar), y = AUC)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+     ylim(0, 1.25) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_NE_psd_AUC.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+```{r}
+#RR PSD AUC arch
+# Plot
+plot <- ggplot(RR_AUC_PSD , aes(x = factor(EventVar), y = AUC)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+     ylim(0, 0.00005) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_RR_psd_AUC.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+```{r}
+#RR peak power arch
+# Plot
+plot <- ggplot(RR_PeakFrequency_PSD , aes(x = factor(EventVar), y = PeakFrequency)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+     ylim(0, 0.125) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_RR_peakfrequency.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+```{r}
+#NE peak power arch
+# Plot
+plot <- ggplot(NE_PeakFrequency_PSD , aes(x = factor(EventVar), y = PeakFrequency)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_NE_peakfrequency.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+```{r}
+#NE peak power arch
+# Plot
+plot <- ggplot(NE_PeakPower_PSD , aes(x = factor(EventVar), y = PeakPower)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+   ylim(0, 65) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_NE_peakpower.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+```
+
+
+
+```{r}
+#RR peak power arch
+# Plot
+plot <- ggplot(RR_PeakPower_PSD , aes(x = factor(EventVar), y = PeakPower)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+  # ylim(0, 0.00007) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/Arch_RR_peakpower.pdf", plot = plot, width = 5, height = 6.17, dpi = 300)
+
+```
+
+ChR2 plots!!!
+```{r}
+# Plot color scale gradient separately
+color_scale_plot <- ggplot(data.frame(x = 1, y = 1, fill = 1), aes(x, y, fill = fill)) +
+  geom_tile() +
+  scale_fill_gradient(low = "lightgray", high = "black", guide = guide_colorbar(title = "BoutLength", barwidth = 15, barheight = 0.5)) +
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 10, family = "Arial")
+  )
+
+# Save the color scale plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/color_scale_plot.pdf", plot = color_scale_plot, width = 3, height = 1, dpi = 300)
+
+print(color_scale_plot)
+
+```
+
+
+```{r}
+# Filter dataframe to include only rows where Group is 'chr2'
+RR_AUC_chr2 <- subset(PSD_AUC_RR, group == 'chr2')
+RR_AUC_yfp <- subset(PSD_AUC_RR, group == 'yfp')
+
+# Plot
+plot <- ggplot(RR_AUC_yfp, aes(x = factor(LaserLevel), y = AUC)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+   ylim(0, 0.00007) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/RR_PSD_AUC_yfp_plot.pdf", plot = plot, width = 5, height = 4.17, dpi = 300)
+```
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(ggplot2, scales)
+
+# Filter dataframe to include only rows where Group is 'chr2'
+RR_peakfreq_chr2 <- subset(RR_peakfreq, group == 'chr2')
+RR_peakfreq_yfp <- subset(RR_peakfreq, group == 'yfp')
+
+# Plot
+plot <- ggplot(RR_peakfreq_yfp, aes(x = factor(LaserLevel), y = PeakFrequency)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+   ylim(0, 0.15) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/RR_peakfrequency_yfp_plot.pdf", plot = plot, width = 5, height = 4.17, dpi = 300)
+
+
+
+
+```
+
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(scales)
+
+# Filter dataframe to include only rows where Group is 'chr2'
+RR_peakPower_chr2 <- subset(RR_peakPower, group == 'chr2')
+RR_peakPower_yfp <- subset(RR_peakPower, group == 'yfp')
+
+# Plot
+plot <- ggplot(RR_peakPower_chr2, aes(x = factor(LaserLevel), y = PeakPower)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+    ylim(0, 0.003) +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_line(color = "black"),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black") )
+
+print(plot)
+
+# Save the plot to the specified location
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/RR_peakPower_plot.pdf", plot = plot, width = 5, height = 4.17, dpi = 300)
+
+print(plot)
+
+```
+
+
+```{r}
+# Plot
+plot <- ggplot(RR_peakPower, aes(x = factor(LaserLevel), y = PeakPower)) +
+  geom_jitter(aes(color = BoutLength), size = 0.7, width = 0.2) +
+  scale_color_gradient(low = "lightgray", high = "black", guide = "none") +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_text(size = 10, family = "Arial"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black")
+  )
+
+print(plot)
+
+ggsave(filename = "C:/Users/trb938/OneDrive - University of Copenhagen/Thesis/R_plots/RR_peakPower_plot.pdf", plot = plot, width = 5, height = 4.17, dpi = 300)
+```
+
+

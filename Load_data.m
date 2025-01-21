@@ -32,10 +32,10 @@ clear workspaceVars varName shouldClear k i suffixes onset_FP REM_onset Rpeaks R
 
 %% Load files with certain suffixes
 % Specify the directory containing the .mat files
-folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp\Traces';
+folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Traces';
 
 % List of 3-digit elements to look for in file names
-% suffixes = {'205', '207', '209', '420', '588', '201', '213', '124', '122', '115'};
+suffixes = {'205', '207', '209', '420', '588', '201', '213'};
 % suffixes = {'408', '420', '484', '468', '015' '079', '089', '387', '403', '412', '414', '416', '013', '019'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
