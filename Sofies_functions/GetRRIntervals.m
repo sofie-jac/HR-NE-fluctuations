@@ -142,15 +142,6 @@ quality_selected_peak_times = sec_signal_EMG(quality_selected_peak_locs);
 % kept_peaks and kept_peak_locs now contain only the peaks (and their locations) that were kept
 
 % Plot movement and selected peaks
-
-% Calculate mean and standard deviation of the filtered EMG signal
-mean_EMG = mean(EMG);
-sd_EMG = std(EMG);
-
-% Set threshold as mean + 3.5 * SD for movement detection
-threshold = mean_EMG + move_thresh * sd_EMG;
-clear mean_EMG sd_EMG
-% Plotting peaks
 figure;
 
 % % Plot the original EMG signal

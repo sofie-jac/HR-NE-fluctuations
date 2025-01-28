@@ -945,7 +945,21 @@ for i = 1:length(data_columns)
     output_file = fullfile(output_dir, sprintf('%s_chr2_combined_both_table.csv', column_name));
     writetable(combined_table, output_file);
 end
-    
+
+%% Get mean/SD RR values for chr2/yfp during NREM for each laser level
+uniqueIDs = {'480', '489', '491', '497', '511', '522', '512', '513', '577', '584'};
+RR_intervals = extract_RR_intervals_chr2(uniqueIDs);
+chr2 = {'489', '480', '491', '497', '511', '522'};
+yfp = {'584', '577', '512', '513'};
+
+summaryTable = compute_RR_summary(RR_intervals, chr2, yfp);
+
+dataDirectory = 'C:\\Users\\trb938\\OneDrive - University of Copenhagen\\MATLAB\\chr2_yfp\\Figure_4_data';
+summaryTable_laserfiles = compute_RR_summary_from_files(dataDirectory, chr2, yfp);
+summaryTable_RR_varriance = compute_RR_varriance_summary_from_files(dataDirectory, chr2, yfp);
+summaryTable_PeakRR = compute_peak_RR_summary_from_files(dataDirectory, chr2, yfp, 5, 2);    
+
+
     %% PSD prep
 %% Extract RR during NREM for each laser level (new PSD version)
 uniqueIDs = {'480', '489', '491', '497', '511', '522', '512', '513', '577', '584'};

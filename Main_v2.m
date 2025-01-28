@@ -160,7 +160,7 @@ synapse_mice = {'M168', 'M147', 'M149', 'M117', 'M124', 'M071', 'M073', 'M115', 
 mice_with_TTL_IDs = {'M168', 'M147', 'M149', 'M117', 'M124' 'M115', 'M122'};
 mice_without_TTL_IDs = {};
 
-o = {M480};
+o = {M117};
 o = {M480, M497};
 %% Load FP and EEG data for all mice
 
@@ -1392,7 +1392,7 @@ for i = 1:length(suffix)
         fprintf('Variables for file %d do not exist in the workspace. Skipping...\n', file_id);
     end
 end
-%% 
+%% plot sigma
 % Define suffix variable with the file IDs
 suffix = [420, 588, 201, 213, 205, 207, 209];
 
@@ -1494,10 +1494,19 @@ for i = 1:length(suffix)
     end
 end
 
-
-%% Plot sigma
+%% Plot mean of ne/sigma at sigma peak
 % Define suffix variable with the file IDs
-suffix = [117, 124, 122, 115, 420, 588, 201, 213, 205, 207, 209];
+suffix = [420, 588, 201, 207, 209];
+
+% Adjustable parameters (can be set for each file)
+peak_prominences = containers.Map({420, 588, 201, 207, 209}, ...
+                                  [2, 2, 2, 2, 2]);
+
+% Window for extracting data around peaks (in seconds)
+window_radius = 30;
+
+sigma_collector = [];
+NE_collector = [];
 
 % Loop over each file ID
 for i = 1:length(suffix)
@@ -1505,47 +1514,610 @@ for i = 1:length(suffix)
     file_id = suffix(i);
     band_powers_var = sprintf('band_powers_%d', file_id);
     time_var = sprintf('time_spectrogram_zero_%d', file_id);
+    NREMinclMA_periods_var = sprintf('NREMinclMA_periods_%d', file_id);
+    NE_var = sprintf('delta465_filt_2_%d', file_id);
+    NE_time_var = sprintf('sec_signal_2_%d', file_id);
+    NE_fs_var = sprintf('signal_fs_%d', file_id);
+    Sigma_fs_var = sprintf('EEG_bands_fs_%d', file_id);
 
-    % Check if the variables exist in the workspace
-    if exist(band_powers_var, 'var') && exist(time_var, 'var')
+    % Check if the necessary variables exist in the workspace
+    if exist(band_powers_var, 'var') && exist(time_var, 'var') && exist(NREMinclMA_periods_var, 'var')
         % Retrieve the sigma band power (4th element in power_bands array)
         band_powers = eval(band_powers_var);
         time_spectrogram_zero = eval(time_var);
+        NREMinclMA_periods = eval(NREMinclMA_periods_var);
+        NE = eval(NE_var);
+        NE_time = eval(NE_time_var);
+        fs_NE = eval(NE_fs_var);
+        fs_sigma = eval(Sigma_fs_var);
 
         % Extract sigma band (8-15 Hz)
         sigma_band_power = band_powers{4};
 
-        % Smooth the signal using a moving average filter
-        window_size = 10; % Adjust the window size as needed
-        sigma_band_power_smoothed = movmean(sigma_band_power, window_size);
+        % Get prominence value for the current file
+        peak_prominence = peak_prominences(file_id);
 
-        % Create a 2-row plot
+        % Restrict peak detection to times within NREMinclMA periods
+        valid_indices = false(size(time_spectrogram_zero));
+        for j = 1:size(NREMinclMA_periods, 1)
+            onset = NREMinclMA_periods(j, 1);
+            offset = NREMinclMA_periods(j, 2);
+            valid_indices = valid_indices | (time_spectrogram_zero >= onset & time_spectrogram_zero <= offset);
+        end
 
-        % Create a 2-row plot
-        figure;
+        valid_times = time_spectrogram_zero(valid_indices);
+        valid_sigma = sigma_band_power(valid_indices);
 
-        % Top: Original sigma band power
-        subplot(2, 1, 1);
-        plot(time_spectrogram_zero, sigma_band_power, 'LineWidth', 1.5);
-        ylabel('Power (log)');
-        title(sprintf('Original Sigma Band Power (8-15 Hz) for File %d', file_id));
-        grid on;
+        % Detect peaks in the sigma band power during valid times
+        [~, locs_rel] = findpeaks(valid_sigma, valid_times, 'MinPeakProminence', peak_prominence);
 
-        % Bottom: Smoothed sigma band power
-        subplot(2, 1, 2);
-        plot(time_spectrogram_zero, sigma_band_power_smoothed, 'LineWidth', 1.5);
-        xlabel('Time (s)');
-        ylabel('Power (log)');
-        title(sprintf('Smoothed Sigma Band Power (8-15 Hz) for File %d', file_id));
-        grid on;
+        % Convert relative locations back to full trace indices
+        locs = locs_rel;
 
-        % Link x-axes
-        linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+        % Number of samples for the window
+        samples_sigma = round(window_radius * fs_sigma * 2 + 1);
+        samples_NE = round(window_radius * fs_NE * 2 + 1);
+        time_window = linspace(-window_radius, window_radius, samples_sigma);
+
+        % Resample NE to match sigma time resolution if necessary
+        if fs_NE ~= fs_sigma
+            NE_time_resampled = linspace(NE_time(1), NE_time(end), length(NE));
+            NE = interp1(NE_time_resampled, NE, time_spectrogram_zero, 'linear', 'extrap');
+            fs_NE = fs_sigma;
+        end
+
+        % Extract NE and sigma data around each peak
+        for k = 1:length(locs)
+            peak_time = locs(k);
+
+            % Calculate start and end indices based on sampling frequency
+            sigma_start_idx = round((peak_time - window_radius) * fs_sigma);
+            sigma_end_idx = round((peak_time + window_radius) * fs_sigma);
+
+            NE_start_idx = round((peak_time - window_radius) * fs_NE);
+            NE_end_idx = round((peak_time + window_radius) * fs_NE);
+
+            % Ensure indices are within bounds
+            if sigma_start_idx > 0 && sigma_end_idx <= length(sigma_band_power) && ...
+               NE_start_idx > 0 && NE_end_idx <= length(NE)
+
+                sigma_window = sigma_band_power(sigma_start_idx:sigma_end_idx);
+                NE_window = NE(NE_start_idx:NE_end_idx);
+
+                % Ensure lengths match the expected number of samples
+                    sigma_collector = [sigma_collector; sigma_window];
+                    NE_collector = [NE_collector; NE_window];
+            else
+                fprintf('Out-of-bounds indices for file %d at peak %d. Skipping this peak.\n', file_id, k);
+            end
+        end
+    end
+end
+        % Compute the average trace across all peaks
+        if ~isempty(sigma_collector) && ~isempty(NE_collector)
+            avg_sigma_trace = mean(sigma_collector, 1, 'omitnan');
+            avg_NE_trace = mean(NE_collector, 1, 'omitnan');
+
+            % Create a plot for this file ID
+            figure;
+
+            % Plot mean sigma trace on top
+            subplot(2, 1, 1);
+            plot(time_window, avg_sigma_trace, 'LineWidth', 1.5);
+            xlabel('Time (s) relative to peak');
+            ylabel('Sigma Power (log)');
+            title('Mean Sigma Trace Around Peaks across animals');
+            grid on;
+
+            % Plot mean NE trace below
+            subplot(2, 1, 2);
+            plot(time_window, avg_NE_trace, 'LineWidth', 1.5);
+            xlabel('Time (s) relative to peak');
+            ylabel('NE Signal');
+            title('Mean NE Trace Around Peaks across animals');
+            grid on;
+        else
+            fprintf('No valid data for file %d. Skipping plotting.\n', file_id);
+        end
+    
+%% sigma peaks plot w. RR
+
+suffix = [420, 588, 201, 207, 209];
+
+% Adjustable parameters (can be set for each file)
+peak_prominences = containers.Map({420, 588, 201, 207, 209}, ...
+                                  [2, 2, 2, 2, 2]);
+
+% Window for extracting data around peaks (in seconds)
+window_radius = 30;
+
+sigma_collector = [];
+NE_collector = [];
+RR_collector = [];
+
+% RR sampling frequency (constant for all files)
+fs_RR = 64;
+
+% Loop over each file ID
+for i = 1:length(suffix)
+    % Generate variable names dynamically
+    file_id = suffix(i);
+    band_powers_var = sprintf('band_powers_%d', file_id);
+    time_var = sprintf('time_spectrogram_zero_%d', file_id);
+    NREMinclMA_periods_var = sprintf('NREMinclMA_periods_%d', file_id);
+    NE_var = sprintf('delta465_filt_2_%d', file_id);
+    NE_time_var = sprintf('sec_signal_2_%d', file_id);
+    NE_fs_var = sprintf('signal_fs_%d', file_id);
+    Sigma_fs_var = sprintf('EEG_bands_fs_%d', file_id);
+    RR_var = sprintf('RR_%d', file_id); % RR interval signal
+
+    % Check if the necessary variables exist in the workspace
+    if exist(band_powers_var, 'var') && exist(time_var, 'var') && exist(NREMinclMA_periods_var, 'var')
+        % Retrieve the sigma band power (4th element in power_bands array)
+        band_powers = eval(band_powers_var);
+        time_spectrogram_zero = eval(time_var);
+        NREMinclMA_periods = eval(NREMinclMA_periods_var);
+        NE = eval(NE_var);
+        NE_time = eval(NE_time_var);
+        fs_NE = eval(NE_fs_var);
+        fs_sigma = eval(Sigma_fs_var);
+        RR = eval(RR_var);
+
+        % Extract sigma band (8-15 Hz)
+        sigma_band_power = band_powers{4};
+
+        % Get prominence value for the current file
+        peak_prominence = peak_prominences(file_id);
+
+        % Restrict peak detection to times within NREMinclMA periods
+        valid_indices = false(size(time_spectrogram_zero));
+        for j = 1:size(NREMinclMA_periods, 1)
+            onset = NREMinclMA_periods(j, 1);
+            offset = NREMinclMA_periods(j, 2);
+            valid_indices = valid_indices | (time_spectrogram_zero >= onset & time_spectrogram_zero <= offset);
+        end
+
+        valid_times = time_spectrogram_zero(valid_indices);
+        valid_sigma = sigma_band_power(valid_indices);
+
+        % Detect peaks in the sigma band power during valid times
+        [~, locs_rel] = findpeaks(valid_sigma, valid_times, 'MinPeakProminence', peak_prominence);
+
+        % Convert relative locations back to full trace indices
+        locs = locs_rel;
+
+        % Number of samples for the window
+        samples_sigma = round(window_radius * fs_sigma * 2 + 1);
+        samples_NE = round(window_radius * fs_NE * 2 + 1);
+        samples_RR = round(window_radius * fs_RR * 2 + 1);
+        time_window_sigma = linspace(-window_radius, window_radius, samples_sigma);
+        time_window_RR = linspace(-window_radius, window_radius, samples_RR);
+        time_window_NE = linspace(-window_radius, window_radius, samples_NE);
+
+        % Extract NE, sigma, and RR data around each peak
+% Extract NE, sigma, and RR data around each peak
+for k = 1:length(locs)
+    peak_time = locs(k);
+
+    % Calculate start and end indices based on sampling frequency
+    sigma_start_idx = round((peak_time - window_radius) * fs_sigma);
+    sigma_end_idx = round((peak_time + window_radius) * fs_sigma);
+
+    NE_start_idx = round((peak_time - window_radius) * fs_NE);
+    NE_end_idx = round((peak_time + window_radius) * fs_NE);
+
+    RR_start_idx = round((peak_time - window_radius) * fs_RR);
+    RR_end_idx = round((peak_time + window_radius) * fs_RR);
+
+    % Ensure indices are within bounds
+    if sigma_start_idx > 0 && sigma_end_idx <= length(sigma_band_power) && ...
+       NE_start_idx > 0 && NE_end_idx <= length(NE) && ...
+       RR_start_idx > 0 && RR_end_idx <= length(RR)
+
+        % Extract windows
+        sigma_window = sigma_band_power(sigma_start_idx:sigma_end_idx);
+        NE_window = NE(NE_start_idx:NE_end_idx);
+        RR_window = RR(RR_start_idx:RR_end_idx);
+
+        % Truncate or skip if lengths don't match expected
+        if length(sigma_window) > samples_sigma
+            sigma_window = sigma_window(1:samples_sigma);
+        elseif length(sigma_window) < samples_sigma
+            fprintf('Sigma window too short for file %d at peak %d. Skipping.\n', file_id, k);
+            continue;
+        end
+
+        if length(NE_window) > samples_NE
+            NE_window = NE_window(1:samples_NE);
+        elseif length(NE_window) < samples_NE
+            fprintf('NE window too short for file %d at peak %d. Skipping.\n', file_id, k);
+            continue;
+        end
+
+        if length(RR_window) > samples_RR
+            RR_window = RR_window(1:samples_RR);
+        elseif length(RR_window) < samples_RR
+            fprintf('RR window too short for file %d at peak %d. Skipping.\n', file_id, k);
+            continue;
+        end
+
+        % Add windows to collectors
+        sigma_collector = [sigma_collector; sigma_window];
+        NE_collector = [NE_collector; NE_window];
+        RR_collector = [RR_collector; RR_window];
+    else
+        fprintf('Out-of-bounds indices for file %d at peak %d. Skipping this peak.\n', file_id, k);
+    end
+end
+
+    end
+end
+        % Compute the average trace across all peaks
+        if ~isempty(sigma_collector) && ~isempty(NE_collector) && ~isempty(RR_collector)
+            avg_sigma_trace = mean(sigma_collector, 1, 'omitnan');
+            avg_NE_trace = mean(NE_collector, 1, 'omitnan');
+            avg_RR_trace = mean(RR_collector, 1, 'omitnan');
+
+            % Create a plot for this file ID
+            figure;
+
+            % Plot mean sigma trace on top
+            subplot(3, 1, 1);
+            plot(time_window_sigma, avg_sigma_trace, 'LineWidth', 1.5);
+            xlabel('Time (s) relative to peak');
+            ylabel('Sigma Power (log)');
+            title('Mean Sigma Trace Around Peaks across animals');
+            grid on;
+
+            % Plot mean NE trace in the middle
+            subplot(3, 1, 2);
+            plot(time_window_NE, avg_NE_trace, 'LineWidth', 1.5);
+            xlabel('Time (s) relative to peak');
+            ylabel('NE Signal');
+            title('Mean NE Trace Around Peaks across animals');
+            grid on;
+
+            % Plot mean RR trace at the bottom
+            subplot(3, 1, 3);
+            plot(time_window_RR, avg_RR_trace, 'LineWidth', 1.5);
+            xlabel('Time (s) relative to peak');
+            ylabel('RR Interval');
+            title('Mean RR Interval Around Peaks across animals');
+            grid on;
+        else
+            fprintf('No valid data for one or more signals. Skipping plotting.\n');
+        end
+
+%% sigma/NE cross corr
+% Define suffix variable with the file IDs
+suffixes = [420, 588, 201, 213, 205, 207, 209];
+
+% Adjustable parameters
+lag_seconds = 30; % 30 seconds lag
+mean_cross_corr = []; % To store mean cross-correlation across suffixes
+
+% Loop over each suffix
+for i = 1:length(suffixes)
+    % Generate variable names dynamically
+    file_id = suffixes(i);
+    NE_var = sprintf('ds_delta465_filt_2_%d', file_id);
+    NE_fs_var = sprintf('signal_fs_%d', file_id);
+    sigma_band_power_var = sprintf('band_powers_%d', file_id);
+    sigma_fs_var = sprintf('EEG_bands_fs_%d', file_id);
+
+    % Check if the variables exist in the workspace
+    if exist(NE_var, 'var') && exist(NE_fs_var, 'var') && exist(sigma_band_power_var, 'var') && exist(sigma_fs_var, 'var')
+        % Retrieve NE signal and its sampling frequency
+        NE = eval(NE_var);
+        NE_fs = eval(NE_fs_var);
+
+        % Retrieve sigma band power (4th element in power_bands array) and its sampling frequency
+        band_powers = eval(sigma_band_power_var);
+        sigma_band_power = band_powers{4}; % Sigma power
+        sigma_fs = eval(sigma_fs_var);
+
+        % Resample sigma band power to match NE sampling frequency
+        if sigma_fs ~= NE_fs
+            scale_factor = 1000; % Scale to integers
+            NE_fs_int = round(NE_fs * scale_factor);
+            sigma_fs_int = round(sigma_fs * scale_factor);
+            gcd_val = gcd(NE_fs_int, sigma_fs_int); % Compute greatest common divisor
+            p = NE_fs_int / gcd_val; % Numerator (scaled sampling rate)
+            q = sigma_fs_int / gcd_val; % Denominator (scaled sampling rate)
+            sigma_resampled = resample(sigma_band_power, p, q);
+        else
+            sigma_resampled = sigma_band_power;
+        end
+
+        % Ensure both signals are the same length
+        min_length = min(length(NE), length(sigma_resampled));
+        NE = NE(1:min_length);
+        sigma_resampled = sigma_resampled(1:min_length);
+
+        % Calculate cross-correlation with a 30-second lag on either side
+        lag_samples = round(lag_seconds * NE_fs); % Convert lag to samples
+        [cross_corr, lags] = xcorr(sigma_resampled, NE, lag_samples, 'coeff');
+
+        % Store the cross-correlation result
+        if isempty(mean_cross_corr)
+            mean_cross_corr = cross_corr;
+        else
+            mean_cross_corr = mean_cross_corr + cross_corr;
+        end
     else
         fprintf('Variables for file %d do not exist in the workspace. Skipping...\n', file_id);
     end
 end
 
+% Average the cross-correlation across all suffixes
+mean_cross_corr = mean_cross_corr / length(suffixes);
+
+% Convert lags to time in seconds
+time_lags = lags / NE_fs;
+
+% Plot the mean cross-correlation
+figure;
+plot(time_lags, mean_cross_corr, 'LineWidth', 1.5);
+xlabel('Lag (seconds)');
+ylabel('Cross-Correlation');
+title('Mean Cross-Correlation Between Sigma Power and NE Across All Suffixes');
+grid on;
+%% cross cor on data files
+
+% Define parameters
+base_folder = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\saved_data\Figure_2_data';
+event_vars = {'NREMexclMA_periods_pklocs', 'NREM_before_MA_short', 'NREM_before_MA_long', 'SWS_before_wake_pklocs'};
+suffixes = [420, 588, 201, 207, 209];
+lag_seconds = 30; % 30 seconds lag before and after
+
+% Loop over each event_var
+for e = 1:length(event_vars)
+    event_var = event_vars{e};
+    mean_cross_corr = []; % To store mean cross-correlation across suffixes
+
+    % Loop over each suffix
+    for s = 1:length(suffixes)
+        suffix = suffixes(s);
+
+        % Construct file paths
+        NE_file = fullfile(base_folder, sprintf('NE_%s_%d.mat', event_var, suffix));
+        Sigma_file = fullfile(base_folder, sprintf('Sigma_%s_%d.mat', event_var, suffix));
+
+        % Check if files exist
+        if isfile(NE_file) && isfile(Sigma_file)
+            % Load NE and Sigma data
+            NE_data = load(NE_file);
+            Sigma_data = load(Sigma_file);
+
+            % % Extract NE and Sigma variables (assuming they have single fields)
+            % NE = struct2array(NE_data);
+            % Sigma = struct2array(Sigma_data);
+
+            % Get NE and Sigma sampling frequencies
+            NE_fs = evalin('base', sprintf('signal_fs_%d', suffix));
+            Sigma_fs = evalin('base', sprintf('EEG_bands_fs_%d', suffix));
+
+            % Resample Sigma to match NE sampling frequency
+% Resample Sigma to match NE sampling frequency
+            % gcd_fs = gcd(round(NE_fs), 64);
+            % 
+            % % Compute downsample and upsample factors
+            % P = 64 / gcd_fs;
+            % Q = round(NE_fs) / gcd_fs;
+
+            if Sigma_fs ~= NE_fs
+                gcd_fs = gcd(round(NE_fs), round(Sigma_fs)); % Scale to integers
+                P = round(NE_fs)/ gcd_fs; % Integer upsample factor
+                Q = round(Sigma_fs)/ gcd_fs; % Integer downsample factor
+                Sigma_resampled = resample(Sigma, P, Q);
+            else
+                Sigma_resampled = Sigma;
+            end
+            
+            % Ensure both signals are the same length
+            min_length = min(length(NE), length(Sigma_resampled));
+            NE = NE(1:min_length);
+            Sigma_resampled = Sigma_resampled(1:min_length);
+            
+            % Detrend and normalize signals
+            NE = detrend(NE);
+            Sigma_resampled = detrend(Sigma_resampled);
+
+            % Calculate lag in samples
+            lag_samples = round(lag_seconds * NE_fs);
+
+            % Compute cross-correlation
+            [cc, lags] = xcorr(Sigma_resampled, NE, round(lag_seconds * NE_fs), 'coeff');
+
+            % Aggregate cross-correlation
+            if isempty(mean_cross_corr)
+                mean_cross_corr = cross_corr;
+            else
+                mean_cross_corr = mean_cross_corr + cross_corr;
+            end
+        else
+            fprintf('Files for event %s and suffix %d do not exist. Skipping...\n', event_var, suffix);
+        end
+    end
+
+    % Average the cross-correlation across all suffixes
+    mean_cross_corr = mean_cross_corr / length(suffixes);
+
+    % Convert lags to time in seconds
+    time_lags = lags / NE_fs;
+
+    % Plot the mean cross-correlation
+    figure;
+    plot(time_lags, mean_cross_corr, 'LineWidth', 1.5);
+    xlabel('Lag (seconds)');
+    ylabel('Cross-Correlation');
+    title(sprintf('Mean Cross-Correlation for %s Across All Suffixes', event_var), 'Interpreter', 'none');
+    grid on;
+
+    figure;
+    subplot(2, 1, 1);
+    plot(NE);
+    title('NE Signal (Processed)');
+    subplot(2, 1, 2);
+    plot(Sigma_resampled);
+    title('Sigma Signal (Processed)');
+end
+
+%% Sigma peak figure with 4 NREM transitions
+%% Get periods before transistions
+
+suffixes = {'420', '588', '201', '207', '209'};
+sleep_stages_for_sigma_peak_detection(suffixes);
+
+%% Find sigma peaks in the 4 transitions
+peak_prominences = containers.Map({420, 588, 201, 207, 209}, ...
+                                  [1.5, 1.5, 1.5, 1.5, 1.5]);
+detect_and_plot_sigma_peaks(suffixes, peak_prominences)
+
+    % colors = [
+    %     0 0 1;  % Blue for NREMexclMA
+    %     0 1 0;  % Green for SWS_before_MA_short
+    %     1 0 0;  % Red for SWS_before_MA_long
+    %     0.5 0.5 0.5  % Gray for SWS_before_wake
+    % ];
+    % 
+    % % Loop through each suffix
+    % for i = 1:length(suffixes)
+    %     suffix = suffixes{i};
+    %     try
+    %         % Load required variables dynamically from the workspace
+    %         sigma_band_power = evalin('base', sprintf('band_powers_%s{4}', suffix));
+    %         sigma_time = evalin('base', sprintf('time_spectrogram_zero_%s', suffix));
+    %         NE_var = evalin('base', sprintf('delta465_filt_2_%s', suffix));
+    %         NE_time = evalin('base', sprintf('sec_signal_2_%s', suffix));
+    %         RR_var = evalin('base', sprintf('RR_%s', suffix));
+    %         RR_time = evalin('base', sprintf('RR_time_%s', suffix));
+    %         wake_binary_vector = evalin('base', sprintf('wake_woMA_binary_vector_%s', suffix));
+    %         sws_binary_vector = evalin('base', sprintf('sws_binary_vector_%s', suffix));
+    %         rem_binary_vector = evalin('base', sprintf('REM_binary_vector_%s', suffix));
+    %         ma_binary_vector = evalin('base', sprintf('MA_binary_vector_%s', suffix));
+    %         sleepscore_time = 0:length(wake_binary_vector)-1; % Assuming all vectors are the same length
+    % 
+    %         % Peak prominence for this suffix
+    %         prominence = peak_prominences(str2double(suffix));
+    % 
+    %         % Initialize variables to store peak timestamps for all stages
+    %         stage_peak_timestamps = struct('NREMexclMA', [], 'SWS_before_MA_short', [], ...
+    %                                        'SWS_before_MA_long', [], 'SWS_before_wake', []);
+    % 
+    %         % Define stages to loop through
+    %         stages = {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'};
+    %         for j = 1:length(stages)
+    %             stage = stages{j};
+    %             try
+    %                 % Load the periods for the current stage
+    %                 stage_periods = evalin('base', sprintf('%s_%s', stage, suffix));
+    % 
+    %                 % Initialize an array to store valid sigma peaks for the current stage
+    %                 valid_sigma_peaks = [];
+    % 
+    %                 % Loop through each period to find peaks
+    %                 for k = 1:size(stage_periods, 1)
+    %                     onset = stage_periods(k, 1);
+    %                     offset = stage_periods(k, 2);
+    % 
+    %                     % Restrict sigma band to the current period
+    %                     valid_indices = sigma_time >= onset & sigma_time <= offset;
+    % 
+    %                     % Extract valid sigma band power and corresponding times
+    %                     valid_times = sigma_time(valid_indices);
+    %                     valid_sigma = sigma_band_power(valid_indices);
+    % 
+    %                     % Detect peaks in the sigma band power during valid times
+    %                     if ~isempty(valid_sigma) && numel(valid_sigma) > 2
+    %                         [~, locs] = findpeaks(valid_sigma, valid_times, 'MinPeakProminence', prominence);
+    %                     else
+    %                         locs = []; % No peaks if valid_sigma is empty or insufficient in size
+    %                     end
+    % 
+    %                     % Store valid peaks
+    %                     valid_sigma_peaks = [valid_sigma_peaks; locs'];
+    %                 end
+    % 
+    %                 % Save valid peaks for the current stage
+    %                 stage_peak_timestamps.(stage) = valid_sigma_peaks;
+    % 
+    %             catch ME
+    %                 fprintf('Could not process stage "%s" for suffix "%s": %s\n', stage, suffix, ME.message);
+    %             end
+    %         end
+    % 
+    %         % Save the peaks to the workspace
+    %         peaks_var_name = sprintf('sigma_peaks_%s', suffix);
+    %         assignin('base', peaks_var_name, stage_peak_timestamps);
+    % 
+    %         % Plot the results
+    %         figure;
+    % 
+    %         % Plot sigma band power
+    %         subplot(3, 1, 1);
+    %         plot_sleep(sigma_time, sigma_band_power, sleepscore_time, wake_binary_vector, sws_binary_vector, rem_binary_vector, ma_binary_vector);
+    %        % plot(sigma_time, sigma_band_power, 'k', 'LineWidth', 1.5); % Black signal
+    %         hold on;
+    %         for j = 1:length(stages)
+    %             stage = stages{j};
+    %             peaks = stage_peak_timestamps.(stage);
+    %             if ~isempty(peaks)
+    %                 scatter(peaks, ...
+    %                         interp1(sigma_time, sigma_band_power, peaks, 'linear', 'extrap'), ...
+    %                         50, colors(j, :), 'filled');
+    %             end
+    %         end
+    %         hold off;
+    %         ylabel('Sigma Power');
+    %         title(sprintf('Sigma Power for Suffix %s', suffix));
+    %         grid on;
+    % 
+    %         % Plot NE signal
+    %         subplot(3, 1, 2);
+    %         plot_sleep(NE_time, NE_var, sleepscore_time, wake_binary_vector, sws_binary_vector, rem_binary_vector, ma_binary_vector);
+    %         % plot(NE_time, NE_var, 'k', 'LineWidth', 1.5); % Black signal
+    %         hold on;
+    %         for j = 1:length(stages)
+    %             stage = stages{j};
+    %             peaks = stage_peak_timestamps.(stage);
+    %             if ~isempty(peaks)
+    %                 scatter(peaks, ...
+    %                         interp1(NE_time, NE_var, peaks, 'linear', 'extrap'), ...
+    %                         50, colors(j, :), 'filled');
+    %             end
+    %         end
+    %         hold off;
+    %         ylabel('NE Signal');
+    %         grid on;
+    % 
+    %         % Plot RR signal
+    %         subplot(3, 1, 3);
+    %         plot_sleep(RR_time, RR_var, sleepscore_time, wake_binary_vector, sws_binary_vector, rem_binary_vector, ma_binary_vector);
+    %         % plot(RR_time, RR_var, 'k', 'LineWidth', 1.5); % Black signal
+    %         hold on;
+    %         for j = 1:length(stages)
+    %             stage = stages{j};
+    %             peaks = stage_peak_timestamps.(stage);
+    %             if ~isempty(peaks)
+    %                 scatter(peaks, ...
+    %                         interp1(RR_time, RR_var, peaks, 'linear', 'extrap'), ...
+    %                         50, colors(j, :), 'filled');
+    %             end
+    %         end
+    %         hold off;
+    %         xlabel('Time (s)');
+    %         ylabel('RR Interval');
+    %         grid on;
+    %                 % Link x-axes
+    %         linkaxes(findall(gcf, 'Type', 'axes'), 'x');
+    % 
+    %     catch ME
+    %         fprintf('Error processing suffix "%s": %s\n', suffix, ME.message);
+    %     end
+    % end
+    %% 
+clear file_id sigma_band_power valid_sigma valid_times locs prominence peaks stage stage_periods RR_time_var NE_time_var RR_var NE_var time_var time_spectrogram_zero RR_window NE_window sigma_window valid_sigma_peaks colors
 
 %% 
 
@@ -2047,7 +2619,7 @@ end
 
 
     %% Main plot w. Hajj cross correlation - single animal
-o = {'117'};
+o = {'588'};
 for idx = 1:length(o)
     uniqueId = o{idx};
     disp(uniqueId)
