@@ -1,11 +1,15 @@
-function detect_and_plot_sigma_peaks(suffixes, peak_prominences)
-    % Define colors for different peak types
+function detect_and_plot_sigma_peaks_stage_based(suffixes, peak_prominences, apply_smoothing, window_size)
+
+% Define colors for different peak types
     colors = [
         0 0 1;  % Blue for NREMexclMA
         0 1 0;  % Green for SWS_before_MA_short
         1 0 0;  % Red for SWS_before_MA_long
         0.5 0.5 0.5  % Gray for SWS_before_wake
     ];
+
+    % Define stages
+    stages = {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'};
 
     % Loop through each suffix
     for i = 1:length(suffixes)
@@ -24,20 +28,23 @@ function detect_and_plot_sigma_peaks(suffixes, peak_prominences)
             ma_binary_vector = evalin('base', sprintf('MA_binary_vector_%s', suffix));
             sleepscore_time = 0:length(wake_binary_vector)-1; % Assuming all vectors are the same length
 
-            % Peak prominence for this suffix
-            prominence = peak_prominences(str2double(suffix));
+            % Apply smoothing if enabled
+            if apply_smoothing
+                sigma_band_power = movmean(sigma_band_power, window_size);
+            end
 
             % Initialize variables to store peak timestamps for all stages
-            stage_peak_timestamps = struct('NREMexclMA_periods', [], 'SWS_before_MA_short', [], ...
-                                           'SWS_before_MA_long', [], 'SWS_before_wake', []);
+            stage_peak_timestamps = struct();
 
-            % Define stages to loop through
-            stages = {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'};
+            % Loop through each stage
             for j = 1:length(stages)
                 stage = stages{j};
                 try
                     % Load the periods for the current stage
                     stage_periods = evalin('base', sprintf('%s_%s', stage, suffix));
+
+                    % Get the prominence for the current stage
+                    prominence = peak_prominences(stage);
 
                     % Initialize an array to store valid sigma peaks for the current stage
                     valid_sigma_peaks = [];
@@ -72,6 +79,10 @@ function detect_and_plot_sigma_peaks(suffixes, peak_prominences)
                             end
                         end
                     end
+
+                    % Remove SWS_before_wake peaks that occur in REM periods
+                    valid_sigma_peaks = remove_peaks_in_REM(valid_sigma_peaks, rem_binary_vector);
+
 
                     % Save valid peaks for the current stage
                     stage_peak_timestamps.(stage) = valid_sigma_peaks;
@@ -143,10 +154,32 @@ function detect_and_plot_sigma_peaks(suffixes, peak_prominences)
 
             % Link x-axes
             linkaxes(findall(gcf, 'Type', 'axes'), 'x');
-            
 
         catch ME
             fprintf('Error processing suffix "%s": %s\n', suffix, ME.message);
         end
     end
+end
+
+%% Helper Function: Remove Peaks in REM Periods
+function filtered_peaks = remove_peaks_in_REM(peaks, rem_binary_vector)
+    % Convert REM binary vector to REM periods
+    [REM_onsets, REM_offsets] = binaryToOnOff(rem_binary_vector);
+    
+    % Remove peaks that fall within REM periods
+    filtered_peaks = [];
+    for j = 1:length(peaks)
+        peak_time = peaks(j);
+        if ~any((peak_time >= REM_onsets) & (peak_time <= REM_offsets))
+            filtered_peaks = [filtered_peaks; peak_time];
+        end
+    end
+end
+
+%% Helper Function: Convert Binary Vector to On/Off Periods
+function [onsets, offsets] = binaryToOnOff(binary_vector)
+    % Identify changes in binary vector to find onsets and offsets
+    transitions = diff([0; binary_vector(:); 0]);
+    onsets = find(transitions == 1);
+    offsets = find(transitions == -1);
 end

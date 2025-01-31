@@ -1970,9 +1970,39 @@ suffixes = {'420', '588', '201', '207', '209'};
 sleep_stages_for_sigma_peak_detection(suffixes);
 
 %% Find sigma peaks in the 4 transitions
-peak_prominences = containers.Map({420, 588, 201, 207, 209}, ...
-                                  [1.5, 1.5, 1.5, 1.5, 1.5]);
-detect_and_plot_sigma_peaks(suffixes, peak_prominences)
+% peak_prominences = containers.Map({420, 588, 201, 207, 209}, ...
+%                                   [1.5, 1.55, 1.6, 1.65, 1.7]);
+% 
+% detect_and_plot_sigma_peaks(suffixes, peak_prominences)
+%Use version below to soecify peak based on the 
+
+
+% Define peak prominence for each stage (same for all suffixes)
+%Sigma unsmoothed
+% peak_prominences = containers.Map( ...
+%     {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'}, ...
+%     [2, 1.65, 1.6, 1.55] ...
+% );
+
+% Define peak prominence for each stage (same for all suffixes) for simga
+% smooth 10
+% peak_prominences = containers.Map( ...
+%     {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'}, ...
+%     [0.8, 0.5, 0.45, 0.4] ...
+% );
+
+% Define peak prominence for each stage (same for all suffixes) for simga
+% smooth 5
+peak_prominences = containers.Map( ...
+    {'NREMexclMA_periods', 'SWS_before_MA_short', 'SWS_before_MA_long', 'SWS_before_wake'}, ...
+    [0.85, 0.5, 0.45, 0.4] ...
+);
+
+detect_and_plot_sigma_peaks_stage_based(suffixes, peak_prominences, true, 5)
+
+
+% mean_traces = compute_and_plot_mean_sigma_peak_traces(suffixes);
+mean_traces_w_SEM = compute_and_plot_mean_sigma_peak_traces_SEM(suffixes, true, 5);
 
     % colors = [
     %     0 0 1;  % Blue for NREMexclMA
