@@ -1219,6 +1219,8 @@ check_lmm_assumptions(m_inv)
 
 # Example initialization with a continuous predictor
 ci_NE_AUC <- perform_bootstrap_pearson_correlation(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+ci_NE_AUC <- perform_bootstrap_r2(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h1)
 r.squaredGLMM(m_h1)
@@ -1270,6 +1272,7 @@ check_lmm_assumptions(m_h1)
 
 # Example initialization with a continuous predictor
 ci_NE_AUC_simple <- perform_bootstrap_pearson_correlation(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+ci_NE_AUC_simple <- perform_bootstrap_r2(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h1)
 r.squaredGLMM(m_h1)
@@ -1523,6 +1526,8 @@ check_lmm_assumptions(m_h1)
 
 # Example initialization with a continuous predictor
 ci_NE_AUC <- perform_bootstrap_pearson_correlation(AUC_prepost_yfp, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+ci_NE_AUC <- perform_bootstrap_r2(AUC_prepost_yfp, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h1)
 r.squaredGLMM(m_h1)
@@ -1574,6 +1579,7 @@ check_lmm_assumptions(m_h1)
 
 # Example initialization with a continuous predictor
 ci_NE_AUC_simple <- perform_bootstrap_pearson_correlation(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+ci_NE_AUC_simple <- perform_bootstrap_r2(AUC_prepost, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h1)
 r.squaredGLMM(m_h1)

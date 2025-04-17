@@ -34,9 +34,6 @@ function summaryTable = compute_peak_RR_summary_from_files(dataDirectory, chr2, 
                 fieldName = fieldnames(data); % Get the field name
                 RR_values = data.(fieldName{1}); % Extract the content of the field
 
-                fieldName_sigma = fieldnames(data_sigma); % Get the field name
-                Sigma_values = data.(fieldName_sigma{1}); % Extract the content of the field
-
                 % Identify the midpoint and extract 640 observations
                 numCols = size(RR_values, 2);
                 midpoint = ceil((numCols / 2)+(64*delay));

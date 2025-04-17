@@ -129,10 +129,12 @@ clear i j fullVarName filename saveDirectory baseVariables suffixes
 %% Load files with certain suffixes
 % Specify the directory containing the .mat files
 folderPath = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\arch_yfp';
+yfp = { '420', '484', '468', '408'};
+arch = {'387', '412', '414', '416'};
 
 % List of 3-digit elements to look for in file names
-suffixes = {'387', '403', '412', '414', '416', '408', '420'};
-suffixes = {'468', '484'};
+suffixes = {'387', '484', '412', '414', '416', '408', '420', '468'};
+% suffixes = {'468', '484'};
 
 % Get a list of all files in the folder and subfolders with the .mat extension
 matFiles = dir(fullfile(folderPath, '**', '*.mat'));  % '**' enables recursive search in subfolders
@@ -187,7 +189,7 @@ sleep_onset_table = identify_first_sleep_onset(yfp, arch);
 %% Create NREMinclMA if you don't have it
 
 % List of suffixes for each animal
-suffixes = {'013', '015', '019', '079', '089'};
+suffixes =  {'387', '484', '412', '414', '416', '408', '420', '468'};
 
 % Loop through each suffix
 for s = 1:length(suffixes)
@@ -321,7 +323,7 @@ window_in_sec = 1; % sec. 1 for 30 sec
 
 %round 1
 [mean_spectrogram_387, time_spectrogram_zero_387, F_387, band_powers_387, EEG_bands_fs_387] = PowerAnalysisEEG(EEG_387, EEG_fs_387, frw, window_in_sec, power_bands);
-[mean_spectrogram_403, time_spectrogram_zero_403, F_403, band_powers_403, EEG_bands_fs_403] = PowerAnalysisEEG(EEG_403, EEG_fs_403, frw, window_in_sec, power_bands);
+% [mean_spectrogram_403, time_spectrogram_zero_403, F_403, band_powers_403, EEG_bands_fs_403] = PowerAnalysisEEG(EEG_403, EEG_fs_403, frw, window_in_sec, power_bands);
 [mean_spectrogram_412, time_spectrogram_zero_412, F_412, band_powers_412, EEG_bands_fs_412] = PowerAnalysisEEG(EEG_412, EEG_fs_412, frw, window_in_sec, power_bands);
 [mean_spectrogram_414, time_spectrogram_zero_414, F_414, band_powers_414, EEG_bands_fs_414] = PowerAnalysisEEG(EEG_414, EEG_fs_414, frw, window_in_sec, power_bands);
 [mean_spectrogram_416, time_spectrogram_zero_416, F_416, band_powers_416, EEG_bands_fs_416] = PowerAnalysisEEG(EEG_416, EEG_fs_416, frw, window_in_sec, power_bands);
@@ -338,6 +340,2439 @@ window_in_sec = 1; % sec. 1 for 30 sec
 [mean_spectrogram_089, time_spectrogram_zero_089, F_089, band_powers_089, EEG_bands_fs_089] = PowerAnalysisEEG(EEG_089(1, :), EEG_fs_089, frw, window_in_sec, power_bands);
 
 clear frw window_in_sec
+
+%% HRB
+
+[HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
+[HRB_387, HRB_time_387] = findHRB(RR_time_387, RR_387);
+[HRB_412, HRB_time_412] = findHRB(RR_time_412, RR_412);
+[HRB_414, HRB_time_414] = findHRB(RR_time_414, RR_414);
+[HRB_416, HRB_time_416] = findHRB(RR_time_416, RR_416);
+[HRB_408, HRB_time_408] = findHRB(RR_time_408, RR_408);
+[HRB_484, HRB_time_484] = findHRB(RR_time_484, RR_484);
+[HRB_468, HRB_time_468] = findHRB(RR_time_468, RR_468);
+
+
+%% Get HRB based sigma/NE across laser on/off
+
+% Parameters
+preTime = 30;           % seconds before the HRB event to include
+postTime = 30;          % seconds after the HRB event to include
+windowTime = preTime + postTime;  % total window length (60 sec)
+transitionBuffer = 15;  % minimum seconds away from a state transition
+
+% Fixed sampling frequencies (Hz)
+fs_RR = 64;         
+fs_sigma = 2;     
+fs_delta465 = 1017;
+
+% Expected number of samples (using floor to ensure an integer count)
+expected_RR_length = 2 * floor(preTime * fs_RR) + 1;         % should be 3841
+expected_sigma_length = 2 * floor(preTime * fs_sigma) + 1;     % should be 30721
+expected_delta465_length = 2 * floor(preTime * fs_delta465) + 1; % should be 61021
+
+% List of mouse IDs (stored as numbers)
+suffix = [387, 484, 412, 414, 416, 408, 420, 468];
+
+% Containers for event segments (each row is one event)
+all_RR_segments = [];          
+all_delta465_segments = [];    
+all_sigma_segments = [];       
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve sleep state vectors (assumed sampled at 1 Hz)
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states
+    %validSleep = sws_binary_vector;
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % HRB event times (in seconds)
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time';  % ensure column vector
+    
+    % Retrieve signals and their time vectors
+    RR = eval(sprintf('RR_%s', uniqueId));         % RR signal (fs_RR)
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));  % RR time vector
+    
+    delta465 = eval(sprintf('delta465_filt_2_%s', uniqueId));
+    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId));  % time vector for delta465
+    
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    sigma_power = band_powers{4};
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));  % time vector for sigma
+    
+    fprintf('Processing mouse %s with %d HRB events...\n', uniqueId, length(HRB_time));
+    
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Skip if the desired window (eventTime +/- preTime) lies outside sleep time
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Mouse %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check that the event occurs during valid sleep
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0 sec
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Mouse %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check the contiguous valid sleep block to ensure the event is not near a transition
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Mouse %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract RR data (fs_RR) ---
+        [~, idx_RR] = min(abs(RR_time - eventTime));
+        if (idx_RR - floor(preTime*fs_RR) < 1) || (idx_RR + floor(preTime*fs_RR) > length(RR_time))
+            fprintf('Mouse %s, event %d: skipped (RR window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        rr_segment = RR(idx_RR - floor(preTime*fs_RR) : idx_RR + floor(preTime*fs_RR));
+        if length(rr_segment) ~= expected_RR_length
+            fprintf('Mouse %s, event %d: skipped (RR segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(rr_segment), expected_RR_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: RR segment length = %d.\n', uniqueId, event_i, length(rr_segment));
+        
+        % --- Extract delta465 data (fs_delta465) ---
+        [~, idx_delta] = min(abs(sec_signal_2 - eventTime));
+        if (idx_delta - floor(preTime*fs_delta465) < 1) || (idx_delta + floor(preTime*fs_delta465) > length(sec_signal_2))
+            fprintf('Mouse %s, event %d: skipped (delta465 window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        delta_segment = delta465(idx_delta - floor(preTime*fs_delta465) : idx_delta + floor(preTime*fs_delta465));
+        if length(delta_segment) ~= expected_delta465_length
+            fprintf('Mouse %s, event %d: skipped (delta465 segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(delta_segment), expected_delta465_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: delta465 segment length = %d.\n', uniqueId, event_i, length(delta_segment));
+        
+        % --- Extract sigma data (fs_sigma) ---
+        [~, idx_sigma] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_sigma - floor(preTime*fs_sigma) < 1) || (idx_sigma + floor(preTime*fs_sigma) > length(time_spectrogram_zero))
+            fprintf('Mouse %s, event %d: skipped (sigma window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        sigma_segment = sigma_power(idx_sigma - floor(preTime*fs_sigma) : idx_sigma + floor(preTime*fs_sigma));
+        if length(sigma_segment) ~= expected_sigma_length
+            fprintf('Mouse %s, event %d: skipped (sigma segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(sigma_segment), expected_sigma_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: sigma segment length = %d.\n', uniqueId, event_i, length(sigma_segment));
+        
+        % Append the segments (each as a row) to overall matrices
+        all_RR_segments = [all_RR_segments; rr_segment(:)'];
+        all_delta465_segments = [all_delta465_segments; delta_segment(:)'];
+        all_sigma_segments = [all_sigma_segments; sigma_segment(:)'];
+        fprintf('After mouse %s, event %d: all_RR_segments size: %s\n', uniqueId, event_i, mat2str(size(all_RR_segments)));
+    end
+end
+
+if isempty(all_RR_segments) || isempty(all_delta465_segments) || isempty(all_sigma_segments)
+    error('No valid events found across mice. Check your event selection criteria.');
+end
+
+% Compute mean and SEM for each modality (across all events)
+mean_RR = mean(all_RR_segments, 1);
+sem_RR  = std(all_RR_segments, 0, 1) / sqrt(size(all_RR_segments, 1));
+mean_delta465 = mean(all_delta465_segments, 1);
+sem_delta465  = std(all_delta465_segments, 0, 1) / sqrt(size(all_delta465_segments, 1));
+mean_sigma = mean(all_sigma_segments, 1);
+sem_sigma  = std(all_sigma_segments, 0, 1) / sqrt(size(all_sigma_segments, 1));
+
+% Define common time vectors for plotting (using the fixed expected lengths)
+t_RR = linspace(-preTime, postTime, expected_RR_length);
+t_delta465 = linspace(-preTime, postTime, expected_delta465_length);
+t_sigma = linspace(-preTime, postTime, expected_sigma_length);
+
+% --- New Code: EEG-derived sigma power histograms ---
+% We will process each mouse’s EEG data to calculate the sigma band
+% power (8–15 Hz) on a per-event basis.
+all_sigma_EEG_bins = [];  % will accumulate binned sigma power for each event
+
+% Define bin edges for 5-sec intervals over a [-30,30] sec window.
+bin_edges = -30:5:30;
+nBins = length(bin_edges)-1;
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve the EEG data, sampling rate, and time vector.
+    EEG = eval(sprintf('EEG_%s', uniqueId));
+    EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));  
+    % Assume EEG_time exists; if not, generate it:
+    if exist(sprintf('EEG_time_%s', uniqueId), 'var')
+        EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+    else
+        EEG_time = (0:length(EEG)-1) / EEG_fs;
+    end
+    
+    % Get the HRB event times for this mouse (in seconds)
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);  % ensure column vector
+    
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Find the closest index in the EEG_time vector to the HRB event.
+        [~, idx_EEG] = min(abs(EEG_time - eventTime));
+        
+        % Check boundaries: we need 30 sec before and after the event.
+        if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+            fprintf('Mouse %s, event %d: EEG segment out of bounds, skipped.\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Extract the EEG segment (60 sec total, centered on the HRB event)
+        EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+        
+        % Run the power analysis on this segment.
+        % We call PowerAnalysisEEG with only the sigma band defined.
+        sigma_band_only = {[8,15]};  % only sigma band
+        [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, sigma_band_only);
+        sigma_event = bp_event{1};  % sigma power time series for this event
+        
+        % Shift the spectrogram time vector so that 0 is at the HRB event.
+        % (EEG_segment is 60 sec long, so center = 30 sec)
+        T_EEG_shifted = T_EEG - 30;
+        
+        % Bin the sigma power values into 5-sec intervals.
+        bin_idx = discretize(T_EEG_shifted, bin_edges);
+        event_bins = nan(1, nBins);
+        for j = 1:nBins
+            if any(bin_idx==j)
+                event_bins(j) = mean(sigma_event(bin_idx == j));
+            end
+        end
+        
+        % Append this event's binned data (as a new row)
+        all_sigma_EEG_bins = [all_sigma_EEG_bins; event_bins];
+    end
+end
+
+% Compute the mean and standard error of the mean (SEM) across events for each bin.
+mean_sigma_EEG_bins = nanmean(all_sigma_EEG_bins, 1);
+sem_sigma_EEG_bins = nanstd(all_sigma_EEG_bins, 0, 1) / sqrt(size(all_sigma_EEG_bins, 1));
+
+% Define bin centers for plotting.
+bin_centers = (bin_edges(1:end-1) + bin_edges(2:end)) / 2;
+
+% --- Existing plotting for RR, delta465, and sigma (from spectrogram) ---
+figure;
+subplot(4,1,1); hold on;
+plot(t_RR, mean_RR, 'b', 'LineWidth', 2);
+fill([t_RR, fliplr(t_RR)], [mean_RR+sem_RR, fliplr(mean_RR-sem_RR)], 'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('RR Trace'); xlabel('Time (s)'); ylabel('RR');
+
+subplot(4,1,2); hold on;
+plot(t_delta465, mean_delta465, 'r', 'LineWidth', 2);
+fill([t_delta465, fliplr(t_delta465)], [mean_delta465+sem_delta465, fliplr(mean_delta465-sem_delta465)], 'r', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('Norepinephrine (delta465)'); xlabel('Time (s)'); ylabel('dF/F');
+
+subplot(4,1,3); hold on;
+plot(t_sigma, mean_sigma, 'g', 'LineWidth', 2);
+fill([t_sigma, fliplr(t_sigma)], [mean_sigma+sem_sigma, fliplr(mean_sigma-sem_sigma)], 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('Sigma Power (from spectrogram)'); xlabel('Time (s)'); ylabel('Power');
+
+% Compute overall min/max from (mean - SEM) to (mean + SEM)
+lowestVal = min(mean_sigma_EEG_bins - sem_sigma_EEG_bins);
+highestVal = max(mean_sigma_EEG_bins + sem_sigma_EEG_bins);
+rangeVal = highestVal - lowestVal;
+margin = 0.1 * rangeVal;  % 10% margin
+
+% Define new axis limits
+lowestAxis = lowestVal - margin;
+highestAxis = highestVal + margin;
+
+subplot(4,1,4); hold on;
+hBar = bar(bin_centers, mean_sigma_EEG_bins, 1, ...
+    'FaceColor', [0.7, 0.7, 0.7], 'EdgeColor', 'none');
+
+% Set the bar's BaseValue to the bottom of our new axis range
+set(hBar, 'BaseValue', lowestAxis);
+
+% Overlay error bars
+errorbar(bin_centers, mean_sigma_EEG_bins, sem_sigma_EEG_bins, ...
+    'k.', 'LineWidth', 1.5);
+
+% Adjust the y-axis limits
+ylim([lowestAxis, highestAxis]);
+xlim([-preTime, postTime]);
+
+title('Sigma Power (EEG) Histograms in 5-sec bins');
+xlabel('Time (s) relative to HRB event');
+ylabel('Sigma Power');
+
+%% HRB and SO plot across laser on/off
+
+% Parameters
+preTime = 30;           % seconds before the HRB event to include
+postTime = 30;          % seconds after the HRB event to include
+windowTime = preTime + postTime;  % total window length (60 sec)
+transitionBuffer = 15;  % minimum seconds away from a state transition
+
+% Fixed sampling frequencies (Hz)
+fs_RR = 64;         
+fs_SO = 2;     
+fs_delta465 = 1017;
+
+% Expected number of samples (using floor to ensure an integer count)
+expected_RR_length = 2 * floor(preTime * fs_RR) + 1;         % should be 3841
+expected_SO_length = 2 * floor(preTime * fs_SO) + 1;     % should be 30721
+expected_delta465_length = 2 * floor(preTime * fs_delta465) + 1; % should be 61021
+
+% List of mouse IDs (stored as numbers)
+suffix = [387, 484, 412, 414, 416, 408, 420, 468];
+
+% Containers for event segments (each row is one event)
+all_RR_segments = [];          
+all_delta465_segments = [];    
+all_SO_segments = [];       
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve sleep state vectors (assumed sampled at 1 Hz)
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states
+    %validSleep = sws_binary_vector;
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % HRB event times (in seconds)
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time';  % ensure column vector
+    
+    % Retrieve signals and their time vectors
+    RR = eval(sprintf('RR_%s', uniqueId));         % RR signal (fs_RR)
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));  % RR time vector
+    
+    delta465 = eval(sprintf('delta465_filt_2_%s', uniqueId));
+    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId));  % time vector for delta465
+    
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    SO_power = band_powers{1};
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));  % time vector for SO
+    
+    fprintf('Processing mouse %s with %d HRB events...\n', uniqueId, length(HRB_time));
+    
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Skip if the desired window (eventTime +/- preTime) lies outside sleep time
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Mouse %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check that the event occurs during valid sleep
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0 sec
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Mouse %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check the contiguous valid sleep block to ensure the event is not near a transition
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Mouse %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract RR data (fs_RR) ---
+        [~, idx_RR] = min(abs(RR_time - eventTime));
+        if (idx_RR - floor(preTime*fs_RR) < 1) || (idx_RR + floor(preTime*fs_RR) > length(RR_time))
+            fprintf('Mouse %s, event %d: skipped (RR window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        rr_segment = RR(idx_RR - floor(preTime*fs_RR) : idx_RR + floor(preTime*fs_RR));
+        if length(rr_segment) ~= expected_RR_length
+            fprintf('Mouse %s, event %d: skipped (RR segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(rr_segment), expected_RR_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: RR segment length = %d.\n', uniqueId, event_i, length(rr_segment));
+        
+        % --- Extract delta465 data (fs_delta465) ---
+        [~, idx_delta] = min(abs(sec_signal_2 - eventTime));
+        if (idx_delta - floor(preTime*fs_delta465) < 1) || (idx_delta + floor(preTime*fs_delta465) > length(sec_signal_2))
+            fprintf('Mouse %s, event %d: skipped (delta465 window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        delta_segment = delta465(idx_delta - floor(preTime*fs_delta465) : idx_delta + floor(preTime*fs_delta465));
+        if length(delta_segment) ~= expected_delta465_length
+            fprintf('Mouse %s, event %d: skipped (delta465 segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(delta_segment), expected_delta465_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: delta465 segment length = %d.\n', uniqueId, event_i, length(delta_segment));
+        
+        % --- Extract SO data (fs_SO) ---
+        [~, idx_SO] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_SO - floor(preTime*fs_SO) < 1) || (idx_SO + floor(preTime*fs_SO) > length(time_spectrogram_zero))
+            fprintf('Mouse %s, event %d: skipped (SO window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        SO_segment = SO_power(idx_SO - floor(preTime*fs_SO) : idx_SO + floor(preTime*fs_SO));
+        if length(SO_segment) ~= expected_SO_length
+            fprintf('Mouse %s, event %d: skipped (SO segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(SO_segment), expected_SO_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: SO segment length = %d.\n', uniqueId, event_i, length(SO_segment));
+        
+        % Append the segments (each as a row) to overall matrices
+        all_RR_segments = [all_RR_segments; rr_segment(:)'];
+        all_delta465_segments = [all_delta465_segments; delta_segment(:)'];
+        all_SO_segments = [all_SO_segments; SO_segment(:)'];
+        fprintf('After mouse %s, event %d: all_RR_segments size: %s\n', uniqueId, event_i, mat2str(size(all_RR_segments)));
+    end
+end
+
+if isempty(all_RR_segments) || isempty(all_delta465_segments) || isempty(all_SO_segments)
+    error('No valid events found across mice. Check your event selection criteria.');
+end
+
+% Compute mean and SEM for each modality (across all events)
+mean_RR = mean(all_RR_segments, 1);
+sem_RR  = std(all_RR_segments, 0, 1) / sqrt(size(all_RR_segments, 1));
+mean_delta465 = mean(all_delta465_segments, 1);
+sem_delta465  = std(all_delta465_segments, 0, 1) / sqrt(size(all_delta465_segments, 1));
+mean_SO = mean(all_SO_segments, 1);
+sem_SO  = std(all_SO_segments, 0, 1) / sqrt(size(all_SO_segments, 1));
+
+% Define common time vectors for plotting (using the fixed expected lengths)
+t_RR = linspace(-preTime, postTime, expected_RR_length);
+t_delta465 = linspace(-preTime, postTime, expected_delta465_length);
+t_SO = linspace(-preTime, postTime, expected_SO_length);
+
+% --- New Code: EEG-derived SO power histograms ---
+% We will process each mouse’s EEG data to calculate the SO band
+% power (8–15 Hz) on a per-event basis.
+all_SO_EEG_bins = [];  % will accumulate binned SO power for each event
+
+% Define bin edges for 5-sec intervals over a [-30,30] sec window.
+bin_edges = -30:5:30;
+nBins = length(bin_edges)-1;
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve the EEG data, sampling rate, and time vector.
+    EEG = eval(sprintf('EEG_%s', uniqueId));
+    EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));  
+    % Assume EEG_time exists; if not, generate it:
+    if exist(sprintf('EEG_time_%s', uniqueId), 'var')
+        EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+    else
+        EEG_time = (0:length(EEG)-1) / EEG_fs;
+    end
+    
+    % Get the HRB event times for this mouse (in seconds)
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);  % ensure column vector
+    
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Find the closest index in the EEG_time vector to the HRB event.
+        [~, idx_EEG] = min(abs(EEG_time - eventTime));
+        
+        % Check boundaries: we need 30 sec before and after the event.
+        if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+            fprintf('Mouse %s, event %d: EEG segment out of bounds, skipped.\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Extract the EEG segment (60 sec total, centered on the HRB event)
+        EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+        
+        % Run the power analysis on this segment.
+        % We call PowerAnalysisEEG with only the SO band defined.
+        SO_band_only = {[0.5,1]};  % only SO band
+        [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, SO_band_only);
+        SO_event = bp_event{1};  % SO power time series for this event
+        
+        % Shift the spectrogram time vector so that 0 is at the HRB event.
+        % (EEG_segment is 60 sec long, so center = 30 sec)
+        T_EEG_shifted = T_EEG - 30;
+        
+        % Bin the SO power values into 5-sec intervals.
+        bin_idx = discretize(T_EEG_shifted, bin_edges);
+        event_bins = nan(1, nBins);
+        for j = 1:nBins
+            if any(bin_idx==j)
+                event_bins(j) = mean(SO_event(bin_idx == j));
+            end
+        end
+        
+        % Append this event's binned data (as a new row)
+        all_SO_EEG_bins = [all_SO_EEG_bins; event_bins];
+    end
+end
+
+% Compute the mean and standard error of the mean (SEM) across events for each bin.
+mean_SO_EEG_bins = nanmean(all_SO_EEG_bins, 1);
+sem_SO_EEG_bins = nanstd(all_SO_EEG_bins, 0, 1) / sqrt(size(all_SO_EEG_bins, 1));
+
+% Define bin centers for plotting.
+bin_centers = (bin_edges(1:end-1) + bin_edges(2:end)) / 2;
+
+% --- Existing plotting for RR, delta465, and SO (from spectrogram) ---
+figure;
+subplot(4,1,1); hold on;
+plot(t_RR, mean_RR, 'b', 'LineWidth', 2);
+fill([t_RR, fliplr(t_RR)], [mean_RR+sem_RR, fliplr(mean_RR-sem_RR)], 'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('RR Trace'); xlabel('Time (s)'); ylabel('RR');
+
+subplot(4,1,2); hold on;
+plot(t_delta465, mean_delta465, 'r', 'LineWidth', 2);
+fill([t_delta465, fliplr(t_delta465)], [mean_delta465+sem_delta465, fliplr(mean_delta465-sem_delta465)], 'r', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('Norepinephrine (delta465)'); xlabel('Time (s)'); ylabel('dF/F');
+
+subplot(4,1,3); hold on;
+plot(t_SO, mean_SO, 'g', 'LineWidth', 2);
+fill([t_SO, fliplr(t_SO)], [mean_SO+sem_SO, fliplr(mean_SO-sem_SO)], 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('SO Power (from spectrogram)'); xlabel('Time (s)'); ylabel('Power');
+
+% Compute overall min/max from (mean - SEM) to (mean + SEM)
+lowestVal = min(mean_SO_EEG_bins - sem_SO_EEG_bins);
+highestVal = max(mean_SO_EEG_bins + sem_SO_EEG_bins);
+rangeVal = highestVal - lowestVal;
+margin = 0.1 * rangeVal;  % 10% margin
+
+% Define new axis limits
+lowestAxis = lowestVal - margin;
+highestAxis = highestVal + margin;
+
+subplot(4,1,4); hold on;
+hBar = bar(bin_centers, mean_SO_EEG_bins, 1, ...
+    'FaceColor', [0.7, 0.7, 0.7], 'EdgeColor', 'none');
+
+% Set the bar's BaseValue to the bottom of our new axis range
+set(hBar, 'BaseValue', lowestAxis);
+
+% Overlay error bars
+errorbar(bin_centers, mean_SO_EEG_bins, sem_SO_EEG_bins, ...
+    'k.', 'LineWidth', 1.5);
+
+% Adjust the y-axis limits
+ylim([lowestAxis, highestAxis]);
+xlim([-preTime, postTime]);
+
+title('SO Power (EEG) Histograms in 5-sec bins');
+xlabel('Time (s) relative to HRB event');
+ylabel('SO Power');
+%% HRB centered events w. sigma power and bins summary file
+
+% Parameters
+preTime = 30;           % seconds before the HRB event to include
+postTime = 30;          % seconds after the HRB event to include
+windowTime = preTime + postTime;  % total window length (60 sec)
+transitionBuffer = 15;  % minimum seconds away from a state transition
+
+% Fixed sampling frequencies (Hz)
+fs_RR = 64;         
+fs_sigma = 2;     
+fs_delta465 = 1017;
+
+% Expected number of samples (using floor to ensure an integer count)
+expected_RR_length = 2 * floor(preTime * fs_RR) + 1;         % should be 3841
+expected_sigma_length = 2 * floor(preTime * fs_sigma) + 1;     % should be 30721
+expected_delta465_length = 2 * floor(preTime * fs_delta465) + 1; % should be 61021
+
+% Pre-compute common time vectors
+t_RR = linspace(-preTime, postTime, expected_RR_length);
+t_delta465 = linspace(-preTime, postTime, expected_delta465_length);
+t_sigma = linspace(-preTime, postTime, expected_sigma_length);
+
+% Define bin edges for 5-sec intervals over a [-30,30] sec window.
+bin_edges = -30:5:30;
+nBins = length(bin_edges)-1;
+
+% List of mouse IDs (stored as numbers)
+suffix = [387, 484, 412, 414, 416, 408, 420, 468];
+
+% Containers for event segments (each row is one event)
+% all_RR_segments = [];          
+% all_delta465_segments = [];    
+% all_sigma_segments = [];       
+
+% --- New: Containers for the summary data table ---
+summary_subject         = {};  % subject IDs (as strings)
+summary_HRB_RR          = [];  % HRB RR value (center of RR segment)
+summary_HRB_RR_AUC      = [];
+summary_sigma_bin5      = [];  % EEG-derived sigma power from bin 5
+summary_sigma_bin5_bl   = [];  % new: sigma_bin5 relative to baseline (bin 1)
+summary_sigma_bin_4_5   = [];  % new: combination of bins 4 + 5
+summary_sigma_bin_4_5_bl= [];  % new: bins 4+5 with baseline correction (subtract bin1)
+summary_sigma_bin_5_6   = [];  % new: combination of bins 5 + 6
+summary_sigma_bin_5_6_bl= [];  % new: bins 5+6 with baseline correction
+summary_sigma_bin_4_5_6 = [];  % new: combination of bins 4 + 5 + 6
+summary_sigma_bin_4_5_6_bl = [];  % new: combination of bins 4+5+6 with baseline correction
+summary_delta465_amp    = [];  % Delta465 amplitude measure
+summary_delta465_AUC    = [];
+summary_sigma_amp       = [];  % sigma amplitude measure
+summary_sigma_AUC       = [];
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve sleep state vectors (assumed sampled at 1 Hz)
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % HRB event times (in seconds)
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time';  % ensure column vector
+    
+    % Retrieve signals and their time vectors
+    RR = eval(sprintf('RR_%s', uniqueId));         % RR signal (fs_RR)
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));  % RR time vector
+    
+    delta465 = eval(sprintf('delta465_filt_2_%s', uniqueId));
+    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId));  % time vector for delta465
+    
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    sigma_power = band_powers{4};
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));  % time vector for sigma
+    
+    fprintf('Processing mouse %s with %d HRB events...\n', uniqueId, length(HRB_time));
+    
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Skip if the desired window (eventTime +/- preTime) lies outside sleep time
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Mouse %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check that the event occurs during valid sleep
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0 sec
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Mouse %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Check contiguous valid sleep block to ensure the event is not near a transition
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Mouse %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract RR data (fs_RR) ---
+        [~, idx_RR] = min(abs(RR_time - eventTime));
+        if (idx_RR - floor(preTime*fs_RR) < 1) || (idx_RR + floor(preTime*fs_RR) > length(RR_time))
+            fprintf('Mouse %s, event %d: skipped (RR window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        rr_segment = RR(idx_RR - floor(preTime*fs_RR) : idx_RR + floor(preTime*fs_RR));
+        if length(rr_segment) ~= expected_RR_length
+            fprintf('Mouse %s, event %d: skipped (RR segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(rr_segment), expected_RR_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: RR segment length = %d.\n', uniqueId, event_i, length(rr_segment));
+        
+        % --- Extract delta465 data (fs_delta465) ---
+        [~, idx_delta] = min(abs(sec_signal_2 - eventTime));
+        if (idx_delta - floor(preTime*fs_delta465) < 1) || (idx_delta + floor(preTime*fs_delta465) > length(sec_signal_2))
+            fprintf('Mouse %s, event %d: skipped (delta465 window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        delta_segment = delta465(idx_delta - floor(preTime*fs_delta465) : idx_delta + floor(preTime*fs_delta465));
+        if length(delta_segment) ~= expected_delta465_length
+            fprintf('Mouse %s, event %d: skipped (delta465 segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(delta_segment), expected_delta465_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: delta465 segment length = %d.\n', uniqueId, event_i, length(delta_segment));
+        
+        % --- Extract sigma data (fs_sigma) ---
+        [~, idx_sigma] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_sigma - floor(preTime*fs_sigma) < 1) || (idx_sigma + floor(preTime*fs_sigma) > length(time_spectrogram_zero))
+            fprintf('Mouse %s, event %d: skipped (sigma window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        sigma_segment = sigma_power(idx_sigma - floor(preTime*fs_sigma) : idx_sigma + floor(preTime*fs_sigma));
+        if length(sigma_segment) ~= expected_sigma_length
+            fprintf('Mouse %s, event %d: skipped (sigma segment length %d, expected %d).\n',...
+                    uniqueId, event_i, length(sigma_segment), expected_sigma_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: sigma segment length = %d.\n', uniqueId, event_i, length(sigma_segment));
+        
+        % % Append the segments (each as a row) to overall matrices
+        % all_RR_segments = [all_RR_segments; rr_segment(:)'];
+        % all_delta465_segments = [all_delta465_segments; delta_segment(:)'];
+        % all_sigma_segments = [all_sigma_segments; sigma_segment(:)'];
+        % fprintf('After mouse %s, event %d: all_RR_segments size: %s\n', uniqueId, event_i, mat2str(size(all_RR_segments)));
+        
+        % --- New: Compute Summary Metrics for this HRB event ---
+        % 1. HRB RR value: value at the center of the RR segment
+        baseline_idx = find(t_RR >= -10 & t_RR <= -5);
+        baseline_mean = mean(rr_segment(baseline_idx));
+        rr_value_at_event = rr_segment(floor(preTime*fs_RR) + 1) - baseline_mean;
+
+        baseline_RR_idx_AUC = find(t_RR >= -10 & t_RR <= -5);
+        event_RR_idx_AUC = find(t_RR >= -2.5 & t_RR <= 2.5);
+        rr_AUC = trapz(rr_segment(event_RR_idx_AUC)) - trapz(rr_segment(baseline_RR_idx_AUC));
+        
+        % 2. Delta465 amplitude: max in [-10,10] sec minus min in [-20,0] sec.
+        ind_delta_min = find(t_RR >= -20 & t_RR <= 0);
+        ind_delta_range = find(t_RR >= -10 & t_RR <= 10);
+        delta465_amp = max(delta_segment(ind_delta_range)) - min(delta_segment(ind_delta_min));
+
+
+        ind_delta_AUC_bl = find(t_RR >= -15 & t_RR <= -10);
+        ind_delta_AUC_peak = find(t_RR >= -2.5 & t_RR <= 2.5);
+        delta465_AUC = trapz(delta_segment(ind_delta_AUC_peak)) - trapz(delta_segment(ind_delta_AUC_bl));
+
+        % 3. EEG-derived sigma power for bin 5 using the same 5-sec segmentation:
+        % Retrieve EEG data for the current subject
+        EEG = eval(sprintf('EEG_%s', uniqueId));
+        EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));
+        if exist(sprintf('EEG_time_%s', uniqueId), 'var')
+            EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+        else
+            EEG_time = (0:length(EEG)-1) / EEG_fs;
+        end
+        [~, idx_EEG] = min(abs(EEG_time - eventTime));
+        if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+            fprintf('Mouse %s, event %d: EEG segment out of bounds for summary, skipped.\n', uniqueId, event_i);
+            continue;
+        end
+        EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+        
+        % Run the power analysis for the sigma band only (8–15 Hz) with 5-sec windows.
+        sigma_band_only = {[8,15]};
+        [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, sigma_band_only);
+        sigma_event = bp_event{1};
+        T_EEG_shifted = T_EEG - 30;
+        
+        % Bin the sigma power values into 5-sec intervals (same as later code)
+        bin_idx = discretize(T_EEG_shifted, bin_edges);
+        event_bins = nan(1, nBins);
+        for j = 1:nBins
+            if any(bin_idx == j)
+                event_bins(j) = mean(sigma_event(bin_idx == j));
+            end
+        end
+        % Extract sigma power from the 5th bin
+        sigma_bin5 = event_bins(5);
+        sigma_bin5_bl = event_bins(5) - event_bins(1);
+        
+        sigma_bin_4_5 = mean([event_bins(4), event_bins(5)]);
+        sigma_bin_4_5_bl = sigma_bin_4_5 - event_bins(1);
+        
+        sigma_bin_5_6 = mean([event_bins(5), event_bins(6)]);
+        sigma_bin_5_6_bl = sigma_bin_5_6 - event_bins(1);
+        
+        sigma_bin_4_5_6 = mean([event_bins(4), event_bins(5), event_bins(6)]);
+        sigma_bin_4_5_6_bl = sigma_bin_4_5_6 - event_bins(1);
+        
+        % 4. Sigma amplitude measure: mean of sigma_segment from -10 to -5 minus
+        %    the mean of sigma_segment from -2.5 to 2.5.
+        %Now changed to min of the -2.5 to 2.5 substracted from max of -15
+        %to 0
+        ind_sigma_baseline = find(t_sigma >= -15 & t_sigma <= 0);
+        ind_sigma_event = find(t_sigma >= -2.5 & t_sigma <= 2.5);
+        sigma_amp =  min(sigma_segment(ind_sigma_event))- max(sigma_segment(ind_sigma_baseline));
+
+        ind_sigma_baseline_AUC = find(t_sigma >= -10 & t_sigma <= -5);
+        ind_sigma_event_AUC = find(t_sigma >= -2.5 & t_sigma <= 2.5);
+        sigma_AUC =  trapz(sigma_segment(ind_sigma_event_AUC)) - trapz(sigma_segment(ind_sigma_baseline_AUC));       
+
+        
+        % Append summary metrics for this event
+        summary_subject{end+1,1} = uniqueId;
+        summary_HRB_RR(end+1,1) = rr_value_at_event;
+        summary_HRB_RR_AUC(end+1,1) = rr_AUC;
+        summary_sigma_bin5(end+1,1) = sigma_bin5;
+        summary_sigma_bin5_bl(end+1,1) = sigma_bin5_bl;
+        summary_sigma_bin_4_5(end+1,1) = sigma_bin_4_5;
+        summary_sigma_bin_4_5_bl(end+1,1) = sigma_bin_4_5_bl;
+        summary_sigma_bin_5_6(end+1,1) = sigma_bin_5_6;
+        summary_sigma_bin_5_6_bl(end+1,1) = sigma_bin_5_6_bl;
+        summary_sigma_bin_4_5_6(end+1,1) = sigma_bin_4_5_6;
+        summary_sigma_bin_4_5_6_bl(end+1,1) = sigma_bin_4_5_6_bl;
+        summary_delta465_amp(end+1,1) = delta465_amp;
+        summary_delta465_AUC(end+1,1) = delta465_AUC;
+        summary_sigma_amp(end+1,1) = sigma_amp;
+        summary_sigma_AUC(end+1,1) = sigma_AUC;
+
+    end
+end
+
+% --- Create the Summary Data Table ---
+summaryTable = table( summary_subject, ...
+    summary_HRB_RR, summary_HRB_RR_AUC, ...
+    summary_sigma_bin5, summary_sigma_bin5_bl, ...
+    summary_sigma_bin_4_5, summary_sigma_bin_4_5_bl, ...
+    summary_sigma_bin_5_6, summary_sigma_bin_5_6_bl, ...
+    summary_sigma_bin_4_5_6, summary_sigma_bin_4_5_6_bl, ...
+    summary_delta465_amp, summary_delta465_AUC, ...
+    summary_sigma_amp, summary_sigma_AUC, ...
+    'VariableNames', {'SubjectID','HRB_RR', 'HRB_RR_AUC', ...
+    'SigmaBin5','SigmaBin5_BL', 'SigmaBin_4_5', 'SigmaBin_4_5_BL', ...
+    'SigmaBin_5_6', 'SigmaBin_5_6_BL', 'SigmaBin_4_5_6', 'SigmaBin_4_5_6_BL', ...
+    'Delta465Amplitude', 'Delta465AUC', 'SigmaAmplitude', 'SigmaAUC'});
+
+% if isempty(all_RR_segments) || isempty(all_delta465_segments) || isempty(all_sigma_segments)
+%     error('No valid events found across mice. Check your event selection criteria.');
+% end
+
+% % Compute mean and SEM for each modality (across all events)
+% mean_RR = mean(all_RR_segments, 1);
+% sem_RR  = std(all_RR_segments, 0, 1) / sqrt(size(all_RR_segments, 1));
+% mean_delta465 = mean(all_delta465_segments, 1);
+% sem_delta465  = std(all_delta465_segments, 0, 1) / sqrt(size(all_delta465_segments, 1));
+% mean_sigma = mean(all_sigma_segments, 1);
+% sem_sigma  = std(all_sigma_segments, 0, 1) / sqrt(size(all_sigma_segments, 1));
+
+
+% disp('Summary Table:');
+% disp(summaryTable);
+
+% % --- Existing EEG-derived sigma power histograms ---
+% all_sigma_EEG_bins = [];  % will accumulate binned sigma power for each event
+% 
+% for idx = 1:length(suffix)
+%     uniqueId = num2str(suffix(idx));
+% 
+%     % Retrieve EEG data, sampling rate, and time vector.
+%     EEG = eval(sprintf('EEG_%s', uniqueId));
+%     EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));  
+%     if exist(sprintf('EEG_time_%s', uniqueId), 'var')
+%         EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+%     else
+%         EEG_time = (0:length(EEG)-1) / EEG_fs;
+%     end
+% 
+%     % Get HRB event times for this mouse (in seconds)
+%     HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+%     HRB_time = HRB_time(:);  % ensure column vector
+% 
+%     for event_i = 1:length(HRB_time)
+%         eventTime = HRB_time(event_i);
+% 
+%         % Find the closest index in the EEG_time vector to the HRB event.
+%         [~, idx_EEG] = min(abs(EEG_time - eventTime));
+% 
+%         % Check boundaries: need 30 sec before and after the event.
+%         if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+%             fprintf('Mouse %s, event %d: EEG segment out of bounds, skipped.\n', uniqueId, event_i);
+%             continue;
+%         end
+% 
+%         % Extract the EEG segment (60 sec total, centered on the HRB event)
+%         EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+% 
+%         % Run the power analysis on this segment (sigma band only, 8–15 Hz)
+%         sigma_band_only = {[8,15]};
+%         [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, sigma_band_only);
+%         sigma_event = bp_event{1};
+% 
+%         % Shift the spectrogram time vector so that 0 is at the HRB event.
+%         T_EEG_shifted = T_EEG - 30;
+% 
+%         % Bin the sigma power values into 5-sec intervals.
+%         bin_idx = discretize(T_EEG_shifted, bin_edges);
+%         event_bins = nan(1, nBins);
+%         for j = 1:nBins
+%             if any(bin_idx == j)
+%                 event_bins(j) = mean(sigma_event(bin_idx == j));
+%             end
+%         end
+% 
+%         % Append this event's binned data (as a new row)
+%         all_sigma_EEG_bins = [all_sigma_EEG_bins; event_bins];
+%     end
+% end
+% 
+% % Compute the mean and SEM across events for each bin.
+% mean_sigma_EEG_bins = nanmean(all_sigma_EEG_bins, 1);
+% sem_sigma_EEG_bins = nanstd(all_sigma_EEG_bins, 0, 1) / sqrt(size(all_sigma_EEG_bins, 1));
+% 
+% % Define bin centers for plotting.
+% bin_centers = (bin_edges(1:end-1) + bin_edges(2:end)) / 2;
+
+% % --- Plotting ---
+% figure;
+% subplot(4,1,1); hold on;
+% plot(t_RR, mean_RR, 'b', 'LineWidth', 2);
+% fill([t_RR, fliplr(t_RR)], [mean_RR+sem_RR, fliplr(mean_RR-sem_RR)], 'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+% title('RR Trace'); xlabel('Time (s)'); ylabel('RR');
+% 
+% subplot(4,1,2); hold on;
+% plot(t_delta465, mean_delta465, 'r', 'LineWidth', 2);
+% fill([t_delta465, fliplr(t_delta465)], [mean_delta465+sem_delta465, fliplr(mean_delta465-sem_delta465)], 'r', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+% title('Norepinephrine (delta465)'); xlabel('Time (s)'); ylabel('dF/F');
+% 
+% subplot(4,1,3); hold on;
+% plot(t_sigma, mean_sigma, 'g', 'LineWidth', 2);
+% fill([t_sigma, fliplr(t_sigma)], [mean_sigma+sem_sigma, fliplr(mean_sigma-sem_sigma)], 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+% title('Sigma Power (from spectrogram)'); xlabel('Time (s)'); ylabel('Power');
+% 
+% % Compute overall min/max from (mean - SEM) to (mean + SEM)
+% lowestVal = min(mean_sigma_EEG_bins - sem_sigma_EEG_bins);
+% highestVal = max(mean_sigma_EEG_bins + sem_sigma_EEG_bins);
+% rangeVal = highestVal - lowestVal;
+% margin = 0.1 * rangeVal;  % 10% margin
+% 
+% % Define new axis limits
+% lowestAxis = lowestVal - margin;
+% highestAxis = highestVal + margin;
+% 
+% subplot(4,1,4); hold on;
+% hBar = bar(bin_centers, mean_sigma_EEG_bins, 1, 'FaceColor', [0.7, 0.7, 0.7], 'EdgeColor', 'none');
+% set(hBar, 'BaseValue', lowestAxis);
+% errorbar(bin_centers, mean_sigma_EEG_bins, sem_sigma_EEG_bins, 'k.', 'LineWidth', 1.5);
+% ylim([lowestAxis, highestAxis]);
+% xlim([-preTime, postTime]);
+% title('Sigma Power (EEG) Histograms in 5-sec bins');
+% xlabel('Time (s) relative to HRB event');
+% ylabel('Sigma Power');
+%% save summary table for R + coor plot
+
+% Save summary table to a CSV file
+filename = 'Mouse_HRB_amplitude_R_data.csv';
+writetable(summaryTable, filename);
+disp(['Summary table saved to ', filename]);
+
+% Read the summary table from a CSV file (if not already in memory)
+summaryTable = readtable('summaryTable.csv');
+
+% Create a scatter plot of HRB RR vs. Delta465 Amplitude
+figure;
+scatter(summaryTable.HRB_RR, summaryTable.SigmaAmplitude, 'filled');
+xlabel('HRB RR Value');
+ylabel('Delta465 Amplitude');
+title('Correlation between HRB RR and Delta465 Amplitude');
+grid on;
+hold on;
+
+% Compute a linear regression fit
+p = polyfit(summaryTable.HRB_RR, summaryTable.SigmaAmplitude, 1);
+x_fit = linspace(min(summaryTable.HRB_RR), max(summaryTable.HRB_RR), 100);
+y_fit = polyval(p, x_fit);
+plot(x_fit, y_fit, 'r-', 'LineWidth', 2);
+legend('Data', 'Linear Fit');
+
+% Compute the correlation coefficient and display it on the plot
+R = corrcoef(summaryTable.HRB_RR, summaryTable.SigmaAmplitude);
+text(0.1, 0.9, sprintf('r = %.2f', R(1,2)), 'Units', 'normalized', ...
+    'FontSize', 12, 'Color', 'red');
+fprintf('Correlation coefficient: %.2f\n', R(1,2));
+
+
+
+%% (Optional) Save the resulting table for later use
+% Uncomment the following line to save the table as a .mat file
+% save(fullfile(dataDir, 'processedData.mat'), 'allData');
+
+
+%% convert for prism export
+
+mean_RR = mean_RR';
+sem_RR  = sem_RR';
+mean_delta465 = mean_delta465';
+sem_delta465  = sem_delta465';
+
+mean_delta465_ds = mean_delta465(1:10:end);
+sem_delta465_ds = sem_delta465(1:10:end);
+
+mean_sigma = mean_sigma';
+sem_sigma  = sem_sigma';
+
+% Define common time vectors for plotting (using the fixed expected lengths)
+t_RR = t_RR';
+t_delta465 = t_delta465';
+t_delta465_ds = t_delta465(1:10:end);
+
+t_sigma = t_sigma';
+
+%% HUMAN: Make RR and sigma mean traces
+
+% Define the directory containing the .mat files
+dataDir = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\Human_data\F3';
+files = dir(fullfile(dataDir, '*.mat'));
+
+% Initialize containers for summary variables and traces
+eventSubject    = {};    % to store subject IDs for each event
+RR_amplitudes   = [];    % to store RR_amplitude for each event
+RR_AUC_vals = [];    % to store AUC for each event
+RR_recover_10_vals = [];    % to store AUC for each event
+RR_recover_15_vals = [];    % to store AUC for each event
+RR_recover_AUC_vals = [];    % to store AUC for each event
+
+
+sigma_amplitudes= [];    % to store sigma_amplitude for each event
+sigma_power_vals= [];    % to store sigma_power for each event
+sigma_power_AUC_vals= [];    % to store sigma_power for each event
+
+% Initialize arrays to accumulate all traces from all events
+all_RR_traces    = [];
+all_sigma_traces = [];
+
+% Create a time vector from -30 to 30 seconds (15361 samples)
+time_vector = linspace(-30, 30, 15361);
+
+% Set a tolerance for matching time (to handle floating point precision)
+tol = 1e-6;
+
+% Find the index corresponding to time 0
+idx_zero = find(abs(time_vector) < tol, 1);
+
+% Find indices for the desired time ranges using logical conditions:
+% For RR baseline: time between -15 and -10 seconds
+idx_rr_baseline = find(time_vector >= -15 & time_vector <= -10);
+
+idx_rr_event = find(time_vector >= -2.5 & time_vector <= 2.5);
+idx_rr_baseline_AUC = find(time_vector >= -15 & time_vector <= -5);
+
+idx_rr_recover_15 = find(time_vector >= 0 & time_vector <= 15);
+idx_rr_recover_10 = find(time_vector >= 0 & time_vector <= 10);
+
+idx_rr_recover_AUC_parasymp = find(time_vector >= 5 & time_vector <= 15);
+idx_rr_recover_AUC_bl = find(time_vector >= 20 & time_vector <= 30);
+
+
+% For sigma amplitude: time between -8 and 2 seconds
+idx_sigma_peak = find(time_vector >= -8 & time_vector <= 2);
+
+% For sigma baseline (for sigma amplitude): time between 0 and 15 seconds
+idx_sigma_baseline = find(time_vector >= 0 & time_vector <= 15);
+
+% For sigma power: mean sigma from time -5 to 0 seconds
+idx_sigma_power = find(time_vector >= -5 & time_vector <= 0);
+
+% Loop over each .mat file in the directory
+
+for i = 1:length(files)
+    % Get full file name
+    fileName = files(i).name;
+    filePath = fullfile(dataDir, fileName);
+    
+    % Extract the subject ID from the filename.
+    % The subject ID is found between 'PSTIM_' and '_V'
+    subjectID_cell = extractBetween(fileName, 'PSTIM_', '_V');
+    if isempty(subjectID_cell)
+        warning('Subject ID not found in filename: %s', fileName);
+        continue;
+    end
+    subjectID = subjectID_cell{1};
+    
+    % Load the .mat file (assumes variable 'result' exists)
+    load(filePath, 'result');
+
+       %pivot due to incosistent naming
+    if strcmp(subjectID, '716')
+        % Extract required variables from ace
+        % 1) Extract sigma_bin2 from the 2nd column of binSigma_stg2_F3
+        sigma_trace = result.sigma_collector_all_hrb;
+        
+        % 3) Extract the HRB RR matrix (n events x 5120 timepoints)
+        RR_trace = result.rr_collector_all_hrb;
+    else
+        % Extract traces from the struct
+        sigma_trace = result.spindle_collector_nrem_hrb; % [n x 15361]
+        RR_trace    = result.rr_collector_nrem_hrb;        % [n x 15361]
+
+    end
+    
+    % Get the number of events for the current subject
+    numEvents = size(RR_trace, 1);
+    
+    % Loop over each event (row) in the current file
+    for j = 1:numEvents
+        % --- Compute RR_amplitude ---
+        % RR value at time = 0
+        rr_at_zero = RR_trace(j, idx_zero);
+        % Mean RR from time -15 to -10
+        rr_baseline = mean(RR_trace(j, idx_rr_baseline));
+        % RR_amplitude for this event
+        RR_amp = rr_at_zero - rr_baseline;
+
+                % --- Compute RR_AUC ---
+        % RR value at time = 0
+        rr_at_zero = trapz(RR_trace(j, idx_rr_event));
+        % Mean RR from time -15 to -10
+        rr_baseline = trapz(RR_trace(j, idx_rr_baseline_AUC));
+        % RR_amplitude for this event
+        RR_AUC = rr_at_zero - rr_baseline;
+
+        % --- Compute RR_recover ---
+        % RR value at time = 0
+        rr_at_zero = RR_trace(j, idx_zero);
+        % Mean RR from time -15 to -10
+        rr_baseline_10 = max(RR_trace(j, idx_rr_recover_10));
+        rr_baseline_15 = max(RR_trace(j, idx_rr_recover_15));
+        % RR_amplitude for this event
+        RR_recover_10 = rr_baseline_10 - rr_at_zero;
+        RR_recover_15 = rr_baseline_15 - rr_at_zero;
+
+                % --- Compute RR_recover_AUC ---
+        % RR value at time = 5 to 15
+        rr_event_parasymp = trapz(RR_trace(j, idx_rr_recover_AUC_parasymp));
+        % Mean RR from time 20 to 30
+        rr_baseline_parasymp = trapz(RR_trace(j, idx_rr_recover_AUC_bl));
+        % RR_AUC for this event
+        RR_recover_AUC = rr_event_parasymp - rr_baseline_parasymp;
+
+        
+        % --- Compute sigma_amplitude ---
+        % Maximum sigma value from time -8 to 2
+        sigma_max = max(sigma_trace(j, idx_sigma_peak));
+        % Minimum sigma value from time between 0 and 15 (as per provided code)
+        sigma_baseline = min(sigma_trace(j, idx_sigma_baseline));
+        % sigma_amplitude for this event (difference between baseline and peak)
+        sigma_amp = sigma_baseline - sigma_max;
+        
+        % --- Compute sigma_power ---
+        % Mean sigma from time -5 to 0
+        sigma_power = mean(sigma_trace(j, idx_sigma_power));
+        % Mean sigma from time -15 to -10 (using the same window as the RR baseline)
+        % sigma_baseline_power = mean(sigma_trace(j, idx_rr_baseline));
+        % sigma_power for this event
+        % sigma_power = sigma_mean_power;
+
+                % --- Compute sigma_power AUC ---
+        % Mean sigma from time -5 to 0
+        sigma_mean_power = trapz(sigma_trace(j, idx_sigma_power));
+        % Mean sigma from time -15 to -10 (using the same window as the RR baseline)
+        sigma_baseline_power = trapz(sigma_trace(j, idx_rr_baseline));
+        % sigma_power for this event
+        sigma_power_AUC = sigma_mean_power - sigma_baseline_power;
+        
+        % Append results for this event
+        eventSubject{end+1,1}     = subjectID;
+        RR_amplitudes(end+1,1)    = RR_amp;
+        RR_AUC_vals(end+1,1) = RR_AUC;
+        RR_recover_10_vals(end+1,1) = RR_recover_10;   
+        RR_recover_15_vals(end+1,1) = RR_recover_15;    
+        RR_recover_AUC_vals(end+1,1) = RR_recover_AUC;    
+
+        sigma_amplitudes(end+1,1) = sigma_amp;
+        sigma_power_vals(end+1,1) = sigma_power;
+        sigma_power_AUC_vals(end+1,1) = sigma_power_AUC;
+    end
+    
+    % Accumulate all RR and sigma traces across events
+    all_RR_traces = [all_RR_traces; RR_trace];
+    all_sigma_traces = [all_sigma_traces; sigma_trace];
+end
+
+% Create the summary table for all events
+Human_summary_table = table(eventSubject, RR_amplitudes, RR_AUC_vals, RR_recover_10_vals, RR_recover_15_vals, RR_recover_AUC_vals, sigma_amplitudes, sigma_power_vals, sigma_power_AUC_vals, ...
+    'VariableNames', {'SubjectID', 'RR_amplitude', 'RR_AUC', 'RR_recover_10', 'RR_recover_15', 'RR_recover_AUC', 'sigma_amplitude', 'sigma_power', 'sigma_power_AUC'});
+
+% --- Compute mean traces and SEM for all events ---
+% For RR traces:
+mean_RR_trace = mean(all_RR_traces, 1);
+SEM_RR_trace = std(all_RR_traces, 0, 1) ./ sqrt(size(all_RR_traces, 1));
+
+% For sigma traces:
+mean_sigma_trace = mean(all_sigma_traces, 1);
+SEM_sigma_trace = std(all_sigma_traces, 0, 1) ./ sqrt(size(all_sigma_traces, 1));
+
+mean_RR_trace = mean_RR_trace';
+mean_sigma_trace = mean_sigma_trace';
+
+SEM_RR_trace = SEM_RR_trace';
+SEM_sigma_trace = SEM_sigma_trace';
+
+time_vector = time_vector';
+
+ds_factor = 10;
+
+% Downsample the mean traces
+mean_RR_trace_ds    = mean_RR_trace(1:ds_factor:end);
+mean_sigma_trace_ds = mean_sigma_trace(1:ds_factor:end);
+
+% Downsample the SEM traces
+SEM_RR_trace_ds    = SEM_RR_trace(1:ds_factor:end);
+SEM_sigma_trace_ds = SEM_sigma_trace(1:ds_factor:end);
+
+% Downsample the time vector
+time_vector_ds = time_vector(1:ds_factor:end);
+
+% --- Plot the Mean Traces with SEM ---
+figure;
+
+% Plot for RR trace
+subplot(2,1,1);
+hold on;
+plot(time_vector_ds, mean_RR_trace_ds, 'LineWidth', 2);
+% Create a patch for SEM (error band)
+patch([time_vector_ds, fliplr(time_vector_ds)], ...
+      [mean_RR_trace_ds-mean_sigma_trace_ds, fliplr(mean_RR_trace_ds+mean_sigma_trace_ds)], ...
+      'b', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+xlabel('Time (s)');
+ylabel('RR Trace');
+title('Mean RR Trace with SEM');
+hold off;
+
+% Plot for sigma trace
+subplot(2,1,2);
+hold on;
+plot(time_vector_ds, mean_sigma_trace_ds, 'LineWidth', 2);
+patch([time_vector_ds, fliplr(time_vector_ds)], ...
+      [mean_sigma_trace_ds-SEM_sigma_trace_ds, fliplr(mean_sigma_trace_ds+SEM_sigma_trace_ds)], ...
+      'r', 'FaceAlpha', 0.2, 'EdgeColor', 'none');
+xlabel('Time (s)');
+ylabel('Sigma Trace');
+title('Mean Sigma Trace with SEM');
+hold off;
+
+
+
+% writetable(Human_summary_table, 'Human_summary_table.csv')
+
+%% Human: mean per subject
+% Compute the mean RR_amplitude and sigma_amplitude for each unique SubjectID
+human_mean_per_subject = groupsummary(Human_summary_table, 'SubjectID', 'mean', ...
+    {'RR_amplitude', 'RR_AUC', 'RR_recover_10', 'RR_recover_15', 'RR_recover_AUC', 'sigma_amplitude', 'sigma_power', 'sigma_power_AUC'});
+
+% Optionally, rename the resulting columns for clarity:
+human_mean_per_subject.Properties.VariableNames{'mean_RR_amplitude'} = 'Mean_RR_amplitude';
+human_mean_per_subject.Properties.VariableNames{'mean_RR_AUC'} = 'Mean_RR_AUC';
+human_mean_per_subject.Properties.VariableNames{'mean_RR_recover_10'} = 'Mean_RR_recover_10';
+human_mean_per_subject.Properties.VariableNames{'mean_RR_recover_15'} = 'Mean_RR_recover_15';
+human_mean_per_subject.Properties.VariableNames{'mean_RR_recover_AUC'} = 'Mean_RR_recover_AUC';
+
+human_mean_per_subject.Properties.VariableNames{'mean_sigma_amplitude'} = 'Mean_sigma_amplitude';
+human_mean_per_subject.Properties.VariableNames{'mean_sigma_power'} = 'Mean_sigma_power';
+human_mean_per_subject.Properties.VariableNames{'mean_sigma_power_AUC'} = 'Mean_sigma_power_AUC';
+
+
+writetable(human_mean_per_subject, 'Human_subject_mean_table.csv')
+%% HUMAN - Pin-Chuns data
+
+% Set the directory containing the .mat files
+dataDir = 'C:\Users\trb938\OneDrive - University of Copenhagen\MATLAB\Human_data\Pin-Chun';
+files = dir(fullfile(dataDir, '*.mat'));
+
+% Initialize an empty table to collect all event data across files
+allData = table();
+
+% Initialize array to store the mean RR trace for each file
+allRRtraces = [];
+
+% Create a time vector corresponding to the 5120 samples over -10 to 10 seconds
+timeVec = linspace(-10, 10, 5120);
+
+% Pre-calculate indices based on the timeVec for later analysis:
+
+% For HRB time 0, note: since 5120 is even, there is no single sample at 0.
+% We take the mean of the two central indices.
+idx_zero1 = size(timeVec,2) / 2;      % e.g., 2560
+idx_zero2 = idx_zero1 + 1;            % e.g., 2561
+
+% Find indices corresponding to time regions:
+idx_neg10_to_neg5 = find(timeVec >= -10 & timeVec <= -5);
+idx_neg5_to_0    = find(timeVec > -5  & timeVec <  0);
+idx_0_to_10      = find(timeVec >= 0   & timeVec <= 10);
+idx_4_to_8   = find(timeVec >= 4 & timeVec <= 8);
+idx_neg2_to_2= find(timeVec >= -2 & timeVec <= 2);
+
+% Loop through each file in the directory
+for iFile = 1:length(files)
+    % Get full filename and load the file; assumes the variable 'ace' is in the file.
+    filename = files(iFile).name;
+    filepath = fullfile(files(iFile).folder, filename);
+    load(filepath, 'ace');  % loads variable ace
+    
+    % Extract the SubjectID from the filename
+    % Assume the filename has underscores and that the SubjectID is between 
+    % the 2nd and 3rd underscore.
+    % For example, if filename = 'Prefix_1_2345_OtherInfo.mat', then:
+    %   parts = {'Prefix', '1', '2345', 'OtherInfo.mat'}
+    % and SubjectID is taken as parts{3}.
+    parts = strsplit(filename, '_');
+    if length(parts) >= 3
+        subjectID = regexprep(parts{3}, '\.mat$', ''); % remove .mat extension if present
+    else
+        warning('Filename "%s" does not have enough parts. Skipping...', filename);
+        continue;
+    end
+    
+    % Extract required variables from ace
+    % 1) Extract sigma_bin2 from the 2nd column of binSigma_stg2_F3
+    sigma_bin2 = ace.binSigma_stg2_F3(:,2);
+    
+    % 2) Extract the baseline value from blSigma_stg2_F3
+    nonace_bl = ace.blSigma_stg2_F3;
+    
+    % 3) Extract the HRB RR matrix (n events x 5120 timepoints)
+    HRB = ace.HRB_stg2;
+    nEvents = size(HRB,1);
+    
+    % Preallocate computed feature vectors (one value per event)
+    sigma_bin2_raw = sigma_bin2; 
+    sigma_subbase2_approx = (sigma_bin2 - nonace_bl) ./ (sigma_bin2 + nonace_bl);
+    non_ace_bl = repmat(nonace_bl, nEvents, 1); % same value for all events in file
+    
+    RR_ampl         = zeros(nEvents,1);
+    RR_AUC          = zeros(nEvents,1);
+    RR_recover_ampl = zeros(nEvents,1);
+    RR_recover_AUC  = zeros(nEvents,1);
+    
+    % Compute the HRB RR value at time 0
+    % For each event, take the mean of the two values around time = 0.
+    HRB0 = mean(HRB(:, [idx_zero1, idx_zero2]), 2);
+    
+    % Compute the baseline RR as the mean of values from time -10 to -5 (per event)
+    baseline = mean(HRB(:, idx_neg10_to_neg5), 2);
+    
+    % Loop through each event to compute features from the HRB trace
+    for jEvent = 1:nEvents
+        rrTrace = HRB(jEvent, :);
+        
+        % RR_ampl: difference between RR at time 0 and the baseline (-10 to -5 sec mean)
+        RR_ampl(jEvent) = HRB0(jEvent) - baseline(jEvent);
+        
+        % RR_AUC: area under curve difference between (-10 to -5) and (-5 to 0) time windows
+        auc1 = trapz(timeVec(idx_neg10_to_neg5), rrTrace(idx_neg10_to_neg5));
+        auc2 = trapz(timeVec(idx_neg5_to_0), rrTrace(idx_neg5_to_0));
+        RR_AUC(jEvent) = auc2 - auc1;
+        
+        % RR_recover_ampl: difference between the maximum RR in the recovery phase (0 to 10 sec)
+        % and the HRB value at time 0.
+        RR_recover_ampl(jEvent) = max(rrTrace(idx_0_to_10)) - HRB0(jEvent);
+        
+        % RR_recover_AUC: difference in the AUC between the time windows 4 to 8 sec 
+        % and -2 to 2 sec.
+        auc_recover   = trapz(timeVec(idx_4_to_8), rrTrace(idx_4_to_8));
+        auc_baseline  = trapz(timeVec(idx_neg2_to_2), rrTrace(idx_neg2_to_2));
+        RR_recover_AUC(jEvent) = auc_recover - auc_baseline;
+    end
+    
+    % Create a table for this file's events with the computed measures
+    % Convert the subjectID to a string vector; this value is repeated for each event.
+    SubjectID = repmat(string(subjectID), nEvents, 1);
+    T = table(SubjectID, sigma_bin2_raw, sigma_subbase2_approx, non_ace_bl, ...
+        RR_ampl, RR_AUC, RR_recover_ampl, RR_recover_AUC);
+    
+    % Append the table for the current file to the overall table
+    allData = [allData; T];
+    
+    % Store the mean RR trace (averaging across events) for later plot
+    meanRR = mean(HRB, 1); % mean across events (row-wise)
+    allRRtraces = [allRRtraces; meanRR];  % each row corresponds to one file
+end
+
+% Plot the overall mean RR trace computed from all files
+if ~isempty(allRRtraces)
+    overallMeanRR = mean(allRRtraces, 1);  % average across files (row-wise)
+    figure;
+    plot(timeVec, overallMeanRR, 'LineWidth', 1.5);
+    xlabel('Time (s)');
+    ylabel('Mean RR');
+    title('Mean RR Trace (Averaged across all files)');
+    grid on;
+else
+    warning('No valid RR traces were loaded. Check your files and directory.');
+end
+
+
+writetable(allData, 'Pin_Chun_data.csv')
+%% Pin-Chun data as subject-level
+
+% Assume that 'allData' is the table created previously, which has the following columns:
+% SubjectIDs, sigma_bin2_raw, sigma_subbase2_approx, non_ace_bl, RR_ampl, RR_AUC, RR_recover_ampl, RR_recover_AUC
+
+% Group the table by unique SubjectIDs and compute the mean for each event-derived field:
+Pin_Chun_subject_summary = groupsummary(allData, 'SubjectID', 'mean', ...
+    {'sigma_bin2_raw', 'sigma_subbase2_approx', 'non_ace_bl', 'RR_ampl', 'RR_AUC', 'RR_recover_ampl', 'RR_recover_AUC'});
+
+% Rename the generated columns for clarity:
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_sigma_bin2_raw'} = 'Mean_sigma_bin2_raw';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_sigma_subbase2_approx'} = 'Mean_sigma_subbase2_approx';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_non_ace_bl'} = 'Mean_non_ace_bl';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_RR_ampl'} = 'Mean_RR_ampl';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_RR_AUC'} = 'Mean_RR_AUC';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_RR_recover_ampl'} = 'Mean_RR_recover_ampl';
+Pin_Chun_subject_summary.Properties.VariableNames{'mean_RR_recover_AUC'} = 'Mean_RR_recover_AUC';
+
+% Write the summary table to a CSV file:
+writetable(Pin_Chun_subject_summary, 'Pin_Chun_subject_mean_table.csv');
+
+
+%% Corr pllot for human data 
+
+% Create a scatter plot of HRB RR vs. Delta465 Amplitude
+figure;
+scatter(Human_summary_table.RR_amplitude, Human_summary_table.sigma_amplitude, 'filled');
+xlabel('HRB RR Value');
+ylabel('Delta465 Amplitude');
+title('Correlation between HRB RR and Delta465 Amplitude');
+grid on;
+hold on;
+
+% Compute a linear regression fit
+p = polyfit(Human_summary_table.RR_amplitude, Human_summary_table.sigma_amplitude, 1);
+x_fit = linspace(min(Human_summary_table.RR_amplitude), max(Human_summary_table.RR_amplitude), 100);
+y_fit = polyval(p, x_fit);
+plot(x_fit, y_fit, 'r-', 'LineWidth', 2);
+legend('Data', 'Linear Fit');
+
+% Compute the correlation coefficient and display it on the plot
+R = corrcoef(Human_summary_table.RR_amplitude, Human_summary_table.sigma_amplitude);
+text(0.1, 0.9, sprintf('r = %.2f', R(1,2)), 'Units', 'normalized', ...
+    'FontSize', 12, 'Color', 'red');
+fprintf('Correlation coefficient: %.2f\n', R(1,2));
+
+
+
+%% Get sigma power at times -10 to -5 for memory corr
+
+% --- Compute one mean sigma power value per subject for time bin -10 to -5 ---
+% (Only including HRB events that occur during valid sleep: SWS or MA)
+%
+% Assumptions:
+% - EEG data, sampling rate, EEG_time, and HRB_time are stored as variables
+%   with names that include the subject ID (suffix).
+% - Sleep state vectors are available as:
+%   wake_woMA_binary_vector_<suffix>, sws_binary_vector_<suffix>, 
+%   MA_binary_vector_<suffix>, REM_binary_vector_<suffix>.
+%
+% The code below uses the same bin edges as before (from -30 to +30 in 5-sec steps)
+% so that the target bin (-10 to -5 sec) is the 5th bin.
+
+% Set bin edges and identify the target bin.
+bin_edges = -30:5:30;   % creates bins: [-30,-25], [-25,-20], ... [25,30]
+nBins = length(bin_edges) - 1;
+targetBins = [4,5];  % Combine bins for -15 to -10 and -10 to -5 (i.e., -15 to -5 sec)
+
+% Preallocate a vector for the per-subject mean sigma value.
+Suffix = suffix(:);  % ensure column vector
+meanSigmaBin = nan(length(suffix),1);
+
+% Loop over each subject.
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+
+        % --- Retrieve laser periods if they exist ---
+    % Each laser_periods_<suffix> variable should be an N×2 matrix:
+    % [laser_onset, laser_offset]
+    laser_var_name = sprintf('laser_periods_%s', uniqueId);
+    if evalin('base', sprintf('exist(''%s'', ''var'')', laser_var_name))
+        laser_periods = eval(laser_var_name);
+    else
+        % No laser periods for this mouse
+        laser_periods = [];
+    end
+
+    % Retrieve EEG data, sampling rate, and time vector.
+    EEG = eval(sprintf('EEG_%s', uniqueId));
+    EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));  
+    if exist(sprintf('EEG_time_%s', uniqueId), 'var')
+        EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+    else
+        EEG_time = (0:length(EEG)-1) / EEG_fs;
+    end
+    
+    % Retrieve sleep state vectors (assumed sampled at 1 Hz).
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states.
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % Get HRB event times for this subject (in seconds).
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);  % ensure column vector
+    
+    % Container for the sigma power values (from the target bin) for each event.
+    subject_event_values = [];
+    
+    % Loop over each HRB event for this subject.
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % --- Valid Sleep Check ---
+        % Ensure the full analysis window (eventTime +/- preTime/postTime) is within sleep.
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Subject %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Subject %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        % Optional: Check that the event is not too near a state transition.
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Subject %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+
+        %         % *** Exclude HRB events that occur during a laser period ***
+        % if ~isempty(laser_periods)
+        %     % If eventTime lies between any laser_onset and laser_offset, skip it.
+        %     if any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+        %         fprintf('Mouse %s, event %d: skipped (laser ON).\n', uniqueId, event_i);
+        %         continue;
+        %     end
+        % end
+        % 
+        if isempty(laser_periods) || ~any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+            fprintf('Subject %s, event %d: skipped (laser OFF).\n', uniqueId, event_i);
+            continue;
+        end
+
+        % --- EEG Segment Extraction ---
+        % Find the closest index in the EEG_time vector to the HRB event.
+        [~, idx_EEG] = min(abs(EEG_time - eventTime));
+        % Check boundaries: need 30 sec before and after the event.
+        if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+            fprintf('Subject %s, event %d: EEG segment out of bounds, skipped.\n', uniqueId, event_i);
+            continue;
+        end
+        % Extract a 60-sec segment (30 sec before and after the event).
+        EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+        
+        % --- Power Analysis ---
+        % Run the power analysis on the EEG segment using only the sigma band.
+        sigma_band_only = {[8,15]};  % only sigma band
+        % Here we call PowerAnalysisEEG with a window size of 5 sec.
+        [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, sigma_band_only);
+        sigma_event = bp_event{1};  % sigma power time series for this event
+        
+        % Shift the spectrogram time vector so that 0 corresponds to the HRB event.
+        T_EEG_shifted = T_EEG - 30;
+        
+        % --- Binning ---
+        % Bin the sigma power values into 5-sec intervals.
+        bin_idx = discretize(T_EEG_shifted, bin_edges);
+        if any(ismember(bin_idx, targetBins))
+            event_val = mean(sigma_event(ismember(bin_idx, targetBins)));
+            subject_event_values = [subject_event_values; event_val];
+        end
+    end
+    
+    % Compute the mean sigma power for this subject (across all its valid events)
+    if ~isempty(subject_event_values)
+        meanSigmaBin(idx) = mean(subject_event_values);
+    else
+        meanSigmaBin(idx) = NaN;
+    end
+end
+
+% Create a table with the subject ID and the corresponding mean sigma power for time bin -10 to -5.
+T_results = table(Suffix, meanSigmaBin, ...
+    'VariableNames', {'Suffix', 'MeanSigmaPower_Minus10_to_Minus5'});
+disp(T_results);
+
+Suffix = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'};
+%sigma_power_increase = [0.056842, 0.057477, 0.047644, 0.062896, 0.064325, 0.068995, 0.080907, 0.045944, 0.051554, 0.016309, 0.041683, 0.012267, 0.03086, 0.058014]';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
+Suffix = Suffix';
+% Create the table
+data_table = table(Suffix, novel_familiar_ratio);
+
+% Convert join keys to string so they match
+T_results.Suffix = string(T_results.Suffix);
+data_table.Suffix = string(data_table.Suffix);
+
+% Merge the tables by matching 'Subject' from T_results with 'Suffix' from data_table
+merged_table = join(T_results, data_table);
+
+% Display the merged table
+disp(merged_table);
+
+plot_correlation_memory_arch(merged_table, arch, yfp, 'MeanSigmaPower_Minus10_to_Minus5'); % Change 'AUC_diff' to any other variable as needed
+
+%% Get peak sigma value between -20 to 0 from the sigma trace during laser off
+% Parameters and expected lengths
+preTime = 30;           % seconds before the HRB event to include
+postTime = 30;          % seconds after the HRB event to include
+windowTime = preTime + postTime;  % total window length (60 sec)
+transitionBuffer = 15;  % minimum seconds away from a state transition
+
+% Fixed sampling frequencies (Hz)
+fs_RR = 64;         
+fs_sigma = 2;     
+
+% Expected number of samples (using floor to ensure an integer count)
+expected_sigma_length = 2 * floor(preTime * fs_sigma) + 1;     % e.g., 30721
+
+% List of mouse IDs (stored as numbers)
+suffix = [387, 484, 412, 414, 416, 408, 420, 468];
+
+% Containers for event segments (each row is one event)
+all_sigma_segments = [];     
+
+% --- Compute one mean peak sigma power value per subject for time window -20 to 0 ---
+% (Only including HRB events that occur during valid sleep (SWS or MA) and outside laser periods)
+%
+% This code uses the sigma traces (from your 3rd subplot extraction) where
+% time 0 corresponds to the HRB event. It then finds the maximum (peak) sigma
+% power in the window from -20 to 0 sec for each event, and then averages those
+% peaks per subject.
+
+% Preallocate a vector for the per-subject mean peak sigma value.
+meanPeakSigma = nan(length(suffix),1);
+
+% Loop over each subject.
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % --- Retrieve laser periods if they exist ---
+    laser_var_name = sprintf('laser_periods_%s', uniqueId);
+    if evalin('base', sprintf('exist(''%s'', ''var'')', laser_var_name))
+        laser_periods = eval(laser_var_name);
+    else
+        laser_periods = [];
+    end
+    
+    % --- Retrieve sleep state vectors (assumed sampled at 1 Hz) ---
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states.
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % --- Retrieve HRB event times (in seconds) ---
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);  % ensure column vector
+    
+    % --- Retrieve sigma data (from the spectrogram used for subplot 3) ---
+    % Here, we assume sigma_power and its corresponding time vector (time_spectrogram_zero)
+    % have been computed for this subject.
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    sigma_power = band_powers{4};  % sigma power (e.g., in dB) as used in subplot 3
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));
+    
+    % Container for the peak sigma values for each valid event.
+    subject_event_peaks = [];
+    
+    % Loop over each HRB event for this subject.
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % --- Exclude events during a laser period ---
+        if ~isempty(laser_periods)
+            if any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+                fprintf('Subject %s, event %d: skipped (laser ON).\n', uniqueId, event_i);
+                continue;
+            end
+        end
+        
+        % --- Valid Sleep Check ---
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Subject %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Subject %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        % Check contiguous valid sleep block to avoid transitions.
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Subject %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract sigma data ---
+        % Find the closest index in the sigma time vector to the HRB event.
+        [~, idx_sigma] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_sigma - floor(preTime*fs_sigma) < 1) || (idx_sigma + floor(preTime*fs_sigma) > length(time_spectrogram_zero))
+            fprintf('Subject %s, event %d: skipped (sigma window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        sigma_segment = sigma_power(idx_sigma - floor(preTime*fs_sigma) : idx_sigma + floor(preTime*fs_sigma));
+        if length(sigma_segment) ~= expected_sigma_length
+            fprintf('Subject %s, event %d: skipped (sigma segment length %d, expected %d).\n',...
+                uniqueId, event_i, length(sigma_segment), expected_sigma_length);
+            continue;
+        end
+        
+        % --- Create a time vector for the sigma segment ---
+        % The segment spans from -preTime to +postTime seconds relative to the event.
+        t_sigma_event = linspace(-preTime, postTime, length(sigma_segment));
+        
+        % --- Determine the peak sigma value in the window from -20 to 0 sec ---
+        target_idx = t_sigma_event >= -20 & t_sigma_event <= 0;
+        if any(target_idx)
+            peak_val = max(sigma_segment(target_idx));
+            subject_event_peaks = [subject_event_peaks; peak_val];
+        end
+    end
+    
+    % Compute the mean peak sigma value for this subject (averaged across valid events)
+    if ~isempty(subject_event_peaks)
+        meanPeakSigma(idx) = mean(subject_event_peaks);
+    else
+        meanPeakSigma(idx) = NaN;
+    end
+end
+
+% Create a table with the subject ID and the corresponding mean peak sigma value for time window -20 to 0.
+T_peak_results = table(string(suffix(:)), meanPeakSigma, ...
+    'VariableNames', {'Suffix','PeakSigma_Minus20_to_0'});
+disp(T_peak_results);
+
+% --- Merge with your memory table ---
+% Provided memory table:
+Suffix_list = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'}';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
+data_table = table(string(Suffix_list), novel_familiar_ratio, 'VariableNames', {'Suffix','novel_familiar_ratio'});
+
+% Convert join keys to string (already done above) and merge:
+merged_table = join(T_peak_results, data_table, 'Keys', 'Suffix');
+disp(merged_table);
+
+% Now, call your plotting function using the new variable.
+plot_correlation_memory_arch(merged_table, arch, yfp, 'PeakSigma_Minus20_to_0');  % change variable name as needed
+
+%% --- Compute one mean AUC of sigma power per subject for time window -20 to -5 ---
+% (Only including HRB events that occur during valid sleep (SWS or MA) and outside laser periods)
+%
+% This code uses the sigma trace (from your subplot 3 extraction) where
+% time 0 corresponds to the HRB event. For each valid event, it computes the
+% area under the curve (AUC) using trapz for the sigma trace between -20 and -5 sec.
+% These per-event AUCs are then averaged to yield one mean AUC per subject.
+
+% Preallocate a vector for the per-subject mean AUC.
+meanAUC = nan(length(suffix),1);
+
+% Loop over each subject.
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % --- Retrieve laser periods if they exist ---
+    laser_var_name = sprintf('laser_periods_%s', uniqueId);
+    if evalin('base', sprintf('exist(''%s'', ''var'')', laser_var_name))
+        laser_periods = eval(laser_var_name);
+    else
+        laser_periods = [];
+    end
+    
+    % --- Retrieve sleep state vectors (assumed sampled at 1 Hz) ---
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states.
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % --- Retrieve HRB event times for this subject (in seconds) ---
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);
+    
+    % --- Retrieve sigma data (from the spectrogram used in subplot 3) ---
+    % We assume the sigma_power and its corresponding time vector (time_spectrogram_zero)
+    % have been computed per subject.
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    sigma_power = band_powers{4};  % sigma power (e.g., in dB)
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));
+    
+    % Container for the AUC values for each valid event.
+    subject_event_auc = [];
+    
+    % Loop over each HRB event for this subject.
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % --- Exclude events during a laser period ---
+        if ~isempty(laser_periods)
+            if any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+                fprintf('Subject %s, event %d: skipped (laser ON).\n', uniqueId, event_i);
+                continue;
+            end
+        end
+        
+        % --- Valid Sleep Check ---
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Subject %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        eventIdx_sleep = round(eventTime) + 1;
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Subject %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        % Check contiguous valid sleep block to avoid transitions.
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Subject %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract sigma data ---
+        [~, idx_sigma] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_sigma - floor(preTime*fs_sigma) < 1) || (idx_sigma + floor(preTime*fs_sigma) > length(time_spectrogram_zero))
+            fprintf('Subject %s, event %d: skipped (sigma window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        sigma_segment = sigma_power(idx_sigma - floor(preTime*fs_sigma) : idx_sigma + floor(preTime*fs_sigma));
+        if length(sigma_segment) ~= expected_sigma_length
+            fprintf('Subject %s, event %d: skipped (sigma segment length %d, expected %d).\n', ...
+                uniqueId, event_i, length(sigma_segment), expected_sigma_length);
+            continue;
+        end
+        
+        % --- Create a time vector for the sigma segment ---
+        % This vector spans from -preTime to +postTime relative to the event.
+        t_sigma_event = linspace(-preTime, postTime, length(sigma_segment));
+        
+        % --- Determine the indices corresponding to the window from -20 to -5 sec ---
+        target_idx = t_sigma_event >= -20 & t_sigma_event <= -0;
+        if any(target_idx)
+            % Compute the area under the curve (AUC) using trapz.
+            auc_val = trapz(t_sigma_event(target_idx), sigma_segment(target_idx));
+            subject_event_auc = [subject_event_auc; auc_val];
+        end
+    end
+    
+    % Compute the mean AUC for this subject (averaged across valid events)
+    if ~isempty(subject_event_auc)
+        meanAUC(idx) = mean(subject_event_auc);
+    else
+        meanAUC(idx) = NaN;
+    end
+end
+
+% Create a table with the subject ID and the corresponding mean AUC for time window -20 to -5.
+T_auc_results = table(string(suffix(:)), meanAUC, ...
+    'VariableNames', {'Suffix','MeanAUC_Sigma_Minus20_to_Minus5'});
+disp(T_auc_results);
+
+%--- Merge with your memory table ---
+Suffix_list = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'}';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
+data_table = table(string(Suffix_list), novel_familiar_ratio, 'VariableNames', {'Suffix','novel_familiar_ratio'});
+
+% Merge the tables by matching on 'Suffix'.
+merged_table = join(T_auc_results, data_table, 'Keys', 'Suffix');
+disp(merged_table);
+
+% Call your plotting function using the new variable.
+plot_correlation_memory_arch(merged_table, arch, yfp, 'MeanAUC_Sigma_Minus20_to_Minus5');  % adjust variable name as needed
+
+%% --- Compute one mean AUC of RR intervals per subject for time window 0.5 to 5 ---
+% (Only including HRB events that occur during valid sleep (SWS or MA) and outside laser periods)
+%
+% This code uses the RR signal (from your RR extraction) where
+% time 0 corresponds to the HRB event. For each valid event, it computes the
+% area under the curve (AUC) using trapz for the RR signal between -20 and -5 sec.
+% These per-event AUCs are then averaged to yield one mean AUC per subject.
+
+% Preallocate a vector for the per-subject mean AUC.
+meanAUC_RR = nan(length(suffix),1);
+
+% Loop over each subject.
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % --- Retrieve laser periods if they exist ---
+    laser_var_name = sprintf('laser_periods_%s', uniqueId);
+    if evalin('base', sprintf('exist(''%s'', ''var'')', laser_var_name))
+        laser_periods = eval(laser_var_name);
+    else
+        laser_periods = [];
+    end
+    
+    % --- Retrieve sleep state vectors (assumed sampled at 1 Hz) ---
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states.
+    validSleep = sws_binary_vector | MA_binary_vector;
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % --- Retrieve HRB event times for this subject (in seconds) ---
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);
+    
+    % --- Retrieve RR signal and its time vector ---
+    RR = eval(sprintf('RR_%s', uniqueId));         % RR signal (e.g., intervals or RR series)
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));   % RR time vector
+    
+    % Container for the AUC values for each valid event.
+    subject_event_auc = [];
+    
+    % Loop over each HRB event for this subject.
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % --- Exclude events during a laser period ---
+        if isempty(laser_periods) || ~any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+            fprintf('Subject %s, event %d: skipped (laser OFF).\n', uniqueId, event_i);
+            continue;
+        end
+
+        % --- Valid Sleep Check ---
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Subject %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        eventIdx_sleep = round(eventTime) + 1;
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Subject %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        % Check contiguous valid sleep block to avoid transitions.
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Subject %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract RR data ---
+        [~, idx_RR] = min(abs(RR_time - eventTime));
+        if (idx_RR - floor(preTime*fs_RR) < 1) || (idx_RR + floor(preTime*fs_RR) > length(RR_time))
+            fprintf('Subject %s, event %d: skipped (RR window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        rr_segment = RR(idx_RR - floor(preTime*fs_RR) : idx_RR + floor(preTime*fs_RR));
+        if length(rr_segment) ~= expected_RR_length
+            fprintf('Subject %s, event %d: skipped (RR segment length %d, expected %d).\n',...
+                uniqueId, event_i, length(rr_segment), expected_RR_length);
+            continue;
+        end
+        
+        % --- Create a time vector for the RR segment ---
+        % The segment spans from -preTime to +postTime relative to the event.
+        t_RR_event = linspace(-preTime, postTime, length(rr_segment));
+        
+        % --- Determine the indices corresponding to the window from -20 to -5 sec ---
+        target_idx = t_RR_event >= 0.5 & t_RR_event <= 5;
+        if any(target_idx)
+            % Compute the area under the curve (AUC) using trapz.
+            auc_val = trapz(t_RR_event(target_idx), rr_segment(target_idx));
+            subject_event_auc = [subject_event_auc; auc_val];
+        end
+    end
+    
+    % Compute the mean AUC for this subject (averaged across valid events)
+    if ~isempty(subject_event_auc)
+        meanAUC_RR(idx) = mean(subject_event_auc);
+    else
+        meanAUC_RR(idx) = NaN;
+    end
+end
+
+% Create a table with the subject ID and the corresponding mean AUC for time window -20 to -5 for RR.
+T_auc_RR_results = table(string(suffix(:)), meanAUC_RR, ...
+    'VariableNames', {'Suffix','MeanAUC_RR_Minus20_to_Minus5'});
+disp(T_auc_RR_results);
+
+% --- Merge with your memory table ---
+Suffix_list = {'387', '399', '392', '403', '412', '414', '416', '418', '486', '408', '420', '468', '477', '484', '015', '079', '089', '013', '019'}';
+novel_familiar_ratio = [1.12, 1.75, 1.384615, 1.15, 3, 1.5, 2.166667, 0.75, 1.666667, 0, 0.909091, 1.3, 0.272727, 1.444444, 1.5, 1, 2.5, 2.3333, 1.3333]';
+data_table = table(string(Suffix_list), novel_familiar_ratio, 'VariableNames', {'Suffix','novel_familiar_ratio'});
+
+% Merge the tables by matching on 'Suffix'.
+merged_table_RR = join(T_auc_RR_results, data_table, 'Keys', 'Suffix');
+disp(merged_table_RR);
+
+% Call your plotting function using the new variable.
+plot_correlation_memory_arch(merged_table_RR, arch, yfp, 'MeanAUC_RR_Minus20_to_Minus5');  % adjust variable name as needed
+%% Get example trace
+
+
+uniqueId = '420';
+    % Access the variables dynamically
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    REM_binary_vector = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    MA_binary_vector = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId));
+    delta465_filt_2 = eval(sprintf('delta465_filt_2_%s', uniqueId));
+    sec_signal_EEG = eval(sprintf('sec_signal_EEG_%s', uniqueId));
+    EEG = eval(sprintf('EEG_%s', uniqueId));
+    EMG = eval(sprintf('EMG_%s', uniqueId));
+    sleepscore_time = 0:length(wake_woMA_binary_vector)-1; % Assuming all vectors are the same length
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    RR = eval(sprintf('RR_%s', uniqueId));
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));
+    HRB = eval(sprintf('HRB_%s', uniqueId));
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+
+    sigma = band_powers{1, 4} ;
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));
+
+% Define the desired time interval (changeable)
+time_start = 1540;
+time_end   = 1600;
+
+% Filter HRB events to only include those in the desired time interval
+hrb_in_interval = HRB_time(HRB_time >= time_start & HRB_time <= time_end);
+% Define the desired time interval (changeable)
+time_start = 1540;
+time_end   = 1600;
+
+% Filter HRB events to only include those in the desired time interval
+hrb_in_interval = HRB_time(HRB_time >= time_start & HRB_time <= time_end);
+
+figure;
+
+% --- First subplot: Norepinephrine ---
+a = subplot(3, 1, 1);
+    plot_sleep(sec_signal_2, delta465_filt_2, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+    title('Norepinephrine');
+    xlabel('time (s)');
+    ylabel('NE (df/f)');
+    xlim([time_start, time_end]);
+    grid on;
+
+% --- Second subplot: Sigma ---
+b = subplot(3, 1, 2);
+    plot_sleep(time_spectrogram_zero, sigma, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+    title('Sigma');
+    xlabel('time (s)');
+    ylabel('Sigma (V)');
+    xlim([time_start, time_end]);
+    grid on;
+
+% --- Third subplot: RR ---
+c = subplot(3, 1, 3);
+    plot_sleep(RR_time, RR, sleepscore_time, wake_woMA_binary_vector, sws_binary_vector, REM_binary_vector, MA_binary_vector);
+    title('RR');
+    xlabel('time (s)');
+    ylabel('RR');
+    xlim([time_start, time_end]);
+    grid on;
+
+% Hold on in all subplots to add the vertical lines for HRB events
+hold(a, 'on'); 
+hold(b, 'on'); 
+hold(c, 'on');
+
+% Loop over each HRB event within the desired time interval and add a vertical line in every subplot
+for i = 1:length(hrb_in_interval)
+    xline(a, hrb_in_interval(i), 'k--', 'LineWidth', 1);
+    xline(b, hrb_in_interval(i), 'k--', 'LineWidth', 1);
+    xline(c, hrb_in_interval(i), 'k--', 'LineWidth', 1);
+end
+
+% Release the hold
+hold(a, 'off');
+hold(b, 'off');
+hold(c, 'off');
+
+% Link axes for synchronized zooming
+linkaxes([a, b, c], 'x');
+
+
+
+figure;
+
+% --- First subplot: Norepinephrine ---
+    plot(sec_signal_2, delta465_filt_2);
+    for i = 1:length(hrb_in_interval)
+    xline(hrb_in_interval(i), 'k--', 'LineWidth', 1);
+    end
+    xlim([time_start, time_end]);
+figure;
+
+% --- Second subplot: Sigma ---
+    plot(time_spectrogram_zero, sigma);
+    for i = 1:length(hrb_in_interval)
+    xline(hrb_in_interval(i), 'k--', 'LineWidth', 1);
+    end
+    xlim([time_start, time_end]);
+figure;
+
+% --- Third subplot: RR ---
+    plot(RR_time, RR);
+    for i = 1:length(hrb_in_interval)
+    xline(hrb_in_interval(i), 'k--', 'LineWidth', 1);
+    end
+    xlim([time_start, time_end]);
+
+
+
+
+
+%% Get HRB plots during laser off
+% Parameters and expected lengths
+preTime = 30;           % seconds before the HRB event to include
+postTime = 30;          % seconds after the HRB event to include
+windowTime = preTime + postTime;  % total window length (60 sec)
+transitionBuffer = 15;  % minimum seconds away from a state transition
+
+% Fixed sampling frequencies (Hz)
+fs_RR = 64;         
+fs_sigma = 2;     
+fs_delta465 = 1017;
+
+% Expected number of samples (using floor to ensure an integer count)
+expected_RR_length = 2 * floor(preTime * fs_RR) + 1;         % e.g., 3841
+expected_sigma_length = 2 * floor(preTime * fs_sigma) + 1;     % e.g., 30721
+expected_delta465_length = 2 * floor(preTime * fs_delta465) + 1; % e.g., 61021
+
+% List of mouse IDs (stored as numbers)
+suffix = [387, 484, 412, 414, 416, 408, 420, 468];
+
+% Containers for event segments (each row is one event)
+all_RR_segments = [];          
+all_delta465_segments = [];    
+all_sigma_segments = [];       
+
+% Process each mouse’s data
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % --- Retrieve laser periods if they exist ---
+    % Each laser_periods_<suffix> variable should be an N×2 matrix:
+    % [laser_onset, laser_offset]
+    laser_var_name = sprintf('laser_periods_%s', uniqueId);
+    if evalin('base', sprintf('exist(''%s'', ''var'')', laser_var_name))
+        laser_periods = eval(laser_var_name);
+    else
+        % No laser periods for this mouse
+        laser_periods = [];
+    end
+    
+    % --- Retrieve sleep state vectors (assumed sampled at 1 Hz) ---
+    wake_woMA_binary_vector = eval(sprintf('wake_woMA_binary_vector_%s', uniqueId));
+    sws_binary_vector         = eval(sprintf('sws_binary_vector_%s', uniqueId));
+    MA_binary_vector          = eval(sprintf('MA_binary_vector_%s', uniqueId));
+    REM_binary_vector         = eval(sprintf('REM_binary_vector_%s', uniqueId));
+    
+    % Combine SWS and MA as valid sleep states
+    validSleep = sws_binary_vector;
+%    validSleep = sws_binary_vector | MA_binary_vector;    
+    sleep_time = 0:length(validSleep)-1;  % time axis for sleep states
+    
+    % --- Retrieve HRB event times (in seconds) ---
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);  % ensure column vector
+    
+    % --- Retrieve signals and time vectors ---
+    RR = eval(sprintf('RR_%s', uniqueId));                  % RR signal
+    RR_time = eval(sprintf('RR_time_%s', uniqueId));          % RR time vector
+    
+    delta465 = eval(sprintf('delta465_filt_2_%s', uniqueId));
+    sec_signal_2 = eval(sprintf('sec_signal_2_%s', uniqueId)); % time vector for delta465
+    
+    band_powers = eval(sprintf('band_powers_%s', uniqueId));
+    sigma_power = band_powers{4};  % sigma power from spectrogram
+    time_spectrogram_zero = eval(sprintf('time_spectrogram_zero_%s', uniqueId));
+    
+    fprintf('Processing mouse %s with %d HRB events...\n', uniqueId, length(HRB_time));
+    
+    % --- Process each HRB event ---
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % *** Exclude HRB events that occur during a laser period ***
+        if ~isempty(laser_periods)
+            % If eventTime lies between any laser_onset and laser_offset, skip it.
+            if any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+                fprintf('Mouse %s, event %d: skipped (laser ON).\n', uniqueId, event_i);
+                continue;
+            end
+        end
+        
+        % --- Check if the desired window lies within the sleep time ---
+        if (eventTime - preTime) < sleep_time(1) || (eventTime + postTime) > sleep_time(end)
+            fprintf('Mouse %s, event %d: skipped (window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Check that the event occurs during valid sleep ---
+        eventIdx_sleep = round(eventTime) + 1;  % since sleep_time starts at 0 sec
+        if ~validSleep(eventIdx_sleep)
+            fprintf('Mouse %s, event %d: skipped (not in valid sleep state).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Check contiguous valid sleep block to avoid transitions ---
+        blockStart = eventIdx_sleep;
+        while blockStart > 1 && validSleep(blockStart-1)
+            blockStart = blockStart - 1;
+        end
+        blockEnd = eventIdx_sleep;
+        while blockEnd < length(validSleep) && validSleep(blockEnd+1)
+            blockEnd = blockEnd + 1;
+        end
+        if (eventTime - (blockStart-1) < transitionBuffer) || ((blockEnd-1) - eventTime < transitionBuffer)
+            fprintf('Mouse %s, event %d: skipped (too close to state transition).\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % --- Extract RR data (fs_RR) ---
+        [~, idx_RR] = min(abs(RR_time - eventTime));
+        if (idx_RR - floor(preTime*fs_RR) < 1) || (idx_RR + floor(preTime*fs_RR) > length(RR_time))
+            fprintf('Mouse %s, event %d: skipped (RR window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        rr_segment = RR(idx_RR - floor(preTime*fs_RR) : idx_RR + floor(preTime*fs_RR));
+        if length(rr_segment) ~= expected_RR_length
+            fprintf('Mouse %s, event %d: skipped (RR segment length %d, expected %d).\n',...
+                uniqueId, event_i, length(rr_segment), expected_RR_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: RR segment length = %d.\n', uniqueId, event_i, length(rr_segment));
+        
+        % --- Extract delta465 data (fs_delta465) ---
+        [~, idx_delta] = min(abs(sec_signal_2 - eventTime));
+        if (idx_delta - floor(preTime*fs_delta465) < 1) || (idx_delta + floor(preTime*fs_delta465) > length(sec_signal_2))
+            fprintf('Mouse %s, event %d: skipped (delta465 window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        delta_segment = delta465(idx_delta - floor(preTime*fs_delta465) : idx_delta + floor(preTime*fs_delta465));
+        if length(delta_segment) ~= expected_delta465_length
+            fprintf('Mouse %s, event %d: skipped (delta465 segment length %d, expected %d).\n',...
+                uniqueId, event_i, length(delta_segment), expected_delta465_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: delta465 segment length = %d.\n', uniqueId, event_i, length(delta_segment));
+        
+        % --- Extract sigma data (fs_sigma) ---
+        [~, idx_sigma] = min(abs(time_spectrogram_zero - eventTime));
+        if (idx_sigma - floor(preTime*fs_sigma) < 1) || (idx_sigma + floor(preTime*fs_sigma) > length(time_spectrogram_zero))
+            fprintf('Mouse %s, event %d: skipped (sigma window out of bounds).\n', uniqueId, event_i);
+            continue;
+        end
+        sigma_segment = sigma_power(idx_sigma - floor(preTime*fs_sigma) : idx_sigma + floor(preTime*fs_sigma));
+        if length(sigma_segment) ~= expected_sigma_length
+            fprintf('Mouse %s, event %d: skipped (sigma segment length %d, expected %d).\n',...
+                uniqueId, event_i, length(sigma_segment), expected_sigma_length);
+            continue;
+        end
+        fprintf('Mouse %s, event %d: sigma segment length = %d.\n', uniqueId, event_i, length(sigma_segment));
+        
+        % --- Append the extracted segments ---
+        all_RR_segments = [all_RR_segments; rr_segment(:)'];
+        all_delta465_segments = [all_delta465_segments; delta_segment(:)'];
+        all_sigma_segments = [all_sigma_segments; sigma_segment(:)'];
+        fprintf('After mouse %s, event %d: all_RR_segments size: %s\n', uniqueId, event_i, mat2str(size(all_RR_segments)));
+    end
+end
+
+if isempty(all_RR_segments) || isempty(all_delta465_segments) || isempty(all_sigma_segments)
+    error('No valid events found across mice. Check your event selection criteria.');
+end
+
+% Compute mean and SEM for each modality (across all events)
+mean_RR = mean(all_RR_segments, 1);
+sem_RR  = std(all_RR_segments, 0, 1) / sqrt(size(all_RR_segments, 1));
+mean_delta465 = mean(all_delta465_segments, 1);
+sem_delta465  = std(all_delta465_segments, 0, 1) / sqrt(size(all_delta465_segments, 1));
+mean_sigma = mean(all_sigma_segments, 1);
+sem_sigma  = std(all_sigma_segments, 0, 1) / sqrt(size(all_sigma_segments, 1));
+
+% Define common time vectors for plotting (based on expected lengths)
+t_RR = linspace(-preTime, postTime, expected_RR_length);
+t_delta465 = linspace(-preTime, postTime, expected_delta465_length);
+t_sigma = linspace(-preTime, postTime, expected_sigma_length);
+
+% --- EEG-derived sigma power histograms ---
+% Process each mouse’s EEG data to calculate sigma band power (8–15 Hz)
+all_sigma_EEG_bins = [];  % will accumulate binned sigma power for each event
+
+% Define bin edges for 5-sec intervals over a [-30,30] sec window.
+bin_edges = -30:5:30;
+nBins = length(bin_edges)-1;
+
+for idx = 1:length(suffix)
+    uniqueId = num2str(suffix(idx));
+    
+    % Retrieve the EEG data, sampling rate, and time vector.
+    EEG = eval(sprintf('EEG_%s', uniqueId));
+    EEG_fs = eval(sprintf('EEG_fs_%s', uniqueId));  
+    if evalin('base', sprintf('exist(''EEG_time_%s'', ''var'')', uniqueId))
+        EEG_time = eval(sprintf('EEG_time_%s', uniqueId));
+    else
+        EEG_time = (0:length(EEG)-1) / EEG_fs;
+    end
+    
+    % Retrieve HRB event times for this mouse
+    HRB_time = eval(sprintf('HRB_time_%s', uniqueId));
+    HRB_time = HRB_time(:);
+    
+    % Note: We reuse the laser_periods variable from above if applicable.
+    % (If not, it remains empty.)
+    for event_i = 1:length(HRB_time)
+        eventTime = HRB_time(event_i);
+        
+        % Exclude events during laser periods
+        if ~isempty(laser_periods)
+            if any(eventTime >= laser_periods(:,1) & eventTime <= laser_periods(:,2))
+                fprintf('Mouse %s, event %d (EEG): skipped (laser ON).\n', uniqueId, event_i);
+                continue;
+            end
+        end
+        
+        % Find the closest index in EEG_time to the HRB event
+        [~, idx_EEG] = min(abs(EEG_time - eventTime));
+        
+        % Check boundaries: need 30 sec before and after the event.
+        if (idx_EEG - 30*EEG_fs < 1) || (idx_EEG + 30*EEG_fs > length(EEG))
+            fprintf('Mouse %s, event %d (EEG): EEG segment out of bounds, skipped.\n', uniqueId, event_i);
+            continue;
+        end
+        
+        % Extract the EEG segment (60 sec total, centered on the event)
+        EEG_segment = EEG(idx_EEG - 30*EEG_fs : idx_EEG + 30*EEG_fs);
+        
+        % Run the power analysis on this segment using only the sigma band.
+        sigma_band_only = {[8,15]};  % only sigma band
+        [~, T_EEG, ~, bp_event, ~] = PowerAnalysisEEG(EEG_segment, EEG_fs, frw, 5, sigma_band_only);
+        sigma_event = bp_event{1};  % sigma power time series for this event
+        
+        % Shift the spectrogram time vector so that 0 corresponds to the HRB event.
+        T_EEG_shifted = T_EEG - 30;
+        
+        % Bin the sigma power values into 5-sec intervals.
+        bin_idx = discretize(T_EEG_shifted, bin_edges);
+        event_bins = nan(1, nBins);
+        for j = 1:nBins
+            if any(bin_idx == j)
+                event_bins(j) = mean(sigma_event(bin_idx == j));
+            end
+        end
+        
+        % Append this event's binned data (each row is one event)
+        all_sigma_EEG_bins = [all_sigma_EEG_bins; event_bins];
+    end
+end
+
+% Compute the mean and SEM across events for each bin.
+mean_sigma_EEG_bins = nanmean(all_sigma_EEG_bins, 1);
+sem_sigma_EEG_bins = nanstd(all_sigma_EEG_bins, 0, 1) / sqrt(size(all_sigma_EEG_bins, 1));
+
+% Define bin centers for plotting.
+bin_centers = (bin_edges(1:end-1) + bin_edges(2:end)) / 2;
+
+% --- Plotting all modalities ---
+figure;
+
+% Subplot 1: RR Trace
+subplot(4,1,1); hold on;
+plot(t_RR, mean_RR, 'b', 'LineWidth', 2);
+fill([t_RR, fliplr(t_RR)], [mean_RR+sem_RR, fliplr(mean_RR-sem_RR)], 'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('RR Trace'); xlabel('Time (s)'); ylabel('RR');
+
+% Subplot 2: Norepinephrine (delta465)
+subplot(4,1,2); hold on;
+plot(t_delta465, mean_delta465, 'r', 'LineWidth', 2);
+fill([t_delta465, fliplr(t_delta465)], [mean_delta465+sem_delta465, fliplr(mean_delta465-sem_delta465)], 'r', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('Norepinephrine (delta465)'); xlabel('Time (s)'); ylabel('dF/F');
+
+% Subplot 3: Sigma Power (from spectrogram)
+subplot(4,1,3); hold on;
+plot(t_sigma, mean_sigma, 'g', 'LineWidth', 2);
+fill([t_sigma, fliplr(t_sigma)], [mean_sigma+sem_sigma, fliplr(mean_sigma-sem_sigma)], 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
+title('Sigma Power (from spectrogram)'); xlabel('Time (s)'); ylabel('Power');
+
+% Subplot 4: EEG-derived sigma power histograms (bar graph)
+% Compute overall min/max from (mean - SEM) to (mean + SEM)
+lowestVal = min(mean_sigma_EEG_bins - sem_sigma_EEG_bins);
+highestVal = max(mean_sigma_EEG_bins + sem_sigma_EEG_bins);
+rangeVal = highestVal - lowestVal;
+margin = 0.1 * rangeVal;  % 10% margin
+
+lowestAxis = lowestVal - margin;
+highestAxis = highestVal + margin;
+
+subplot(4,1,4); hold on;
+hBar = bar(bin_centers, mean_sigma_EEG_bins, 1, 'FaceColor', [0.7, 0.7, 0.7], 'EdgeColor', 'none');
+% Set the bar's BaseValue so that bars extend upward from the baseline.
+set(hBar, 'BaseValue', lowestAxis);
+% Overlay error bars for SEM.
+errorbar(bin_centers, mean_sigma_EEG_bins, sem_sigma_EEG_bins, 'k.', 'LineWidth', 1.5);
+ylim([lowestAxis, highestAxis]);
+xlim([-preTime, postTime]);
+title('Sigma Power (EEG) Histograms in 5-sec bins');
+xlabel('Time (s) relative to HRB event');
+ylabel('Sigma Power');
+
 
 %% Get figure 3 single animal
 o = {'387', '403', '412', '414', '416', '408', '420'};

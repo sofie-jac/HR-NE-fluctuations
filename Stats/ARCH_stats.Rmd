@@ -850,8 +850,65 @@ bootstrap_block_arch_psd <- function(data, formula, group_var, subject_var, R = 
   return(pairwise_ci)
 }
 
+# Load required package
+library(boot)
+
+perform_bootstrap_adjR2 <- function(data, formula, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    # Create a bootstrap sample based on provided indices
+    d <- data[indices, ]
+    
+    # Fit the lm model with the specified formula
+    model <- try(lm(formula, data = d), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if the model fails to converge
+    } else {
+      # Extract adjusted R² from the model's summary output
+      adj_r2 <- summary(model)$adj.r.squared
+      return(adj_r2)
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out the bootstrap samples where the model did not converge (i.e., returned NA)
+  valid_results <- results$t[!is.na(results$t)]
+  
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Optionally recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate the bootstrap confidence intervals (2.5% and 97.5% quantiles)
+  boot_ci <- quantile(valid_results, probs = c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals for adjusted R²
+  return(boot_ci)
+}
+
+
 ```
-```
+
 RR AUC
 ```{r}
 #AUC <- read_csv("AUC_for_R.csv")
@@ -868,6 +925,8 @@ m1_RR_AUC_prepost <- lmer(formula = RR ~ Condition + (1|SubjectID), data = AUC_o
 check_lmm_assumptions(m1_RR_AUC_prepost) #Normality slightly off
 
 pairwise_ci_RR_AUC_prepost <- bootstrap_difference_estimate(AUC_old_batch_1, RR ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+
+perform_bootstrap_r2
 # print(pairwise_ci)
 
 # Print pairwise comparisons
@@ -900,8 +959,11 @@ check_lmm_assumptions(m1_Sigma_AUC_prepost) #slight normality issues
 
 
 pairwise_ci_Sigma_AUC_prepost <-  bootstrap_difference_estimate(AUC_old_batch_1, Sigma ~ Condition + (1|SubjectID), "Condition", "SubjectID", R = 1000)
+pairwise_ci_Sigma_AUC_prepost <- perform_bootstrap_r2(AUC_old_batch_1, Sigma ~ Condition + (1|SubjectID), "SubjectID", R = 1000)
 
 # Print pairwise comparisons
+r.squaredGLMM(m1_Sigma_AUC_prepost)
+
 print(pairwise_ci_Sigma_AUC_prepost)
 print(summary(m1_Sigma_AUC_prepost))
 ```
@@ -947,16 +1009,18 @@ AUC_old_batch_1_arch = filter(AUC_old_batch_1, AUC_old_batch_1$Condition == 'arc
 m_h1_NE <- lmer(formula = RR ~  NE + (1|SubjectID), data = AUC_old_batch_1_arch)
 m_h2 <- lmer(formula = RR ~  NE + (NE|SubjectID), data = AUC_old_batch_1_arch, control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 1e5)))
 anova(m_h1_NE, m_h2) # M1 better as it doesn't have signular fit
-summary(m_h1)
+summary(m_h1_NE)
 
 # Example usage with your model
 check_lmm_assumptions(m_h1_NE) #normality issues and heteroscacedicity
 
 # Example initialization with a continuous predictor
 ci_NE_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+ci_NE_AUC <- perform_bootstrap_r2(AUC_old_batch_1_arch, RR ~  NE + (1|SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h1_NE)
-r.squaredGLMM(m_h1)
+r.squaredGLMM(m_h1_NE)
 print(ci_NE_AUC)
 pearson(m_h1_NE, AUC_old_batch_1_arch$RR)
 ```
@@ -973,6 +1037,8 @@ check_lmm_assumptions(m_h1_sigma) #normality issues
 
 # Example initialization with a continuous predictor
 ci_Sigma_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Sigma + (1|SubjectID), "SubjectID", R = 1000)
+ci_Sigma_AUC <- perform_bootstrap_r2(AUC_old_batch_1_arch, RR ~  Sigma + (1|SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h1_sigma)
 r.squaredGLMM(m_h1_sigma)
@@ -992,6 +1058,7 @@ check_lmm_assumptions(m_h1_beta) #slight normality issues and slight heteroscace
 
 # Example initialization with a continuous predictor
 ci_Beta_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Beta + (1|SubjectID), "SubjectID", R = 1000)
+ci_Beta_AUC <- perform_bootstrap_r2(AUC_old_batch_1_arch, RR ~  Beta + (1|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h1_beta)
 r.squaredGLMM(m_h1_beta)
@@ -1011,6 +1078,7 @@ check_lmm_assumptions(m_h1theta) #slight normality issues
 
 # Example initialization with a continuous predictor
 ci_Theta_AUC <- perform_bootstrap_pearson_correlation(AUC_old_batch_1_arch, RR ~  Theta + (1|SubjectID), "SubjectID", R = 1000)
+ci_Theta_AUC <- perform_bootstrap_r2(AUC_old_batch_1_arch, RR ~  Theta + (1|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h1theta)
 r.squaredGLMM(m_h1theta)
@@ -1025,7 +1093,7 @@ memory_table <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MA
 # Subset the dataframe to the desired columns
 memory_table <- memory_table[, c("mean_RR", "mean_NE", "novel_familiar_ratio")]
 # Remove rows with NaN values
-memory_table <- memory_table[complete.cases(subset_memory_table), ]
+memory_table <- memory_table[complete.cases(memory_table), ]
 
 memory_model <- lm(formula = mean_RR ~  novel_familiar_ratio, data = memory_table)
 
@@ -1036,6 +1104,8 @@ check_lmm_assumptions(memory_model) #slight normality issues
 
 # Example initialization with a continuous predictor
 memeory_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_RR ~  novel_familiar_ratio, R = 1000)
+memeory_ci <- perform_bootstrap_adjR2(memory_table, mean_RR ~  novel_familiar_ratio, R = 1000)
+memeory_ci <- perform_bootstrap_R2(memory_table, mean_RR ~  novel_familiar_ratio, R = 1000)
 
 summary(memory_model)
 r.squaredGLMM(memory_model)
@@ -1052,6 +1122,8 @@ check_lmm_assumptions(memory_model_2) #slight normality issues
 
 # Example initialization with a continuous predictor
 memeory_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_RR ~  mean_NE, R = 1000)
+memeory_ci <- perform_bootstrap_adjR2(memory_table, mean_RR ~  mean_NE, R = 1000)
+
 
 summary(memory_model_2)
 r.squaredGLMM(memory_model_2)

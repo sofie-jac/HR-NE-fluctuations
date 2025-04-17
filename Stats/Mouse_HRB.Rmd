@@ -1,0 +1,815 @@
+---
+title: "Mouse_HRB"
+author: "SJ"
+date: "2025-03-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+pacman::p_load(knitr, optimx, MuMIn, tidyverse, stringr, emmeans, MASS, boot, robustlmm, dplyr, lmtest, fitdistrplus, car, ggpubr, ggplot2, ggthemes, plyr, lme4, RColorBrewer, reshape2, afex, emmeans, psych, lmerTest, compare, rstatix, ggExtra, gridExtra, ggeffects, modelr, boot, stats, dbplyr,broom.mixed)
+
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp")
+#human_merged_data_saved = human_merged_data
+```
+
+
+
+```{r}
+library(readr)
+Mouse_HRB_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/Mouse_HRB_R_data.csv")
+Mouse_HRB_R_data$SubjectID <- as.factor(Mouse_HRB_R_data$SubjectID)
+
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp")
+
+Mouse_HRB_amplitude_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/arch_yfp/Mouse_HRB_amplitude_R_data.csv")
+Mouse_HRB_amplitude_R_data$SubjectID <- as.factor(Mouse_HRB_amplitude_R_data$SubjectID)
+
+#New version
+#Mouse_HRB_amplitude_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/mouse/Mouse_HRB_amplitude_R_data.csv")
+
+
+#Contol Mice version
+Control_mouse_HRB_amplitude_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/mouse/Control_mouse_HRB_amplitude_R_data.csv")
+```
+
+functions
+```{r}
+check_lmm_assumptions <- function(model) {
+  # Linearity
+  print("Checking linearity...")
+  plot(model)
+  
+  # Normality of residuals
+  print("Checking normality of residuals...")
+  residuals <- resid(model)
+  
+  # Debugging: Simple histogram of residuals
+  hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue", border = "black")
+  
+  # Create histogram with density fits
+  hist_data <- data.frame(residuals = residuals)
+  ggplot(hist_data, aes(x = residuals)) +
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", alpha = 0.5) +
+    stat_function(fun = dnorm, args = list(mean = mean(hist_data$residuals), sd = sd(hist_data$residuals)), color = "red", linewidth = 1) +
+    stat_function(fun = function(x) dgamma(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "green", linewidth = 1) +
+    stat_function(fun = function(x) dweibull(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "purple", linewidth = 1) +
+    stat_function(fun = function(x) dunif(x, min = min(hist_data$residuals), max = max(hist_data$residuals)), color = "orange", linewidth = 1) +
+    ggtitle("Histogram of Residuals with Distribution Fits") +
+    theme_minimal()
+  
+  # Homoscedasticity
+  print("Checking homoscedasticity...")
+  fitted_values <- fitted(model)
+  plot(fitted_values, residuals, main = "Residuals vs Fitted Values")
+  abline(h = 0, col = "red")
+  
+  # Breusch-Pagan Test for homoscedasticity
+  bptest_result <- bptest(residuals ~ fitted_values)
+  print(bptest_result)
+  
+  # Independence
+  print("Checking independence of residuals...")
+  acf(residuals, main = "ACF of residuals")
+  
+  # Random effects
+  print("Checking random effects...")
+  ranef_model <- ranef(model, condVar = TRUE)
+  qqnorm(unlist(ranef_model$SubjectID))
+  qqline(unlist(ranef_model$SubjectID))
+  
+  print("Assumptions check completed.")
+}
+
+perform_bootstrap_pearson_correlation <- function(data, formula, subject_var, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Extract the dependent variable name from the formula
+  dep_var <- deparse(formula[[2]])
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # Allows boot to select sample
+    
+    model <- try(lmer(formula, data = d, 
+                      control = lmerControl(optimizer = "bobyqa", 
+                                            optCtrl = list(maxfun = 1e5))), 
+                 silent = TRUE)
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(NA)  # Return NA if model fails
+    } else {
+      fitted_values <- fitted(model)
+      # Use the dependent variable extracted from the formula
+      observed_values <- d[[dep_var]]
+      if (length(fitted_values) != length(observed_values)) {
+        return(NA)  # Return NA if lengths do not match
+      }
+      correlation <- cor(observed_values, fitted_values)
+      return(correlation)  # Return the Pearson correlation coefficient
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    # Debug: Print error message
+    print(paste("Error in bootstrapping:", e$message))
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out NA results due to non-converging models
+  valid_results <- results$t[!is.na(results$t)]
+  
+  # Check the number of valid bootstrap samples
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate bootstrap confidence intervals for the Pearson correlation coefficient
+  boot_ci <- quantile(valid_results, c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals
+  return(boot_ci)
+}
+
+
+pearson <- function(model, y) { 
+  # Extract fitted values from the model
+fitted_values <- fitted(model)
+
+# Get the indices of the non-NA values used in the model
+used_indices <- as.numeric(names(fitted_values))
+
+# Extract the corresponding observed values
+observed_values <- y[used_indices]
+
+# Calculate Pearson correlation between observed and fitted values
+correlation <- cor(observed_values, fitted_values)
+print(correlation)
+  }
+
+
+perform_bootstrap_r2 <- function(data, formula, subject_var = NULL, R = 1000) {
+  # Remove rows with NA values (you might want to modify this if using cluster-level bootstrap)
+  data <- na.omit(data)
+  
+  # Note: The 'subject_var' is not used directly in this row-level bootstrap.
+  # For a cluster bootstrap (resampling by subject), you would need to implement
+  # logic to sample unique subjects (e.g., using unique(data[[subject_var]])) and then
+  # merge back the data accordingly.
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # bootstrap resample
+    
+    # Fit the model using lmer() with control options
+    model <- try(
+      lmer(formula, data = d, 
+           control = lmerControl(optimizer = "bobyqa", 
+                                 optCtrl = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    
+    # If the model fails or is singular, return NA values
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(c(NA, NA))
+    } else {
+      # Compute marginal and conditional R² using r.squaredGLMM()
+      r2 <- try(r.squaredGLMM(model), silent = TRUE)
+      if (inherits(r2, "try-error")) {
+        return(c(NA, NA))
+      }
+      # Assume r2[1] is marginal R² and r2[2] is conditional R²
+      return(c(r2[1], r2[2]))
+    }
+  }
+  
+  # Run bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Remove bootstrap samples that returned NA in either estimate
+  valid_indices <- apply(results$t, 1, function(x) !any(is.na(x)))
+  valid_results <- results$t[valid_indices, , drop = FALSE]
+  
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  if (nrow(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Compute the 95% bootstrap confidence intervals for both estimates
+  # Marginal R² (R2m)
+  ci_marginal <- quantile(valid_results[, 1], probs = c(0.025, 0.975))
+  # Conditional R² (R2c)
+  ci_conditional <- quantile(valid_results[, 2], probs = c(0.025, 0.975))
+  
+  # Return a list with the results
+  boot_results <- list(
+    ci_marginal = ci_marginal,
+    ci_conditional = ci_conditional)
+  
+  return(boot_results)
+}
+
+perform_bootstrap_adjR2 <- function(data, formula, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    # Create a bootstrap sample based on provided indices
+    d <- data[indices, ]
+    
+    # Fit the lm model with the specified formula
+    model <- try(lm(formula, data = d), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if the model fails to converge
+    } else {
+      # Extract adjusted R² from the model's summary output
+      adj_r2 <- summary(model)$adj.r.squared
+      return(adj_r2)
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out the bootstrap samples where the model did not converge (i.e., returned NA)
+  valid_results <- results$t[!is.na(results$t)]
+  
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Optionally recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate the bootstrap confidence intervals (2.5% and 97.5% quantiles)
+  boot_ci <- quantile(valid_results, probs = c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals for adjusted R²
+  return(boot_ci)
+}
+
+```
+
+## Stats
+
+```{r NE/RR corr test}
+m_h1 <- lmer(formula = HRB_RR ~  Delta465Amplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
+summary(m_h1)
+r.squaredGLMM(m_h1)
+
+m_h2 <- lmer(formula = HRB_RR ~  SigmaAmplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
+summary(m_h2)
+r.squaredGLMM(m_h2)
+
+m_h3 <- lmer(formula = Delta465Amplitude ~  SigmaAmplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
+summary(m_h3)
+r.squaredGLMM(m_h3)
+
+# Example usage with your model
+check_lmm_assumptions(m_h3)
+
+
+# Example initialization with a continuous predictor
+pairwise_ci_HRB_NE <- perform_bootstrap_r2(Control_mouse_HRB_amplitude_R_data, HRB_RR ~ Delta465Amplitude + (1 | SubjectID), "SubjectID", R = 1000)
+pairwise_ci_HRB_sigma <- perform_bootstrap_r2(Control_mouse_HRB_amplitude_R_data, HRB_RR ~ SigmaAmplitude + (1 | SubjectID), "SubjectID", R = 1000)
+pairwise_ci_NE_sigma <- perform_bootstrap_r2(Control_mouse_HRB_amplitude_R_data, Delta465Amplitude ~  SigmaAmplitude + (1 | SubjectID), "SubjectID", R = 1000)
+
+summary(m_h1)
+r.squaredGLMM(m_h1)
+print(pairwise_ci_HRB_NE)
+pearson(m_h1, Control_mouse_HRB_amplitude_R_data$HRB_RR)
+
+
+summary(m_h2)
+r.squaredGLMM(m_h2)
+print(pairwise_ci_HRB_sigma)
+pearson(m_h2, Control_mouse_HRB_amplitude_R_data$HRB_RR)
+
+
+summary(m_h3)
+r.squaredGLMM(m_h3)
+print(pairwise_ci_NE_sigma)
+pearson(m_h3, Control_mouse_HRB_amplitude_R_data$Delta465Amplitude)
+
+```
+
+HUMAN 
+```{r New Pin Chun data preprocess}
+Pin_Chun_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/Pin_Chun_data.csv")
+Pin_Chun_subject_mean_table <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/Pin_Chun_subject_mean_table.csv")
+
+Pin_Chun_data$SubjectID <- as.factor(Pin_Chun_data$SubjectID)
+Pin_Chun_subject_mean_table$SubjectID <- as.factor(Pin_Chun_subject_mean_table$SubjectID)
+
+subbase_pin_chun <- merge(Pin_Chun_subject_mean_table, subbase_win, by.x = "SubjectID", by.y = "id")
+subbase_pin_chun$sigma_bl <- subbase_pin_chun$Mean_sigma_bin2_raw - subbase_pin_chun$Mean_non_ace_bl
+
+# Subjects in Pin_Chun_subject_mean_table that are not in subbase_win:
+only_in_Pin_Chun <- anti_join(Pin_Chun_subject_mean_table, subbase_win, by = c("SubjectID" = "id"))
+cat("SubjectIDs only in Pin_Chun_subject_mean_table:\n")
+print(only_in_Pin_Chun$SubjectID)
+
+# Subjects in subbase_win that are not in Pin_Chun_subject_mean_table:
+only_in_subbase <- anti_join(subbase_win, Pin_Chun_subject_mean_table, by.x = "SubjectID", by.y = "id")
+cat("SubjectIDs only in subbase_win:\n")
+print(only_in_subbase$id)
+
+
+filtered_data <- clean_data %>%
+  # Convert SubjectID to character
+  mutate(SubjectID = as.character(SubjectID)) %>%
+  # Perform a semi join with subbase_win (also converted to character)
+  semi_join(subbase_win %>% mutate(id = as.character(id)),
+            by = c("SubjectID" = "id"))
+filtered_data$SubjectID <- as.factor(filtered_data$SubjectID)
+
+
+
+human_RR_sigma <- lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = clean_data)
+human_RR_sigma_28 <- lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = filtered_data)
+
+unique(filtered_data$SubjectID)
+
+bs_human_RR_sigma <- perform_bootstrap_r2(clean_data, RR_recover_ampl  ~  sigma_bin2_raw + (1 | SubjectID), "SubjectID", R = 1000)
+
+r.squaredGLMM(human_RR_sigma)
+summary(human_RR_sigma)
+print(bs_human_RR_sigma)
+
+check_lmm_assumptions(human_RR_sigma)
+
+
+
+
+#Test best correlate to subbase_2
+summary(lm(formula = subbase_win2 ~  Mean_sigma_bin2_raw, data = subbase_pin_chun)) # winner
+summary(lm(formula = subbase_win2 ~  Mean_sigma_subbase2_approx, data = subbase_pin_chun))
+summary(lm(formula = subbase_win2 ~  sigma_bl, data = subbase_pin_chun))
+
+#Test signal correlation
+
+summary(lmer(formula = RR_ampl ~ sigma_bin2_raw  + (1|SubjectID), data = clean_data))
+summary(lmer(formula = sigma_bin2_raw ~  RR_AUC + (1|SubjectID), data = clean_data))
+summary(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = Pin_Chun_data)) #Significant
+summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
+
+r.squaredGLMM(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = clean_data))
+r.squaredGLMM(lmer(formula = sigma_bin2_raw ~ RR_ampl + (1|SubjectID), data = clean_data))
+
+summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
+r.squaredGLMM(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = clean_data))
+
+#Outlier extraction
+mean_RR_recover_ampl <- mean(Pin_Chun_data$RR_recover_ampl, na.rm = TRUE)
+sd_RR_recover_ampl <- sd(Pin_Chun_data$RR_recover_ampl, na.rm = TRUE)
+
+# Calculate the mean and standard deviation for RR_recover_AUC
+mean_RR_recover_AUC <- mean(Pin_Chun_data$RR_recover_AUC, na.rm = TRUE)
+sd_RR_recover_AUC <- sd(Pin_Chun_data$RR_recover_AUC, na.rm = TRUE)
+
+# Filter the data to exclude rows where the RR variables are more than 5 SD's away from the mean
+clean_data <- Pin_Chun_data %>%
+  filter(
+    abs(RR_recover_ampl - mean_RR_recover_ampl) <= 2.5 * sd_RR_recover_ampl,
+    abs(RR_recover_AUC - mean_RR_recover_AUC) <= 2.5 * sd_RR_recover_AUC
+  )
+
+
+ggplot(clean_data, aes(x = RR_recover_ampl, y = sigma_bin2_raw)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "Correlation between Sigma Power (-5 to 0) and parasymp RR post-HRB",
+    x = "RR AUC",
+    y = "Sigma Power"
+  ) +
+  theme_minimal()
+
+ggplot(clean_data, aes(x = RR_recover_AUC, y = sigma_bin2_raw)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "Correlation between Sigma Power (-5 to 0) and parasymp RR post-HRB",
+    x = "RR AUC",
+    y = "Sigma Power"
+  ) +
+  theme_minimal()
+
+write.csv(clean_data, "C:\\Users\\trb938\\OneDrive - University of Copenhagen\\MATLAB\\Human_data\\Pin-Chun_signal_corr_df.csv")
+
+summary(lm(formula = PerChange ~  Mean_RR_recover_AUC, data = subbase_pin_chun))
+
+ggplot(subbase_pin_chun, aes(x = Mean_RR_recover_AUC, y = PerChange)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "Correlation between parasymp RR post-HRB and memory",
+    x = "RR AUC",
+    y = "% Change"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+
+
+```{r Human preprocess}
+Human_summary_table <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/Human_summary_table.csv")
+Demographics <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/Demographics.csv")
+Human_subject_mean_table <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/Human_subject_mean_table.csv")
+#sigma_bins_subject_level <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/sigma_bins_subject_level.csv")
+subbase_win <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/subbase_win.csv")
+Human_F4 <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/AceWpaCompiledData_Sigma_stg2_F4_Q1_Cleaned.csv")
+Human_HF <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/AceWpaCompiledData_HF_stg2_Q1_Cleaned.csv")
+
+Human_summary_table$SubjectID <- as.factor(Human_summary_table$SubjectID)
+
+Human_subject_mean_table$SubjectID <- as.factor(Human_subject_mean_table$SubjectID)
+
+Human_F4 <- Human_F4 %>%
+  mutate(id = str_remove(id, "_V.*"))
+Human_F4$id <- as.factor(Human_F4$id)
+
+Human_HF <- Human_HF %>%
+  mutate(id = str_remove(id, "_V.*"))
+Human_HF$id <- as.factor(Human_HF$id)
+
+subbase_win <- subbase_win %>%
+  mutate(id = str_remove(id, "_V.*"))
+subbase_win$id <- as.factor(subbase_win$id)
+
+human_merged_data <- merge(Human_subject_mean_table, subbase_win, by.x = "SubjectID", by.y = "id")
+
+
+human_merged_data$sigma_corrected <- human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl
+
+human_merged_data$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
+
+#Make HF and F4 versions of the same thing
+human_merged_data_F4 <- merge(Human_subject_mean_table, Human_F4, by.x = "SubjectID", by.y = "id")
+
+human_merged_data_HF <- merge(Human_subject_mean_table, Human_HF, by.x = "SubjectID", by.y = "id")
+
+
+human_merged_data_HF$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
+
+human_merged_data_F4$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
+
+
+
+
+```
+
+```{r Show Pin-Chun}
+
+#replicating Pin-Chun code
+memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = subbase_win)
+memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = human_merged_data)
+signal_corr <- lm(formula = subbase_win2 ~  sigma_subbbase, data = human_merged_data)
+summary(memory_m_h6)
+
+ggplot(human_merged_data, aes(x = sigma_subbbase, y = subbase_win2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "Correlation between Sigma Power (corrected to fit subbase2) and Subbase Win2",
+    x = "Sigma Power",
+    y = "Subbase Win2"
+  ) +
+  theme_minimal()
+
+df_model <- subbase_win %>%
+  select(OvernightDiff_24, subbase_win2, nonace_bl, Test1Study1) %>%
+  na.omit()
+
+
+memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = df_model)
+summary(memory_m_h6)
+memory_bs <- perform_bootstrap_adjR2(df_model, OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1,  R = 1000)
+summary(memory_m_h6)
+print(memory_bs)
+pearson(memory_m_h6, df_model$OvernightDiff_24)
+
+```
+
+
+
+```{r human signal corr}
+test_model <- lm(formula = subbase_win2 ~ Mean_sigma_power, data = human_merged_data)
+test_model <- lm(formula = subbase_win2 ~ sigma_corrected, data = human_merged_data)
+test_model <- lm(formula = subbase_win2 ~ Mean_sigma_power_AUC, data = human_merged_data)
+test_model <- lm(formula = subbase_win2 ~ sigma_subbbase, data = human_merged_data)
+
+
+summary(test_model)
+pearson(test_model, human_merged_data$subbase_win2)
+#57% correlation between subbase2 and the sigma power - nonace_bl (sigma_corrected)
+#69% correlation between subbase2 and the sigma power - own baseline (Mean_sigma_power)
+
+
+h_m_h1 <- lmer(formula = RR_amplitude ~  sigma_amplitude + (1|SubjectID), data = Human_summary_table)
+h_m_h2 <- lmer(formula = Mean_RR_amplitude ~  Mean_sigma_amplitude  + (1|Age), data = human_merged_data)
+h_m_h3 <- lmer(formula = Mean_RR_amplitude ~  Mean_sigma_amplitude + (1|Sex), data = human_merged_data)
+h_m_h4 <- lm(formula = Mean_RR_amplitude ~  Mean_sigma_amplitude, data = human_merged_data)
+h_m_h6 <- lm(formula = Mean_RR_amplitude ~  subbase_win2, data = human_merged_data)
+
+
+h_m_h5 <- lmer(formula = RR_amplitude ~  sigma_power + (1|SubjectID), data = Human_summary_table)
+pearson(h_m_h5, Human_summary_table$RR_amplitude)
+r.squaredGLMM(h_m_h5)
+
+
+
+anova(h_m_h3, h_m_h4) # M2 better
+summary(h_m_h6)
+r.squaredGLMM(h_m_h5)
+pearson(h_m_h4, human_merged_data$Mean_RR_amplitude)
+
+
+# Example usage with your model
+check_lmm_assumptions(m_h2)
+
+
+# Example initialization with a continuous predictor
+pairwise_ci_human_HRB <- perform_bootstrap_pearson_correlation(Human_summary_table, RR_amplitude ~ sigma_amplitude + (1 | SubjectID), "SubjectID", R = 1000)
+
+
+summary(h_m_h1)
+r.squaredGLMM(h_m_h1)
+print(pairwise_ci_human_HRB)
+pearson(h_m_h1, Human_summary_table$RR_amplitude)
+
+
+
+################### Signal correlation to match new memory correlation ##############################
+
+h_m_h1 <- lmer(formula = RR_recover_15 ~  sigma_power_AUC + (1|SubjectID), data = Human_summary_table)
+summary(h_m_h1)
+r.squaredGLMM(h_m_h1)
+
+#no correlation when per suject but positive tendeny
+lm_test = lm(formula = Mean_RR_recover_15 ~  Mean_sigma_power_AUC, data = human_merged_data)
+summary(lm_test)
+
+ggplot(Human_summary_table, aes(x = RR_recover_15, y = sigma_power_AUC)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between RR amplitude post-HRB and sigma power (AUC) - event level",
+    x = "RR ampl.",
+    y = "Sigma Power"
+  ) +
+  theme_minimal()
+
+ggplot(human_merged_data, aes(x = Mean_RR_recover_15, y = Mean_sigma_power_AUC)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between RR amplitude post-HRB and sigma power (AUC) - subject level",
+    x = "RR ampl.",
+    y = "Sigma Power"
+  ) +
+  theme_minimal()
+
+
+```
+
+```{r plot correlations}
+ggplot(human_merged_data, aes(x = Mean_sigma_power, y = subbase_win2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Correlation between Mean Sigma Power and Subbase Win2",
+    x = "Mean Sigma Power",
+    y = "Subbase Win2"
+  ) +
+  theme_minimal()
+
+ggplot(human_merged_data, aes(x = sigma_subbbase, y = subbase_win2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(
+    title = "Correlation between Sigma Power (corrected to fit subbase2) and Subbase Win2",
+    x = "Sigma Power",
+    y = "Subbase Win2"
+  ) +
+  theme_minimal()
+
+ggplot(human_merged_data, aes(x = OvernightDiff_24, y = subbase_win2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between memory (24-hr) and Subbase Win2, n=27",
+    x = "Memory score",
+    y = "Subbase Win2"
+  ) +
+  theme_minimal()
+
+ggplot(subbase_win, aes(x = OvernightDiff_24, y = subbase_win2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between memory (24-hr) and Subbase Win2, n=28",
+    x = "Memory score",
+    y = "Subbase Win2"
+  ) +
+  theme_minimal()
+
+ggplot(human_merged_data, aes(x = PerChange_24, y = Mean_RR_recover_15)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between memory (24-hr) and parasymp RR amplitude, n=28",
+    x = "% Change",
+    y = "RR post-HRB amplitude"
+  ) +
+  theme_minimal()
+
+library(ggplot2)
+library(dplyr)
+
+# Create a new data frame for predictions:
+new_data <- data.frame(
+  Mean_RR_amplitude = seq(
+    min(human_merged_data$Mean_RR_amplitude, na.rm = TRUE),
+    max(human_merged_data$Mean_RR_amplitude, na.rm = TRUE),
+    length.out = 100
+  ),
+  Mean_sigma_power_AUC = mean(human_merged_data$Mean_sigma_power_AUC, na.rm = TRUE)
+)
+
+# Get predictions with confidence intervals from the model WORKS
+predictions <- predict(WORKS, newdata = new_data, interval = "confidence")
+new_data <- cbind(new_data, predictions)
+
+# Plot the data and overlay the fitted line and confidence interval
+ggplot(human_merged_data, aes(x = Mean_RR_amplitude, y = PerChange)) +
+  geom_point(alpha = 0.5) +
+  geom_line(data = new_data, 
+            aes(x = Mean_RR_amplitude, y = fit), 
+            color = "blue", 
+            linewidth = 1, 
+            inherit.aes = FALSE) +
+  geom_ribbon(data = new_data, 
+              aes(x = Mean_RR_amplitude, ymin = lwr, ymax = upr), 
+              alpha = 0.2, 
+              fill = "blue", 
+              inherit.aes = FALSE) +
+  labs(
+    title = "Effect of Mean RR Amplitude on PerChange",
+    x = "Mean RR Amplitude",
+    y = "PerChange"
+  ) +
+  theme_minimal()
+
+
+```
+
+
+
+```{r human memory}
+memory_m_h1 <- lm(formula = OvernightDiff ~  Mean_sigma_amplitude, data = human_merged_data)
+memory_m_h2 <- lm(formula = OvernightDiff_24 ~  Mean_sigma_amplitude+Test1Study1+nonace_bl, data = human_merged_data)
+memory_m_h3 <- lm(formula = OvernightDiff ~  Mean_sigma_amplitude+Mean_RR_amplitude, data = human_merged_data)
+memory_m_h4 <- lm(formula = OvernightDiff_24 ~  Mean_sigma_amplitude+Mean_RR_amplitude, data = human_merged_data)
+memory_m_h5 <- lm(formula = OvernightDiff_24 ~  Mean_sigma_power_AUC+nonace_bl+Test1Study1, data = human_merged_data)
+summary(memory_m_h5)
+
+memory_m_h7 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = human_merged_data)
+memory_m_h8 <- lm(formula = OvernightDiff_24 ~  Mean_RR_amplitude, data = human_merged_data)
+memory_m_h9 <- lm(formula = OvernightDiff_24 ~  Mean_RR_amplitude+Mean_sigma_amplitude+nonace_bl+Test1Study1, data = human_merged_data)
+
+memory_m_h10 <- lm(formula = PerChange_24 ~  Mean_RR_recover_AUC+Mean_sigma_power_AUC, data = human_merged_data)
+summary(memory_m_h10)
+
+
+#replicating Pin-Chun code
+memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = subbase_win)
+memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = human_merged_data)
+signal_corr <- lm(formula = subbase_win2 ~  sigma_subbbase, data = human_merged_data)
+summary(signal_corr)
+
+
+memory_m_h6 <- lm(formula = PerChange_24 ~  Mean_RR_recover_15+Mean_sigma_power_AUC, data = human_merged_data)
+summary(memory_m_h6)
+summary(WORKS)
+
+
+WORKS <- lm(formula = PerChange ~  Mean_RR_amplitude+Mean_sigma_power_AUC, data = human_merged_data)
+WORKS_BETTER <-  lm(formula = PerChange_24 ~  Mean_RR_recover_15+Mean_sigma_power_AUC, data = human_merged_data)
+summary(WORKS_BETTER)
+
+ggplot(human_merged_data, aes(x = PerChange_24, y = Mean_RR_recover_15)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "pink") +
+  labs(
+    title = "Correlation between memory (24-hr) and parasymp RR amplitude, n=27",
+    x = "% Change",
+    y = "RR post-HRB amplitude"
+  ) +
+  theme_minimal()
+
+```
+```{r graveyard}
+
+#subbase_win has nonace_bl, Test1Study1 and subbase_win2
+#Human_subject_mean_table is HRB/sigma amplitude per person
+# Human_summary_table is HRB/sigma amplitude per event
+# sigma_bins_subject_level has all the updated bins calculated
+
+#Demographics$SID <- as.factor(Demographics$SID)
+#Demographics$Sex <- as.factor(Demographics$Sex)
+#Demographics$Ethnicity <- as.factor(Demographics$Ethnicity)
+
+
+
+# subbase_win <- subbase_win %>% 
+#   select(id, subbase_win2, nonace_bl)
+
+# sigma_bins_subject_level <- sigma_bins_subject_level %>%
+#   mutate(
+#     # 1) Remove the leading "PSTIM_" 
+#     # 2) Remove "_V" and everything following
+#     # 3) Convert the result to a factor
+#     SubjectID = factor(
+#       str_remove_all(
+#         str_remove(FileNames, "^PSTIM_"),  # remove leading PSTIM_
+#         "_V.*"                             # remove _V plus anything after
+#       )
+#     )
+#   )
+
+# Merge with the demographics dataframe by matching SubjectID with SID
+# human_merged_data <- merge(Human_subject_mean_table, Demographics, by.x = "SubjectID", by.y = "SID")
+# human_merged_data <- merge(human_merged_data, sigma_bins_subject_level, by = "SubjectID")
+# human_merged_data <- merge(human_merged_data, subbase_win, by.x = "SubjectID", by.y = "id")
+
+
+
+
+human_memory_corr <- human_merged_data %>%
+select(Mean_RR_amplitude, Mean_sigma_power_AUC, PerChange)
+write.csv(human_memory_corr, "C:\\Users\\trb938\\OneDrive - University of Copenhagen\\MATLAB\\Human_data\\human_memory_corr.csv")
+#subbase2_memory <- merge(subbase_win, sigma_bins_subject_level, by.x = "id", by.y = "SubjectID")
+
+
+
+summary(h_m_h1)
+r.squaredGLMM(h_m_h1)
+print(pairwise_ci_human_HRB)
+pearson(h_m_h1, Human_summary_table$RR_amplitude)
+
+r.squaredGLMM(WORKS)
+
+# Example usage with your model
+check_lmm_assumptions(m_h2)
+
+
+# Example initialization with a continuous predictor
+pairwise_ci_human_HRB <- perform_bootstrap_pearson_correlation(Human_summary_table, RR_amplitude ~ sigma_amplitude + (1 | SubjectID), "SubjectID", R = 1000)
+```
+
+
+

@@ -73,5 +73,5 @@ end
 function auc = calculate_auc(data, time_vector, time_range)
 % Calculate the area under the curve for the specified time range
 indices = time_vector >= time_range(1) & time_vector <= time_range(2);
-auc = trapz(time_vector(indices), data(:, indices), 2); % Use abs to ensure positive AUC
+auc = trapz(time_vector(indices), data(:, indices), 2);
 end

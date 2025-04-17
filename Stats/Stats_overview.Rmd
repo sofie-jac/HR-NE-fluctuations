@@ -316,6 +316,133 @@ correlation <- cor(observed_values, fitted_values)
 print(correlation)
   }
 
+perform_bootstrap_r2 <- function(data, formula, subject_var = NULL, R = 1000) {
+  # Remove rows with NA values (you might want to modify this if using cluster-level bootstrap)
+  data <- na.omit(data)
+  
+  # Note: The 'subject_var' is not used directly in this row-level bootstrap.
+  # For a cluster bootstrap (resampling by subject), you would need to implement
+  # logic to sample unique subjects (e.g., using unique(data[[subject_var]])) and then
+  # merge back the data accordingly.
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # bootstrap resample
+    
+    # Fit the model using lmer() with control options
+    model <- try(
+      lmer(formula, data = d, 
+           control = lmerControl(optimizer = "bobyqa", 
+                                 optCtrl = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    
+    # If the model fails or is singular, return NA values
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(c(NA, NA))
+    } else {
+      # Compute marginal and conditional R² using r.squaredGLMM()
+      r2 <- try(r.squaredGLMM(model), silent = TRUE)
+      if (inherits(r2, "try-error")) {
+        return(c(NA, NA))
+      }
+      # Assume r2[1] is marginal R² and r2[2] is conditional R²
+      return(c(r2[1], r2[2]))
+    }
+  }
+  
+  # Run bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Remove bootstrap samples that returned NA in either estimate
+  valid_indices <- apply(results$t, 1, function(x) !any(is.na(x)))
+  valid_results <- results$t[valid_indices, , drop = FALSE]
+  
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  if (nrow(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Compute the 95% bootstrap confidence intervals for both estimates
+  # Marginal R² (R2m)
+  ci_marginal <- quantile(valid_results[, 1], probs = c(0.025, 0.975))
+  # Conditional R² (R2c)
+  ci_conditional <- quantile(valid_results[, 2], probs = c(0.025, 0.975))
+  
+  # Return a list with the results
+  boot_results <- list(
+    ci_marginal = ci_marginal,
+    ci_conditional = ci_conditional)
+  
+  return(boot_results)
+}
+
+# Load required package
+library(boot)
+
+perform_bootstrap_adjR2 <- function(data, formula, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    # Create a bootstrap sample based on provided indices
+    d <- data[indices, ]
+    
+    # Fit the lm model with the specified formula
+    model <- try(lm(formula, data = d), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if the model fails to converge
+    } else {
+      # Extract adjusted R² from the model's summary output
+      adj_r2 <- summary(model)$adj.r.squared
+      return(adj_r2)
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out the bootstrap samples where the model did not converge (i.e., returned NA)
+  valid_results <- results$t[!is.na(results$t)]
+  
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Optionally recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate the bootstrap confidence intervals (2.5% and 97.5% quantiles)
+  boot_ci <- quantile(valid_results, probs = c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals for adjusted R²
+  return(boot_ci)
+}
+
 
 ```
 
@@ -343,6 +470,8 @@ check_lmm_assumptions(m_h1_transformed)
 
 # Example initialization with a continuous predictor
 pairwise_ci_RR <- perform_bootstrap_pearson_correlation(df, RR ~ NE + (NE | SubjectID), "SubjectID", R = 1000)
+pairwise_ci_RR <- perform_bootstrap_r2(df, RR ~ NE + (NE | SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h2)
 r.squaredGLMM(m_h2)
@@ -374,6 +503,7 @@ check_lmm_assumptions(m_inv)
 
 # Example initialization with a continuous predictor
 ci_delta <- perform_bootstrap_pearson_correlation(df, RR ~  Delta + (1|SubjectID), "SubjectID", R = 1000)
+ci_delta <- perform_bootstrap_r2(df, RR ~  Delta + (1 | SubjectID), "SubjectID", R = 1000)
 
 summary(m_h1)
 r.squaredGLMM(m_h1)
@@ -393,6 +523,7 @@ r.squaredGLMM(m_h1)
 
 # Example usage with your model - assumptions met!
 check_lmm_assumptions(m_h2)
+
 
 summary(m_h2)
 r.squaredGLMM(m_h2)
@@ -424,11 +555,12 @@ check_lmm_assumptions(m_sqrt)
 
 # Example initialization with a continuous predictor
 ci_delta <- perform_bootstrap_pearson_correlation(df, RR ~  Sigma + (Sigma|SubjectID), "SubjectID", R = 1000)
+ci_sigma <- perform_bootstrap_r2(df, RR ~  Sigma + (Sigma|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h2)
 r.squaredGLMM(m_h2)
 
-print(ci_delta)
+print(ci_sigma)
 
 pearson(m_h2, df$RR)
 ```
@@ -455,10 +587,11 @@ check_lmm_assumptions(m_sqrt)
 
 # Example initialization with a continuous predictor
 ci_beta <- perform_bootstrap_pearson_correlation(df, RR ~  Beta + (Beta|SubjectID), "SubjectID", R = 1000)
+ci_beta <- perform_bootstrap_r2(df, RR ~  Beta + (Beta|SubjectID), "SubjectID", R = 1000)
 
 summary(m_h2)
 r.squaredGLMM(m_h2)
-print(ci_delta)
+print(ci_beta)
 pearson(m_h2, df$RR)
 ```
 
@@ -484,10 +617,12 @@ check_lmm_assumptions(m_inv)
 
 # Example initialization with a continuous predictor
 ci_Gamma_high <- perform_bootstrap_pearson_correlation(df, RR ~  Gamma_high + (Gamma_high|SubjectID), "SubjectID", R = 1000)
+ci_Gamma_high <- perform_bootstrap_r2(df, RR ~   Gamma_high + (Gamma_high|SubjectID), "SubjectID", R = 1000)
+
 
 summary(m_h2)
 r.squaredGLMM(m_h2)
-print(ci_delta)
+print(ci_Gamma_high)
 pearson(m_h2, df$RR)
 ```
 
