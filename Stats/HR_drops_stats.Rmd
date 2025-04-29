@@ -1,0 +1,552 @@
+---
+title: "HR_drops_stats"
+author: "SJ"
+date: "2025-04-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+pacman::p_load(knitr, optimx, MuMIn, tidyverse, stringr, emmeans, MASS, boot, robustlmm, dplyr, lmtest, fitdistrplus, car, ggpubr, ggplot2, ggthemes, plyr, lme4, RColorBrewer, reshape2, afex, emmeans, psych, lmerTest, compare, rstatix, ggExtra, gridExtra, ggeffects, modelr, boot, stats, dbplyr, broom.mixed, readr)
+```
+
+
+
+```{r functions}
+check_lmm_assumptions <- function(model) {
+  # Linearity
+  print("Checking linearity...")
+  plot(model)
+  
+  # Normality of residuals
+  print("Checking normality of residuals...")
+  residuals <- resid(model)
+  
+  # Debugging: Simple histogram of residuals
+  hist(residuals, breaks = 30, main = "Histogram of Residuals", xlab = "Residuals", col = "blue", border = "black")
+  
+  # Create histogram with density fits
+  hist_data <- data.frame(residuals = residuals)
+  ggplot(hist_data, aes(x = residuals)) +
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", alpha = 0.5) +
+    stat_function(fun = dnorm, args = list(mean = mean(hist_data$residuals), sd = sd(hist_data$residuals)), color = "red", linewidth = 1) +
+    stat_function(fun = function(x) dgamma(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "green", linewidth = 1) +
+    stat_function(fun = function(x) dweibull(x - min(hist_data$residuals) + 0.001, shape = 2, scale = 1), color = "purple", linewidth = 1) +
+    stat_function(fun = function(x) dunif(x, min = min(hist_data$residuals), max = max(hist_data$residuals)), color = "orange", linewidth = 1) +
+    ggtitle("Histogram of Residuals with Distribution Fits") +
+    theme_minimal()
+  
+  # Homoscedasticity
+  print("Checking homoscedasticity...")
+  fitted_values <- fitted(model)
+  plot(fitted_values, residuals, main = "Residuals vs Fitted Values")
+  abline(h = 0, col = "red")
+  
+  # Breusch-Pagan Test for homoscedasticity
+  bptest_result <- bptest(residuals ~ fitted_values)
+  print(bptest_result)
+  
+  # Independence
+  print("Checking independence of residuals...")
+  acf(residuals, main = "ACF of residuals")
+  
+  # Random effects
+  print("Checking random effects...")
+  ranef_model <- ranef(model, condVar = TRUE)
+  qqnorm(unlist(ranef_model$SubjectID))
+  qqline(unlist(ranef_model$SubjectID))
+  
+  print("Assumptions check completed.")
+}
+
+perform_bootstrap_r2 <- function(data, formula, subject_var = NULL, R = 1000) {
+  # Remove rows with NA values (you might want to modify this if using cluster-level bootstrap)
+  data <- na.omit(data)
+  
+  # Note: The 'subject_var' is not used directly in this row-level bootstrap.
+  # For a cluster bootstrap (resampling by subject), you would need to implement
+  # logic to sample unique subjects (e.g., using unique(data[[subject_var]])) and then
+  # merge back the data accordingly.
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    d <- data[indices, ]  # bootstrap resample
+    
+    # Fit the model using lmer() with control options
+    model <- try(
+      lmer(formula, data = d, 
+           control = lmerControl(optimizer = "bobyqa", 
+                                 optCtrl = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    
+    # If the model fails or is singular, return NA values
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(c(NA, NA))
+    } else {
+      # Compute marginal and conditional R² using r.squaredGLMM()
+      r2 <- try(r.squaredGLMM(model), silent = TRUE)
+      if (inherits(r2, "try-error")) {
+        return(c(NA, NA))
+      }
+      # Assume r2[1] is marginal R² and r2[2] is conditional R²
+      return(c(r2[1], r2[2]))
+    }
+  }
+  
+  # Run bootstrapping with R replications
+  results <- tryCatch({
+    boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Remove bootstrap samples that returned NA in either estimate
+  valid_indices <- apply(results$t, 1, function(x) !any(is.na(x)))
+  valid_results <- results$t[valid_indices, , drop = FALSE]
+  
+  cat("Number of valid bootstrap samples:", nrow(valid_results), "\n")
+  
+  if (nrow(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Compute the 95% bootstrap confidence intervals for both estimates
+  # Marginal R² (R2m)
+  ci_marginal <- quantile(valid_results[, 1], probs = c(0.025, 0.975))
+  # Conditional R² (R2c)
+  ci_conditional <- quantile(valid_results[, 2], probs = c(0.025, 0.975))
+  
+  # Return a list with the results
+  boot_results <- list(
+    ci_marginal = ci_marginal,
+    ci_conditional = ci_conditional)
+  
+  return(boot_results)
+}
+
+library(lme4)
+library(emmeans)
+library(boot)
+
+#bootstrap only chr2 not yfp but is elsewise the same as bootstrap_pairwise_contrasts 
+bootstrap_pairwise_chr2 <- function(data, formula, group_var, R = 1000) {
+  # Helper: how many pairwise contrasts we'll get
+  n_lev <- length(levels(data[[group_var]]))
+  n_contrasts <- choose(n_lev, 2)
+  
+  # The function that boot() will call
+  boot_model <- function(d, indices) {
+    samp <- d[indices, ]
+    fit <- try(
+      lmer(formula, data = samp,
+           control = lmerControl(optimizer = "bobyqa",
+                                 optCtrl = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    if (inherits(fit, "try-error")) {
+      return(rep(NA_real_, n_contrasts))
+    }
+    
+    # get marginal means and all pairwise contrasts
+    emm <- emmeans(fit, as.formula(paste0("~ ", group_var)))
+    pw  <- pairs(emm)                # same as contrast(emm, method = "pairwise")
+    s   <- summary(pw)
+    
+    # return the vector of estimates
+    return(s$estimate)
+  }
+  
+  # run the bootstrap
+  boot_out <- boot(data, statistic = boot_model, R = R)
+  
+  # drop any replicates with NA (failed fits)
+  good_t <- boot_out$t[complete.cases(boot_out$t), , drop = FALSE]
+  cat("Used", nrow(good_t), "valid reps out of", R, "\n")
+  
+  # recompute CIs
+  ci_mat <- apply(good_t, 2, quantile, probs = c(0.025, 0.975), na.rm = TRUE)
+  colnames(ci_mat) <- names(summary(pairs(
+    emmeans(lmer(formula, data = data), as.formula(paste0("~ ", group_var)))
+  ))$estimate)
+  
+  return(ci_mat)
+}
+
+bootstrap_block_pairwise_laser <- function(data, formula, subject_var, R = 1000) {
+  # 1. Fit the initial mixed model (no weights)
+  initial_model <- lmer(
+    formula,
+    data    = data,
+    control = lmerControl(optimizer = "bobyqa",
+                          optCtrl   = list(maxfun = 1e5))
+  )
+  
+  # 2. Compute the number of pairwise LaserLevel contrasts
+  emm0        <- emmeans(initial_model, ~ LaserLevel)
+  c0          <- contrast(emm0, method = "pairwise")
+  n_estimates <- length(summary(c0)$estimate)
+  
+  # 3. Define a single‐subject block bootstrap statistic
+  boot_model <- function(dat, inds) {
+    # resample subjects with replacement
+    subs           <- unique(dat[[subject_var]])
+    sampled_subs   <- subs[inds]
+    d              <- dat[dat[[subject_var]] %in% sampled_subs, , drop = FALSE]
+    
+    # refit model
+    m <- try(
+      lmer(formula, data = d,
+           control = lmerControl(optimizer = "bobyqa",
+                                 optCtrl   = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    if (inherits(m, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    
+    # re‐estimate emmeans & contrasts
+    emm_b <- try(emmeans(m, ~ LaserLevel), silent = TRUE)
+    if (inherits(emm_b, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    c_b <- try(contrast(emm_b, method = "pairwise"), silent = TRUE)
+    if (inherits(c_b, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    
+    est <- summary(c_b)$estimate
+    if (length(est) != n_estimates) {
+      return(rep(NA_real_, n_estimates))
+    }
+    est
+  }
+  
+  # 4. Run the bootstrap
+  set.seed(123)
+  subj_inds <- seq_along(unique(data[[subject_var]]))
+  bs <- boot(
+    data      = data,
+    statistic = boot_model,
+    R         = R,
+    strata    = data[[subject_var]],
+    sim       = "ordinary"
+  )
+  
+  # 5. Drop any failed (NA) replicates
+  good <- !apply(bs$t, 1, function(x) any(is.na(x)))
+  t0   <- bs$t[good, , drop = FALSE]
+  if (nrow(t0) == 0) {
+    stop("No valid bootstrap samples were obtained.")
+  }
+  
+  # 6. Compute 95% CIs
+  ci <- apply(t0, 2, quantile, probs = c(0.025, 0.975))
+  return(ci)
+}
+
+block_bootstrap_r2 <- function(data, formula, subject_var = NULL, R = 1000, seed = NULL) {
+  # 0. (Optional) set seed for reproducibility
+  if (!is.null(seed)) set.seed(seed)
+  
+  # 1. Drop NAs
+  data <- na.omit(data)
+  
+  # 2. Define bootstrap statistic
+  boot_model <- function(dat, indices) {
+    # for block‐bootstrap: indices are row‐indices chosen by boot()
+    d <- dat[indices, ]
+    
+    # fit mixed model
+    model <- try(
+      lmer(formula, data = d,
+           control = lmerControl(optimizer = "bobyqa",
+                                 optCtrl = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    
+    if (inherits(model, "try-error") || isSingular(model)) {
+      return(c(NA_real_, NA_real_))
+    }
+    
+    # compute R2
+    r2 <- try(r.squaredGLMM(model), silent = TRUE)
+    if (inherits(r2, "try-error")) {
+      return(c(NA_real_, NA_real_))
+    }
+    
+    # return c(marginal, conditional)
+    as.numeric(r2[1:2])
+  }
+  
+  # 3. Set up arguments for boot()
+  boot_args <- list(
+    data = data,
+    statistic = boot_model,
+    R = R
+  )
+  if (!is.null(subject_var)) {
+    # stratify resampling by subject: this will resample within each subject‐block
+    boot_args$strata <- data[[subject_var]]
+    boot_args$sim    <- "ordinary"
+  }
+  
+  # 4. Run bootstrap
+  bs <- tryCatch({
+    do.call(boot, boot_args)
+  }, error = function(e) {
+    stop("Error in bootstrapping: ", e$message)
+  })
+  
+  # 5. Keep only successful replicates
+  tmat <- bs$t
+  good <- apply(tmat, 1, function(x) all(!is.na(x)))
+  tmat <- tmat[good, , drop = FALSE]
+  if (nrow(tmat) == 0) {
+    stop("No valid bootstrap samples were obtained.")
+  }
+  cat("Number of valid bootstrap samples:", nrow(tmat), "\n")
+  
+  # 6. Compute 95% CIs
+  ci_marginal   <- quantile(tmat[,1], probs = c(0.025, 0.975))
+  ci_conditional<- quantile(tmat[,2], probs = c(0.025, 0.975))
+  
+  list(
+    ci_marginal    = ci_marginal,
+    ci_conditional = ci_conditional
+  )
+}
+
+```
+
+
+
+```{r data load}
+setwd("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/chr2_yfp/Suplementary_HR_drop_fig")
+
+
+RR_peak_bl_corr_values <- read_csv("stats_RR_peak_bl_corr_values.csv")
+RR_peak_8to10_bl_corr_values <- read_csv("stats_8to10_RR_peak_bl_corr_values.csv")
+Entropy <- read_csv("Stats_entropy.csv")
+NE <- read_csv("Stats_NE.csv")
+sigma <- read_csv("Stats_sigma.csv")
+
+
+RR_peak_bl_corr_values$SubjectID <- as.factor(RR_peak_bl_corr_values$SubjectID)
+RR_peak_bl_corr_values$LaserLevel <- as.factor(RR_peak_bl_corr_values$LaserLevel)
+RR_peak_8to10_bl_corr_values$SubjectID <- as.factor(RR_peak_8to10_bl_corr_values$SubjectID)
+RR_peak_8to10_bl_corr_values$LaserLevel <- as.factor(RR_peak_8to10_bl_corr_values$LaserLevel)
+Entropy$SubjectID <- as.factor(Entropy$SubjectID)
+Entropy$LaserLevel <- as.factor(Entropy$LaserLevel)
+NE$SubjectID <- as.factor(NE$SubjectID)
+NE$LaserLevel <- as.factor(NE$LaserLevel)
+sigma$SubjectID <- as.factor(sigma$SubjectID)
+sigma$LaserLevel <- as.factor(sigma$LaserLevel)
+
+RR_peak_high_thresh <- filter(RR_peak_8to10_bl_corr_values, LaserLevel == 4 | LaserLevel == 5)
+```
+
+
+```{r stats}
+
+m3 <- lmer(formula = RR_SD ~  LaserLevel + (1|SubjectID), data = RR_peak_8to10_bl_corr_values)
+summary(m3)
+emmeans(
+  m3,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+ci_m3 <- bootstrap_block_pairwise_laser(RR_peak_8to10_bl_corr_values, RR_SD ~  LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+print(ci_m3)
+check_lmm_assumptions(m3)
+#heterscadedicity, autocorrelation of resid
+
+
+
+m9 <- lmer(formula = SampleEntropy ~  LaserLevel + (1|SubjectID), data = Entropy)
+ci_m9 <- bootstrap_block_pairwise_laser(Entropy, SampleEntropy ~  LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+summary(m9)
+emmeans(
+  m9,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m9)
+
+#Normality. heterscadedicity, autocorrelation of resid
+
+
+m1 <- lmer(formula = MeanRR ~  LaserLevel + (1|SubjectID), data = RR_peak_8to10_bl_corr_values)
+ci_m1 <- bootstrap_block_pairwise_laser(RR_peak_8to10_bl_corr_values, MeanRR ~  LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m1)
+emmeans(
+  m1,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m1)
+
+check_lmm_assumptions(m1)
+#heterscadedicity, autocorrelation of resid
+
+
+m2 <- lmer(formula = MeanBPM ~  LaserLevel + (1|SubjectID), data = RR_peak_8to10_bl_corr_values)
+ci_m2 <- bootstrap_block_pairwise_laser(RR_peak_8to10_bl_corr_values, MeanBPM ~  LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m2)
+emmeans(
+  m2,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m2)
+
+check_lmm_assumptions(m2)
+#heterscadedicity, autocorrelation of resid
+
+
+m6 <- lmer(formula = MeanBPM ~ RR_SD + (1|SubjectID), data = Entropy)
+ci_m6 <-block_bootstrap_r2 (Entropy, MeanBPM ~ RR_SD + (1|SubjectID), subject_var = "SubjectID", R = 1000)
+summary(m6)
+r.squaredGLMM(m6)
+print(ci_m6)
+check_lmm_assumptions(m6)
+
+#Normality. heterscadedicity, autocorrelation of resid
+
+m14 <- lmer(formula = RR_peak ~ LaserLevel + (1|SubjectID), data = NE)
+ci_m14 <- bootstrap_block_pairwise_laser(NE, RR_peak ~  LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m14)
+emmeans(
+  m14,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m14)
+
+check_lmm_assumptions(m9)
+#heterscadedicity, autocorrelation of resid
+
+
+m10 <- lmer(formula = BPM_peak ~ LaserLevel + (1|SubjectID), data = NE)
+ci_m10 <-bootstrap_block_pairwise_laser(NE, BPM_peak ~ LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m10)
+emmeans(
+  m10,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m10)
+
+check_lmm_assumptions(m10)
+#heterscadedicity, slight autocorrelation of resid
+
+
+m4 <- lmer(formula = CorrRR_peak ~  LaserLevel + (1|SubjectID), data = RR_peak_8to10_bl_corr_values)
+ci_m4 <-bootstrap_block_pairwise_laser(RR_peak_8to10_bl_corr_values, CorrRR_peak ~ LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m4)
+emmeans(
+  m4,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+#check_lmm_assumptions(m4)
+#No violation
+
+#  a) get the marginal (i.e. population‑level) mean for each LaserLevel
+emm <- emmeans(m4, ~ LaserLevel)
+
+#  b) have summary() produce tests and confidence intervals *against* null = 0
+#     infer = c(TRUE, TRUE) means: return CIs *and* p‐values (null = 0 by default)
+summary(emm, infer = c(TRUE, TRUE))
+
+
+
+m5 <- lmer(formula = MeanBPM ~  CorrRR_peak + (1|SubjectID), data = RR_peak_high_thresh)
+ci_m5 <-block_bootstrap_r2(RR_peak_high_thresh, MeanBPM ~  CorrRR_peak + (1|SubjectID), subject_var = "SubjectID", R = 1000)
+
+summary(m5)
+r.squaredGLMM(m5)
+print(ci_m5)
+
+check_lmm_assumptions(m5)
+#heterscadedicity, autocorrelation of resid
+
+
+m11 <- lmer(formula = MeanNE_pre_10 ~ LaserLevel + (1|SubjectID), data = NE)
+ci_m11 <-bootstrap_block_pairwise_laser(NE, MeanNE_pre_10 ~ LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m11)
+emmeans(
+  m11,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m11)
+
+check_lmm_assumptions(m11)
+#Everything is bad
+
+m12 <- lmer(formula = NE_ampl ~ LaserLevel + (1|SubjectID), data = NE)
+ci_m12 <-bootstrap_block_pairwise_laser(NE, NE_ampl ~ LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m12)
+emmeans(
+  m12,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m12)
+
+check_lmm_assumptions(m12)
+#heterscadedicity, slight autocorrelation of resid
+
+m7 <- lmer(formula = RR_peak ~ MeanNE_pre_10 + (1|SubjectID), data = NE)
+ci_m7 <-block_bootstrap_r2(NE, RR_peak ~ MeanNE_pre_10 + (1|SubjectID), subject_var = "SubjectID", R = 1000)
+
+summary(m7)
+r.squaredGLMM(m7)
+print(ci_m7)
+
+check_lmm_assumptions(m7)
+#heterscadedicity, slight autocorrelation of resid
+
+
+m13 <- lmer(formula = Sigma_ampl ~ LaserLevel + (1|SubjectID), data = sigma)
+ci_m13 <-bootstrap_block_pairwise_laser(sigma, Sigma_ampl ~ LaserLevel + (1|SubjectID), 'SubjectID', R = 1000)
+
+summary(m13)
+emmeans(
+  m13,
+  pairwise ~ LaserLevel,  # directly returns emms + contrasts
+  adjust = "tukey"
+)
+print(ci_m13)
+
+check_lmm_assumptions(m13)
+# slight heterscadedicity, slight autocorrelation of resid
+
+
+m8 <- lmer(formula = RR_peak ~ Sigma_ampl + (1|SubjectID), data = sigma)
+ci_m8 <-block_bootstrap_r2(sigma, RR_peak ~ Sigma_ampl + (1|SubjectID), subject_var = "SubjectID", R = 1000)
+
+summary(m8)
+r.squaredGLMM(m8)
+print(ci_m8)
+check_lmm_assumptions(m8)
+#heterscadedicity, slight normality issues, slight autocorrelation of resid
+
+
+```
+

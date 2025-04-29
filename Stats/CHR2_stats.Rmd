@@ -668,6 +668,79 @@ bootstrap_block_pairwise_contrasts <- function(data, formula, group_var, subject
 }
 
 
+
+bootstrap_block_pairwise_laser <- function(data, formula, subject_var, R = 1000) {
+  # 1. Fit the initial mixed model (no weights)
+  initial_model <- lmer(
+    formula,
+    data    = data,
+    control = lmerControl(optimizer = "bobyqa",
+                          optCtrl   = list(maxfun = 1e5))
+  )
+  
+  # 2. Compute the number of pairwise LaserLevel contrasts
+  emm0        <- emmeans(initial_model, ~ LaserLevel)
+  c0          <- contrast(emm0, method = "pairwise")
+  n_estimates <- length(summary(c0)$estimate)
+  
+  # 3. Define a single‐subject block bootstrap statistic
+  boot_model <- function(dat, inds) {
+    # resample subjects with replacement
+    subs           <- unique(dat[[subject_var]])
+    sampled_subs   <- subs[inds]
+    d              <- dat[dat[[subject_var]] %in% sampled_subs, , drop = FALSE]
+    
+    # refit model
+    m <- try(
+      lmer(formula, data = d,
+           control = lmerControl(optimizer = "bobyqa",
+                                 optCtrl   = list(maxfun = 1e5))),
+      silent = TRUE
+    )
+    if (inherits(m, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    
+    # re‐estimate emmeans & contrasts
+    emm_b <- try(emmeans(m, ~ LaserLevel), silent = TRUE)
+    if (inherits(emm_b, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    c_b <- try(contrast(emm_b, method = "pairwise"), silent = TRUE)
+    if (inherits(c_b, "try-error")) {
+      return(rep(NA_real_, n_estimates))
+    }
+    
+    est <- summary(c_b)$estimate
+    if (length(est) != n_estimates) {
+      return(rep(NA_real_, n_estimates))
+    }
+    est
+  }
+  
+  # 4. Run the bootstrap
+  set.seed(123)
+  subj_inds <- seq_along(unique(data[[subject_var]]))
+  bs <- boot(
+    data      = data,
+    statistic = boot_model,
+    R         = R,
+    strata    = data[[subject_var]],
+    sim       = "ordinary"
+  )
+  
+  # 5. Drop any failed (NA) replicates
+  good <- !apply(bs$t, 1, function(x) any(is.na(x)))
+  t0   <- bs$t[good, , drop = FALSE]
+  if (nrow(t0) == 0) {
+    stop("No valid bootstrap samples were obtained.")
+  }
+  
+  # 6. Compute 95% CIs
+  ci <- apply(t0, 2, quantile, probs = c(0.025, 0.975))
+  return(ci)
+}
+
 ```
 
 RR peak power

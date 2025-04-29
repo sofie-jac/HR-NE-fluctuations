@@ -1,73 +1,90 @@
-function summaryTable = compute_RR_varriance_summary_from_files(dataDirectory, chr2, yfp)
-    % Initialize containers for results
+function [summaryTable, chr2EventVarTable] = compute_RR_varriance_summary_from_files(dataDirectory, chr2, yfp)
+% COMPUTE_RR_VARIANCE_SUMMARY_FROM_FILES
+%   [summaryTable, chr2EventVarTable] =
+%     – summaryTable: mean/SD/SEM of the per-row SDs by group & laser level
+%     – chr2EventVarTable: one row per chr2 trial with SD & SEMSD of that trial
+
+    %% SETUP
     results = struct();
+    chr2Rows = {};  % for event‐level stats
 
-    % Combine groups and add group label to the data
-    allGroups = [chr2, yfp];
-    groupLabels = [repmat({"chr2"}, 1, length(chr2)), repmat({"yfp"}, 1, length(yfp))];
+    % groups
+    allGroups   = [chr2, yfp];
+    groupLabels = [repmat({"chr2"},1,numel(chr2)), repmat({"yfp"},1,numel(yfp))];
 
-    % Prepare a structure to store data
-    for laserLevel = 1:5
-        results(laserLevel).chr2 = [];
-        results(laserLevel).yfp = [];
+    % init containers for summary
+    for lvl = 1:5
+        results(lvl).chr2 = [];
+        results(lvl).yfp  = [];
     end
 
-    % Iterate through files in the directory
+    %% LOOP FILES
     for laserLevel = 1:5
-        for i = 1:length(allGroups)
-            subjectID = allGroups{i};
+        for i = 1:numel(allGroups)
+            subjectID  = allGroups{i};
             groupLabel = groupLabels{i};
 
-            % Construct the file name
-            fileName = fullfile(dataDirectory, sprintf('RR_laser_%d_NREM_%s.mat', laserLevel, subjectID));
+            fn = fullfile(dataDirectory, ...
+                sprintf('RR_laser_%d_NREM_%s.mat', laserLevel, subjectID));
+            if ~exist(fn,'file')
+                warning('File not found: %s', fn);
+                continue
+            end
 
-            % Check if the file exists
-            if exist(fileName, 'file')
-                % Load the file
-                data = load(fileName);
+            % load RR: can be vector or matrix [nTrials × nSamples]
+            D     = load(fn);
+            f     = fieldnames(D);
+            RRm   = D.(f{1});              % trials×samples
 
-                % Extract the content of the first field dynamically
-                fieldName = fieldnames(data); % Get the field name
-                RR_values = data.(fieldName{1}); % Extract the content of the field
+            % compute per‐trial SDs
+            rowSDs = std(RRm, 0, 2);       % one SD per row
 
-                % Calculate the standard deviation for each row
-                rowSDs = std(RR_values, 0, 2); % Compute SD across columns (dimension 2)
+            % aggregate for group‑level summary
+            results(laserLevel).(groupLabel) = ...
+                [ results(laserLevel).(groupLabel); rowSDs ];
 
-                % Append rowSDs to the corresponding group and laser level
-                results(laserLevel).(groupLabel) = [results(laserLevel).(groupLabel); rowSDs];
-            else
-                warning('File not found: %s', fileName);
+            % for chr2, build event table rows
+            if strcmp(groupLabel,'chr2')
+                nSamples = size(RRm,2);
+                % SEM of SD ≈ SD / sqrt(2*(N-1))
+                semFactor = 1 / sqrt(2*(nSamples-1));
+                for tr = 1:numel(rowSDs)
+                    sd_rr    = rowSDs(tr);
+                    semsd_rr = sd_rr * semFactor;
+                    chr2Rows(end+1,:) = { subjectID, laserLevel, sd_rr, semsd_rr };
+                end
             end
         end
     end
 
-    % Compute mean, SD, and SEM of SDs for each group and laser level
-    laserLevels = 1:5;
-    groupNames = {"chr2", "yfp"};
-    summaryData = [];
+    %% BUILD GROUP SUMMARY TABLE
+    laserLevels = (1:5).';
+    groups      = {'chr2','yfp'};
+    summaryData = cell(0,6);
 
-    for laserLevel = laserLevels
-        for groupIdx = 1:length(groupNames)
-            groupName = groupNames{groupIdx};
-            SD_data = results(laserLevel).(groupName);
-
-            if isempty(SD_data)
-                meanSD = NaN;
-                sdSD = NaN;
+    for lvl = laserLevels.'
+        for g = 1:2
+            sd_data = results(lvl).(groups{g});
+            if isempty(sd_data)
+                mSD   = NaN;
+                sdSD  = NaN;
                 semSD = NaN;
-                dataCount = 0;
+                cnt   = 0;
             else
-                meanSD = mean(SD_data);
-                sdSD = std(SD_data); % Compute SD of SDs
-                semSD = sdSD / sqrt(length(SD_data)); % Compute SEM of SDs
-                dataCount = length(SD_data);
+                mSD   = mean(sd_data);
+                sdSD  = std(sd_data);
+                semSD = sdSD / sqrt(numel(sd_data));
+                cnt   = numel(sd_data);
             end
-
-            % Store results in a summary array
-            summaryData = [summaryData; {laserLevel, groupName, meanSD, sdSD, semSD, dataCount}];
+            summaryData(end+1,:) = { ...
+                lvl, groups{g}, mSD, sdSD, semSD, cnt };
         end
     end
 
-    % Convert summary data to a table
-    summaryTable = cell2table(summaryData, 'VariableNames', {'LaserLevel', 'Group', 'MeanSD', 'SDofSD', 'SEMSD', 'DataCount'});
+    summaryTable = cell2table(summaryData, ...
+      'VariableNames',{'LaserLevel','Group','MeanSD','SDofSD','SEMSD','DataCount'});
+
+    %% BUILD CHR2 EVENT‐LEVEL VARIANCE TABLE
+    chr2EventVarTable = cell2table(chr2Rows, ...
+        'VariableNames',{'SubjectID','LaserLevel','SD_RR','SEMSD_RR'});
 end

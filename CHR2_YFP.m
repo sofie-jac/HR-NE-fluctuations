@@ -955,12 +955,89 @@ yfp = {'584', '577', '512', '513'};
 summaryTable = compute_RR_summary(RR_intervals, chr2, yfp);
 
 dataDirectory = 'C:\\Users\\trb938\\OneDrive - University of Copenhagen\\MATLAB\\chr2_yfp\\Figure_4_data';
-summaryTable_laserfiles = compute_RR_summary_from_files(dataDirectory, chr2, yfp);
-summaryTable_RR_varriance = compute_RR_varriance_summary_from_files(dataDirectory, chr2, yfp);
+[summaryTable_laserfiles, events_laserfiles] = compute_RR_summary_from_files(dataDirectory, chr2, yfp);
+[summaryTable_BPM, chr2EventTable_BPM] = compute_mean_BPM(dataDirectory, chr2, yfp);
+[summaryTable_varriance, events_varriance] = compute_RR_varriance_summary_from_files(dataDirectory, chr2, yfp);
 summaryTable_PeakRR = compute_peak_RR_summary_from_files(dataDirectory, chr2, yfp, 5, 2);
 
-[summaryTable_PeakRR_new, sigmaSummaryTable, sigma_peak_RR_table] = compute_peak_RR_summary_from_files_w_sigma(dataDirectory, chr2, yfp, 5, 2);
-%writetable(sigma_peak_RR_table, 'sigma_peak_RR_table.csv')
+[summaryTable_PeakRR_new, sigmaSummaryTable, RRSummaryTable, sigma_peak_RR_table] = compute_peak_RR_summary_from_files_w_sigma(dataDirectory, chr2, yfp, 5, 2);
+
+[NEsummaryTable_PeakRR, NESummaryTable, RRSummaryTable, NE_peak_RR_table] = compute_peak_RR_summary_from_files_w_NE(dataDirectory, chr2, [], 5, 2);
+[summaryTable_PeakRR_chr2, sigmaSummaryTable_chr2, RRSummaryTable_chr2, sigma_peak_RR_table_chr2] = compute_peak_RR_summary_from_files_w_sigma(dataDirectory, chr2, [], 5, 2);
+
+%uses mean RR across laser level as baseline
+[summaryTable_blCorr, event_table_blCorr] = compute_peak_RR_summary_from_files_bl_corr(dataDirectory, chr2, yfp,  5, 2, summaryTable_laserfiles);
+
+%Uses -10 to -8 before RR peak as baseline (the mean) - USE THIS FOR R
+[summaryTable_individual_blCorr, event_table_individual_blCorr] = compute_peak_RR_with_individual_bl(dataDirectory, chr2, yfp, 5, 2);
+
+writetable(sigma_peak_RR_table_chr2, 'Stats_sigma.csv')
+
+%This provides the mean RR during laser onset for each exampel tract to
+%give the gray lines
+[rrMeanTable, r1, r2, r3, r4, r5] = compute_RR_mean_and_raw(dataDirectory, chr2, []);
+% calculate entrophy
+[summaryEntropyTable, eventEntropyTable] = compute_RR_sample_entropy(dataDirectory, chr2, []);
+
+levels = 1:5;
+% find max count across levels
+counts = arrayfun(@(L) sum(event_table_individual_blCorr.LaserLevel==L), levels);
+n = max(counts);
+
+%seperate by laser level
+% pre‑allocate
+M = NaN(n, numel(levels));
+
+% fill each column with sigma_ampl for that laser level
+for L = levels
+    idx = event_table_individual_blCorr.LaserLevel == L;
+    vals = event_table_individual_blCorr.RR_SD(idx);
+    M(1:numel(vals), L) = vals;
+end
+
+
+%% 
+
+
+
+% Subset to laser levels 4 & 5
+mask    = ismember(sigma_peak_RR_table_chr2.LaserLevel, [4, 5]);
+subset4_5 = sigma_peak_RR_table_chr2(mask, :);
+
+levels = 4:5;
+% find max count across levels
+counts = arrayfun(@(L) sum(subset4_5.LaserLevel==L), levels);
+n = max(counts);
+
+%seperate by laser level
+% pre‑allocate
+M = NaN(n, numel(levels));
+
+% fill each column with sigma_ampl for that laser level
+for L = levels
+    idx = subset4_5.LaserLevel == L;
+    vals = subset4_5.Sigma_ampl(idx);
+    M(1:numel(vals), L) = vals;
+end
+
+BPM = 60 ./ M; 
+
+%seperate by laser level
+
+levels = 1:5;
+% find max count across levels
+counts = arrayfun(@(L) sum(event_table_blCorr.LaserLevel==L), levels);
+n = max(counts);
+
+% pre‑allocate
+M = NaN(n, numel(levels));
+
+% fill each column with sigma_ampl for that laser level
+for L = levels
+    idx = event_table_blCorr.LaserLevel == L;
+    vals = event_table_blCorr.CorrRR_peak(idx);
+    M(1:numel(vals), L) = vals;
+end
 
     %% PSD prep
 %% Extract RR during NREM for each laser level (new PSD version)

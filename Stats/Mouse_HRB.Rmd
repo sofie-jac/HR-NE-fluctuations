@@ -288,6 +288,60 @@ perform_bootstrap_adjR2 <- function(data, formula, R = 1000) {
   return(boot_ci)
 }
 
+
+perform_bootstrap_R2 <- function(data, formula, R = 1000) {
+  # Remove rows with NA values
+  data <- na.omit(data)
+  
+  # Define the bootstrapping function
+  boot_model <- function(data, indices) {
+    # Create a bootstrap sample based on provided indices
+    d <- data[indices, ]
+    
+    # Fit the linear model using the specified formula
+    model <- try(lm(formula, data = d), silent = TRUE)
+    if (inherits(model, "try-error")) {
+      return(NA)  # Return NA if the model fails to converge
+    } else {
+      # Extract multiple R² (proportion of variance explained)
+      r2 <- summary(model)$r.squared
+      return(r2)
+    }
+  }
+  
+  # Apply bootstrapping with R replications
+  results <- tryCatch({
+    boot::boot(data = data, statistic = boot_model, R = R)
+  }, error = function(e) {
+    message("Error in bootstrapping: ", e$message)
+    return(NULL)
+  })
+  
+  if (is.null(results)) {
+    return(NULL)
+  }
+  
+  # Filter out the bootstrap samples where the model did not converge (i.e., returned NA)
+  valid_results <- results$t[!is.na(results$t)]
+  
+  cat("Number of valid bootstrap samples:", length(valid_results), "\n")
+  
+  if (length(valid_results) == 0) {
+    return(NULL)
+  }
+  
+  # Optionally recreate the boot object with only valid results
+  boot_results <- results
+  boot_results$t <- valid_results
+  boot_results$R <- length(valid_results)
+  
+  # Calculate the bootstrap confidence intervals (2.5% and 97.5% quantiles)
+  boot_ci <- quantile(valid_results, probs = c(0.025, 0.975))
+  
+  # Return the bootstrap confidence intervals for multiple R²
+  return(boot_ci)
+}
+
 ```
 
 ## Stats
@@ -344,16 +398,33 @@ Pin_Chun_subject_mean_table$SubjectID <- as.factor(Pin_Chun_subject_mean_table$S
 subbase_pin_chun <- merge(Pin_Chun_subject_mean_table, subbase_win, by.x = "SubjectID", by.y = "id")
 subbase_pin_chun$sigma_bl <- subbase_pin_chun$Mean_sigma_bin2_raw - subbase_pin_chun$Mean_non_ace_bl
 
-# Subjects in Pin_Chun_subject_mean_table that are not in subbase_win:
-only_in_Pin_Chun <- anti_join(Pin_Chun_subject_mean_table, subbase_win, by = c("SubjectID" = "id"))
-cat("SubjectIDs only in Pin_Chun_subject_mean_table:\n")
-print(only_in_Pin_Chun$SubjectID)
+# # Subjects in Pin_Chun_subject_mean_table that are not in subbase_win:
+# only_in_Pin_Chun <- anti_join(Pin_Chun_subject_mean_table, subbase_win, by = c("SubjectID" = "id"))
+# cat("SubjectIDs only in Pin_Chun_subject_mean_table:\n")
+# print(only_in_Pin_Chun$SubjectID)
+# 
+# # Subjects in subbase_win that are not in Pin_Chun_subject_mean_table:
+# only_in_subbase <- anti_join(subbase_win, Pin_Chun_subject_mean_table, by.x = "SubjectID", by.y = "id")
+# cat("SubjectIDs only in subbase_win:\n")
+# print(only_in_subbase$id)
 
-# Subjects in subbase_win that are not in Pin_Chun_subject_mean_table:
-only_in_subbase <- anti_join(subbase_win, Pin_Chun_subject_mean_table, by.x = "SubjectID", by.y = "id")
-cat("SubjectIDs only in subbase_win:\n")
-print(only_in_subbase$id)
+clean_data <- Pin_Chun_data[
+  Pin_Chun_data$sigma_bin2_raw <= 15 & Pin_Chun_data$RR_recover_ampl <= 2, 
+]
 
+#Outlier extraction
+mean_RR_recover_ampl <- mean(clean_data$RR_recover_ampl, na.rm = TRUE)
+sd_RR_recover_ampl <- sd(clean_data$RR_recover_ampl, na.rm = TRUE)
+
+# Calculate the mean and standard deviation for RR_recover_AUC
+mean_sigma_bin2_raw <- mean(clean_data$sigma_bin2_raw, na.rm = TRUE)
+sd_sigma_bin2_raw <- sd(clean_data$sigma_bin2_raw, na.rm = TRUE)
+
+# Filter the data to exclude rows where the RR variables are more than 5 SD's away from the mean
+clean_data <- clean_data %>%
+  filter(
+    abs(RR_recover_ampl - mean_RR_recover_ampl) <= 2.5 * sd_RR_recover_ampl,
+    abs(sigma_bin2_raw - mean_sigma_bin2_raw) <= 2.5 * sd_sigma_bin2_raw)
 
 filtered_data <- clean_data %>%
   # Convert SubjectID to character
@@ -364,20 +435,19 @@ filtered_data <- clean_data %>%
 filtered_data$SubjectID <- as.factor(filtered_data$SubjectID)
 
 
+# Signal correlation
 
 human_RR_sigma <- lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = clean_data)
 human_RR_sigma_28 <- lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = filtered_data)
 
-unique(filtered_data$SubjectID)
+bs_human_RR_sigma <- perform_bootstrap_r2(filtered_data, RR_recover_ampl  ~  sigma_bin2_raw + (1 | SubjectID), "SubjectID", R = 1000)
 
-bs_human_RR_sigma <- perform_bootstrap_r2(clean_data, RR_recover_ampl  ~  sigma_bin2_raw + (1 | SubjectID), "SubjectID", R = 1000)
-
-r.squaredGLMM(human_RR_sigma)
-summary(human_RR_sigma)
+summary(human_RR_sigma_28)
+r.squaredGLMM(human_RR_sigma_28)
 print(bs_human_RR_sigma)
+pearson(human_RR_sigma_28, filtered_data$RR_recover_ampl)
 
 check_lmm_assumptions(human_RR_sigma)
-
 
 
 
@@ -388,64 +458,27 @@ summary(lm(formula = subbase_win2 ~  sigma_bl, data = subbase_pin_chun))
 
 #Test signal correlation
 
-summary(lmer(formula = RR_ampl ~ sigma_bin2_raw  + (1|SubjectID), data = clean_data))
-summary(lmer(formula = sigma_bin2_raw ~  RR_AUC + (1|SubjectID), data = clean_data))
-summary(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = Pin_Chun_data)) #Significant
-summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
-
-r.squaredGLMM(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = clean_data))
-r.squaredGLMM(lmer(formula = sigma_bin2_raw ~ RR_ampl + (1|SubjectID), data = clean_data))
-
-summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
-r.squaredGLMM(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = clean_data))
-
-#Outlier extraction
-mean_RR_recover_ampl <- mean(Pin_Chun_data$RR_recover_ampl, na.rm = TRUE)
-sd_RR_recover_ampl <- sd(Pin_Chun_data$RR_recover_ampl, na.rm = TRUE)
-
-# Calculate the mean and standard deviation for RR_recover_AUC
-mean_RR_recover_AUC <- mean(Pin_Chun_data$RR_recover_AUC, na.rm = TRUE)
-sd_RR_recover_AUC <- sd(Pin_Chun_data$RR_recover_AUC, na.rm = TRUE)
-
-# Filter the data to exclude rows where the RR variables are more than 5 SD's away from the mean
-clean_data <- Pin_Chun_data %>%
-  filter(
-    abs(RR_recover_ampl - mean_RR_recover_ampl) <= 2.5 * sd_RR_recover_ampl,
-    abs(RR_recover_AUC - mean_RR_recover_AUC) <= 2.5 * sd_RR_recover_AUC
-  )
+# summary(lmer(formula = RR_ampl ~ sigma_bin2_raw  + (1|SubjectID), data = clean_data))
+# summary(lmer(formula = sigma_bin2_raw ~  RR_AUC + (1|SubjectID), data = clean_data))
+# summary(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = Pin_Chun_data)) #Significant
+# summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
+# 
+# r.squaredGLMM(lmer(formula = RR_recover_ampl  ~  sigma_bin2_raw + (1|SubjectID), data = clean_data))
+# r.squaredGLMM(lmer(formula = sigma_bin2_raw ~ RR_ampl + (1|SubjectID), data = clean_data))
+# 
+# summary(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = Pin_Chun_data)) #Significant
+# r.squaredGLMM(lmer(formula = sigma_bin2_raw ~  RR_recover_AUC + (1|SubjectID), data = clean_data))
 
 
-ggplot(clean_data, aes(x = RR_recover_ampl, y = sigma_bin2_raw)) +
+
+
+ggplot(filtered_data, aes(x = RR_recover_ampl, y = sigma_bin2_raw)) +
   geom_point() +
   geom_smooth(method = "lm", se = TRUE, color = "red") +
   labs(
     title = "Correlation between Sigma Power (-5 to 0) and parasymp RR post-HRB",
     x = "RR AUC",
     y = "Sigma Power"
-  ) +
-  theme_minimal()
-
-ggplot(clean_data, aes(x = RR_recover_AUC, y = sigma_bin2_raw)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = TRUE, color = "red") +
-  labs(
-    title = "Correlation between Sigma Power (-5 to 0) and parasymp RR post-HRB",
-    x = "RR AUC",
-    y = "Sigma Power"
-  ) +
-  theme_minimal()
-
-write.csv(clean_data, "C:\\Users\\trb938\\OneDrive - University of Copenhagen\\MATLAB\\Human_data\\Pin-Chun_signal_corr_df.csv")
-
-summary(lm(formula = PerChange ~  Mean_RR_recover_AUC, data = subbase_pin_chun))
-
-ggplot(subbase_pin_chun, aes(x = Mean_RR_recover_AUC, y = PerChange)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = TRUE, color = "red") +
-  labs(
-    title = "Correlation between parasymp RR post-HRB and memory",
-    x = "RR AUC",
-    y = "% Change"
   ) +
   theme_minimal()
 
@@ -488,14 +521,14 @@ human_merged_data$sigma_corrected <- human_merged_data$Mean_sigma_power - human_
 human_merged_data$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
 
 #Make HF and F4 versions of the same thing
-human_merged_data_F4 <- merge(Human_subject_mean_table, Human_F4, by.x = "SubjectID", by.y = "id")
-
-human_merged_data_HF <- merge(Human_subject_mean_table, Human_HF, by.x = "SubjectID", by.y = "id")
-
-
-human_merged_data_HF$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
-
-human_merged_data_F4$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
+# human_merged_data_F4 <- merge(Human_subject_mean_table, Human_F4, by.x = "SubjectID", by.y = "id")
+# 
+# human_merged_data_HF <- merge(Human_subject_mean_table, Human_HF, by.x = "SubjectID", by.y = "id")
+# 
+# 
+# human_merged_data_HF$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
+# 
+# human_merged_data_F4$sigma_subbbase <- (human_merged_data$Mean_sigma_power - human_merged_data$nonace_bl)/(human_merged_data$Mean_sigma_power + human_merged_data$nonace_bl)
 
 
 
@@ -527,6 +560,8 @@ df_model <- subbase_win %>%
 
 memory_m_h6 <- lm(formula = OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1, data = df_model)
 summary(memory_m_h6)
+memory_bs <- perform_bootstrap_R2(df_model, OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1,  R = 1000)
+
 memory_bs <- perform_bootstrap_adjR2(df_model, OvernightDiff_24 ~  subbase_win2+nonace_bl+Test1Study1,  R = 1000)
 summary(memory_m_h6)
 print(memory_bs)

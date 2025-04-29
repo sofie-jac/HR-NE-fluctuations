@@ -1123,6 +1123,7 @@ check_lmm_assumptions(memory_model_2) #slight normality issues
 # Example initialization with a continuous predictor
 memeory_ci <- lm_bootstrap_pearson_correlation(memory_table, mean_RR ~  mean_NE, R = 1000)
 memeory_ci <- perform_bootstrap_adjR2(memory_table, mean_RR ~  mean_NE, R = 1000)
+memeory_ci <- perform_bootstrap_R2(memory_table, mean_RR ~  mean_NE, R = 1000)
 
 
 summary(memory_model_2)

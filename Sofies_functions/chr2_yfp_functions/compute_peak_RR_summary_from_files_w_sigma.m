@@ -1,179 +1,196 @@
-function [summaryTable, sigmaSummaryTable, event_table] = compute_peak_RR_summary_from_files_w_sigma(dataDirectory, chr2, yfp, sec_after, delay)
-% COMPUTE_PEAK_RR_SUMMARY_FROM_FILES_W_SIGMA
-%  [summaryTable, sigmaSummaryTable] = …
-%
-% Extracts peak RR (in delay→delay+sec_after window) and around each RR peak
-% pulls ±10 s of sigma trace (2 Hz→40 samples), handling both 240/241 lengths.
+function [summaryTable, sigmaSummaryTable, RRSummaryTable, event_table] = ...
+    compute_peak_RR_summary_from_files_w_sigma(dataDirectory, chr2, yfp, sec_after, delay)
+% COMPUTE_PEAK_RR_SUMMARY_FROM_FILES_W_SIGMA (with revised ampl definitions)
+% Outputs:
+%   summaryTable       – per‐laser & group mean±SEM of RR_peak, sigmaAtPeak,
+%                        RR_ampl (8–10 s baseline), sigma_ampl (2–3 s baseline)
+%   sigmaSummaryTable  – ±10 s sigma windows ± 20 samples, mean±SEM
+%   RRSummaryTable     – ±20 s RR windows, mean±SEM
+%   event_table        – one row per trial with SubjectID, LaserLevel, 
+%                        RR_peak, sigmaAtPeak, RR_ampl, sigma_ampl
 
-    obsRows = {};    % will hold {SubjectID, LaserLevel, RR_peak, Sigma_at_RR_peak, RR_ampl, Sigma_ampl}
+    %% PARAMETERS
+    fs_RR            = 64;        % Hz
+    fs_sigma         = 2;         % Hz
+    sigmaHalfSamples = fs_sigma * 10;     % 10 s window half‐length
+    sigmaSegLen      = sigmaHalfSamples*2 + 1;
+    halfRRsec        = 20;        % ±20 s RR window
+    halfRRsamp       = halfRRsec * fs_RR;
+    rrSegLen         = halfRRsamp*2 + 1;
 
-
-    % PARAMETERS
-    fs_RR            = 64;                  % RR sampling rate (Hz)
-    fs_sigma         = 2;                   % sigma sampling rate (Hz)
-    sigmaWindowSec   = 10;                  % ± window (s)
-    sigmaHalfSamples = sigmaWindowSec * fs_sigma;    % 20 samples
-    sigmaSegLen      = sigmaHalfSamples * 2;         % 40 samples total
-
-    % INIT
+    %% PREALLOCATE
+    obsRows       = {};
+    groups        = {'chr2','yfp'};
     for lvl = 1:5
-        results(lvl).chr2 = [];
-        results(lvl).yfp  = [];
-        sigmaSegments{lvl} = zeros(0, sigmaSegLen);
+      for g = 1:2
+        fld = groups{g};
+        results(lvl).(fld).RR_peak     = [];
+        results(lvl).(fld).sigmaAtPeak = [];
+        results(lvl).(fld).RR_ampl     = [];
+        results(lvl).(fld).sigma_ampl  = [];
+      end
     end
+
+    sigmaSegments = cell(1,5);
+    rrSegments    = cell(1,5);
+    for lvl = 1:5
+      sigmaSegments{lvl} = zeros(0, sigmaSegLen);
+      rrSegments{lvl}    = zeros(0, rrSegLen);
+    end
+
     allGroups   = [chr2, yfp];
     groupLabels = [repmat({'chr2'},1,numel(chr2)), repmat({'yfp'},1,numel(yfp))];
 
-    % MAIN LOOP
+    %% MAIN LOOP
     for laserLevel = 1:5
       for i = 1:numel(allGroups)
         subj = allGroups{i};
         grp  = groupLabels{i};
 
-        fn_RR    = fullfile(dataDirectory, sprintf('RR_laser_%d_NREM_%s.mat',    laserLevel, subj));
+        fn_RR    = fullfile(dataDirectory, sprintf('RR_laser_%d_NREM_%s.mat', laserLevel, subj));
         fn_sigma = fullfile(dataDirectory, sprintf('Sigma_laser_%d_NREM_%s.mat', laserLevel, subj));
-        if ~(exist(fn_RR,'file') && exist(fn_sigma,'file'))
-          warning('Missing RR or Sigma for %s @ level %d', subj, laserLevel);
-          continue
-        end
+        if ~(exist(fn_RR,'file') && exist(fn_sigma,'file')), continue, end
 
-        %— load RR —%
-        D     = load(fn_RR);
-        f_RR  = fieldnames(D);
-        RR    = D.(f_RR{1});         % nTrials×nRRsamples
+        %--- load RR & Sigma ---
+        D      = load(fn_RR);      fn = fieldnames(D);
+        RR     = D.(fn{1});        % [nTrials × nRRsamples]
+        [nTrials, nRR] = size(RR);
 
-        %— load Sigma —%
-        S        = load(fn_sigma);
-        f_sigma  = fieldnames(S);
-        Sigma    = S.(f_sigma{1});   % nTrials×(240 or 241)
+        S      = load(fn_sigma);   fs = fieldnames(S);
+        Sigma  = S.(fs{1});        % [nTrials × nSig]
         [~, nSig] = size(Sigma);
-        if ~ismember(nSig,[240,241])
-          warning('Sigma length=%d (expect 240 or 241)', nSig);
-        end
 
-        % RR window mapping
-        nRR      = size(RR,2);
-        rrCenter = ceil(nRR/2);
-        midpoint = rrCenter + round(delay * fs_RR);
-        winSamps = sec_after * fs_RR;
+        rrCenter    = ceil(nRR/2);
+        midpoint    = rrCenter + round(delay * fs_RR);
+        winSamps    = sec_after * fs_RR;
+        sigmaCenter = floor((nSig+1)/2);
 
-        for tr = 1:size(RR,1)
-          if midpoint + winSamps - 1 <= nRR
-            interval = RR(tr, midpoint:midpoint+winSamps-1);
-            [~, idxLocal] = max(interval);
-            maxRR = interval(idxLocal);
-            results(laserLevel).(grp)(end+1,1) = interval(idxLocal);
+        for tr = 1:nTrials
+          if midpoint + winSamps - 1 > nRR, continue, end
 
-            % global RR-peak index → time relative to center
-            idxGlobal = midpoint + idxLocal - 1;
-            t_rel     = (idxGlobal - rrCenter) / fs_RR;
+          % 1) RR peak & global idx
+          segRR = RR(tr, midpoint:midpoint+winSamps-1);
+          [RRpk, idxLoc] = max(segRR);
+          idxGlobal      = midpoint + idxLoc - 1;
 
-            % map to Sigma index
-            sigmaCenter = floor((nSig+1)/2);
-            idxSigma    = sigmaCenter + round(t_rel * fs_sigma);
-
-            %--- sigma at the RR‐peak time
+          % 2) corresponding Sigma index
+          t_rel    = (idxGlobal - rrCenter)/fs_RR;
+          idxSigma = sigmaCenter + round(t_rel * fs_sigma);
+          if idxSigma<1 || idxSigma>nSig
+            sigmaAtPeak = NaN;
+          else
             sigmaAtPeak = Sigma(tr, idxSigma);
-            
-            %--- RR amplitude: peak minus min RR in 5 s before
-            preRRstart = max(1, idxGlobal - 5*fs_RR);
-            minRRpre   = min( RR(tr, preRRstart:idxGlobal) );
-            RR_ampl    = maxRR - minRRpre;
-            
-            %--- sigma amplitude: max sigma in 5 s before minus sigma at peak
-            preSigStart = max(1, idxSigma - 5*fs_sigma);
-            maxSigPre   = max( Sigma(tr, preSigStart:idxSigma) );
-            sigma_ampl  = maxSigPre - sigmaAtPeak;
-            
-            %--- collect this trial’s row
-            obsRows(end+1,:) = { subj, laserLevel, maxRR, sigmaAtPeak, RR_ampl, sigma_ampl };
-
-
-            %— NEW SLICE: exactly 40 samples —%
-            startIdx = idxSigma - sigmaHalfSamples;
-            endIdx   = idxSigma + sigmaHalfSamples - 1;
-            if startIdx>=1 && endIdx<=nSig
-              seg = Sigma(tr, startIdx:endIdx);   % 1×40
-              sigmaSegments{laserLevel}(end+1,:) = seg;
-            else
-              warning('Sigma window [%d:%d] oob (nSig=%d)', startIdx, endIdx, nSig);
-            end
           end
+
+          % 3) NEW RR_ampl: baseline = mean RR 8–10 s pre-peak
+          b1 = max(1, idxGlobal - 10*fs_RR);
+          b2 = idxGlobal - 8*fs_RR;
+          RR_base = mean(RR(tr, b1:b2));
+          RR_ampl = RRpk - RR_base;
+
+          % 4) NEW sigma_ampl: baseline = mean Sigma 2–3 s pre-peak
+          if idxSigma>=1 && idxSigma<=nSig
+            s1 = max(1, idxSigma - 3*fs_sigma);
+            s2 = idxSigma - 2*fs_sigma;
+            sigma_base  = mean(Sigma(tr, s1:s2));
+            sigma_ampl  = sigmaAtPeak - sigma_base;
+          else
+            sigma_ampl = NaN;
+          end
+
+          % 5) collect ±20 s windows
+          % 5a) RR
+          r1 = idxGlobal - halfRRsamp;
+          r2 = idxGlobal + halfRRsamp;
+          if r1>=1 && r2<=nRR
+            rrSegments{laserLevel}(end+1,:) = RR(tr, r1:r2);
+          end
+          % 5b) Sigma
+          s1 = idxSigma - sigmaHalfSamples;
+          s2 = idxSigma + sigmaHalfSamples;
+          if s1>=1 && s2<=nSig
+            sigmaSegments{laserLevel}(end+1,:) = Sigma(tr, s1:s2);
+          end
+
+          % 6) store in results struct
+          r = results(laserLevel).(grp);
+          r.RR_peak     (end+1,1) = RRpk;
+          r.sigmaAtPeak (end+1,1) = sigmaAtPeak;
+          r.RR_ampl     (end+1,1) = RR_ampl;
+          r.sigma_ampl  (end+1,1) = sigma_ampl;
+          results(laserLevel).(grp) = r;
+
+          % 7) build event row
+          obsRows(end+1,:) = { ...
+            subj, laserLevel, ...
+            RRpk, sigmaAtPeak, ...
+            RR_ampl, sigma_ampl ...
+          };
         end
       end
     end
 
-    % BUILD RR SUMMARY TABLE
-    groups      = {'chr2','yfp'};
-    rows = {};
+    %% BUILD event_table
+    event_table = cell2table(obsRows, ...
+      'VariableNames',{'SubjectID','LaserLevel', ...
+                       'RR_peak','Sigma_atPeak', ...
+                       'RR_ampl','Sigma_ampl'});
+
+    %% BUILD summaryTable
+    vars = {'LaserLevel','Group', ...
+            'MeanRR_peak','SEMRR_peak', ...
+            'MeanSigma_atPeak','SEMSigma_atPeak', ...
+            'MeanRR_ampl','SEMRR_ampl', ...
+            'MeanSigma_ampl','SEMSigma_ampl', ...
+            'DataCount'};
+    summaryData = cell(0, numel(vars));
     for lvl = 1:5
       for g = 1:2
-        dat = results(lvl).(groups{g});
-        if isempty(dat)
-          mn=NaN; sd=NaN; sem=NaN; cnt=0;
+        grpName = groups{g};
+        v       = results(lvl).(grpName);
+        X1 = v.RR_peak;      X2 = v.sigmaAtPeak;
+        X3 = v.RR_ampl;      X4 = v.sigma_ampl;
+        n  = numel(X1);
+        if n==0
+          vals = num2cell(nan(1,8)); cnt=0;
         else
-          mn  = mean(dat);
-          sd  = std(dat);
-          sem = sd/sqrt(numel(dat));
-          cnt = numel(dat);
+          vals = { ...
+            mean(X1), std(X1)/sqrt(n), ...
+            mean(X2), std(X2)/sqrt(n), ...
+            mean(X3), std(X3)/sqrt(n), ...
+            mean(X4), std(X4)/sqrt(n) };
+          cnt = n;
         end
-        rows(end+1,:) = {lvl, groups{g}, mn, sd, sem, cnt};
+        summaryData(end+1,:) = [{lvl,grpName}, vals, cnt];
       end
     end
-    summaryTable = cell2table(rows, ...
-      'VariableNames',{'LaserLevel','Group','MeanPeakRR','SDPeakRR','SEMPeakRR','DataCount'});
+    summaryTable = cell2table(summaryData, 'VariableNames',vars);
 
-    event_table = cell2table( obsRows, ...
-  'VariableNames', { ...
-    'SubjectID', 'LaserLevel', ...
-    'RR_peak', 'Sigma_at_RR_peak', ...
-    'RR_ampl', 'Sigma_ampl' } );
-
-    % BUILD SIGMA SUMMARY TABLE
-    timeVec = (-sigmaHalfSamples : sigmaHalfSamples-1).' / fs_sigma;
+    %% BUILD sigmaSummaryTable (41‑sample windows)
+    timeVec = (-sigmaHalfSamples : sigmaHalfSamples).' / fs_sigma;
     sigmaSummaryTable = table(timeVec,'VariableNames',{'Time'});
     for lvl = 1:5
       X = sigmaSegments{lvl};
       if isempty(X)
-        meanSig = nan(1,sigmaSegLen);
-        semSig  = nan(1,sigmaSegLen);
+        mS = nan(1,sigmaSegLen); sS = nan(1,sigmaSegLen);
       else
-        meanSig = mean(X,1);
-        semSig  = std(X,0,1)/sqrt(size(X,1));
+        mS = mean(X,1); sS = std(X,0,1)/sqrt(size(X,1));
       end
-      sigmaSummaryTable.(['MeanSigma_L', num2str(lvl)]) = meanSig.';
-      sigmaSummaryTable.(['SEMSigma_L', num2str(lvl)])  = semSig.';
+      sigmaSummaryTable.(['MeanSigma_L',num2str(lvl)])    = mS.';
+      sigmaSummaryTable.(['SEMSigma_L',num2str(lvl)])     = sS.';
     end
 
-    time = sigmaSummaryTable.Time;         % time vector (‑10 → +9.5 s)
-
-    figure; hold on;
-    cols = lines(5);                       % 5 distinct colors
-    
+    %% BUILD RRSummaryTable (±20 s RR windows)
+    timeRR = (-halfRRsamp : halfRRsamp).' / fs_RR;
+    RRSummaryTable = table(timeRR,'VariableNames',{'Time'});
     for lvl = 1:5
-        meanCol = sigmaSummaryTable.(['MeanSigma_L',num2str(lvl)]);
-        semCol  = sigmaSummaryTable.(['SEMSigma_L', num2str(lvl)]);
-        
-        upper = meanCol + semCol;
-        lower = meanCol - semCol;
-        
-        % shaded SEM band
-        fill([time; flipud(time)], ...
-             [upper; flipud(lower)], ...
-             cols(lvl,:), ...
-             'FaceAlpha', 0.2, ...
-             'EdgeColor','none');
-        
-        % mean trace
-        plot(time, meanCol, ...
-             'Color', cols(lvl,:), ...
-             'LineWidth', 1.5);
+      X = rrSegments{lvl};
+      if isempty(X)
+        mR = nan(1,rrSegLen); sR = nan(1,rrSegLen);
+      else
+        mR = mean(X,1); sR = std(X,0,1)/sqrt(size(X,1));
+      end
+      RRSummaryTable.(['MeanRR_L',num2str(lvl)])  = mR.';
+      RRSummaryTable.(['SEMRR_L',num2str(lvl)]) = sR.';
     end
-    
-    xlabel('Time (s)');
-    ylabel('Sigma');
-    title('Mean \pm SEM Sigma Traces by Laser Level');
-    legend({'L1','L2','L3','L4','L5'}, 'Location','Best');
-    grid on;
-    hold off;
 end
