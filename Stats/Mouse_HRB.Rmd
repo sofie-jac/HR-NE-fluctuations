@@ -32,7 +32,7 @@ Mouse_HRB_amplitude_R_data$SubjectID <- as.factor(Mouse_HRB_amplitude_R_data$Sub
 
 
 #Contol Mice version
-Control_mouse_HRB_amplitude_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/mouse/Control_mouse_HRB_amplitude_R_data.csv")
+Control_mouse_HRB_amplitude_R_data <- read_csv("C:/Users/trb938/OneDrive - University of Copenhagen/MATLAB/Human_data/mouse/Control_mouse_all_HRB_amplitude_R_data.csv")
 ```
 
 functions
@@ -347,14 +347,17 @@ perform_bootstrap_R2 <- function(data, formula, R = 1000) {
 ## Stats
 
 ```{r NE/RR corr test}
+#Heteroscacedicity
 m_h1 <- lmer(formula = HRB_RR ~  Delta465Amplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
 summary(m_h1)
 r.squaredGLMM(m_h1)
 
+#Heteroscacedicity
 m_h2 <- lmer(formula = HRB_RR ~  SigmaAmplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
 summary(m_h2)
 r.squaredGLMM(m_h2)
 
+#Heteroscacedicity
 m_h3 <- lmer(formula = Delta465Amplitude ~  SigmaAmplitude + (1|SubjectID), data = Control_mouse_HRB_amplitude_R_data)
 summary(m_h3)
 r.squaredGLMM(m_h3)

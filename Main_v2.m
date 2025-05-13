@@ -1167,6 +1167,17 @@ grid on;
     % Linking axes for synchronized zooming
     linkaxes([a, b, c, d], 'x');
 
+%% HRB for manuscript on control mice
+
+[HRB_420, HRB_time_420] = findHRB_all(RR_time_420, RR_420);
+[HRB_588, HRB_time_588] = findHRB_all(RR_time_588, RR_588);
+[HRB_201, HRB_time_201] = findHRB_all(RR_time_201, RR_201);
+[HRB_207, HRB_time_207] = findHRB_all(RR_time_207, RR_207);
+[HRB_209, HRB_time_209] = findHRB_all(RR_time_209, RR_209);
+[HRB_213, HRB_time_213] = findHRB_all(RR_time_213, RR_213);
+[HRB_205, HRB_time_205] = findHRB_all(RR_time_205, RR_205);
+
+
 %% Get HRB based sigma/NE across laser on/off
 
 % Parameters
@@ -1439,6 +1450,17 @@ title('Sigma Power (EEG) Histograms in 5-sec bins');
 xlabel('Time (s) relative to HRB event');
 ylabel('Sigma Power');
 
+t_RR = t_RR';
+mean_RR = mean_RR';
+sem_RR = sem_RR';
+t_delta465 = t_delta465';
+mean_delta465 = mean_delta465';
+sem_delta465 = sem_delta465';
+t_sigma = t_sigma';
+mean_sigma = mean_sigma';
+sem_sigma = sem_sigma';
+
+
 %% HRB centered events w. sigma power and bins summary file
 
 % Parameters
@@ -1708,7 +1730,9 @@ summaryTable = table( summary_subject, ...
     'SigmaBin_5_6', 'SigmaBin_5_6_BL', 'SigmaBin_4_5_6', 'SigmaBin_4_5_6_BL', ...
     'Delta465Amplitude', 'Delta465AUC', 'SigmaAmplitude', 'SigmaAUC'});
 
-filename = 'Control_mouse_HRB_amplitude_R_data.csv';
+%The extra 'all' in the name indicates it's based on all NREM HRB (multiple
+%per window)
+filename = 'Control_mouse_all_HRB_amplitude_R_data.csv';
 writetable(summaryTable, filename);
 
 %% Plot HRB events for paper

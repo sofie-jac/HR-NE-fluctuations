@@ -16,7 +16,7 @@ threshold = mean_EMG + move_thresh * sd_EMG;
 [movement, movement_locs] = findpeaks(EMG, 'MinPeakHeight', threshold);
 movement_sec = sec_signal_EMG(movement_locs); % Assuming sec_signal_EMG is defined and corresponds to the timestamps of EMG data
 
-% Define window length in seconds (1 second) and ensure window_length_samples is an integer
+% Define window length in seconds (2 second) and ensure window_length_samples is an integer
 window_length_sec = 2;
 window_length_samples = round(window_length_sec * EEG_fs);
 

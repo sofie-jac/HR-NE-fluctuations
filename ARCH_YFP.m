@@ -343,14 +343,14 @@ clear frw window_in_sec
 
 %% HRB
 
-[HRB_420, HRB_time_420] = findHRB(RR_time_420, RR_420);
-[HRB_387, HRB_time_387] = findHRB(RR_time_387, RR_387);
-[HRB_412, HRB_time_412] = findHRB(RR_time_412, RR_412);
-[HRB_414, HRB_time_414] = findHRB(RR_time_414, RR_414);
-[HRB_416, HRB_time_416] = findHRB(RR_time_416, RR_416);
-[HRB_408, HRB_time_408] = findHRB(RR_time_408, RR_408);
-[HRB_484, HRB_time_484] = findHRB(RR_time_484, RR_484);
-[HRB_468, HRB_time_468] = findHRB(RR_time_468, RR_468);
+[HRB_420, HRB_time_420] = findHRB_all(RR_time_420, RR_420);
+[HRB_387, HRB_time_387] = findHRB_all(RR_time_387, RR_387);
+[HRB_412, HRB_time_412] = findHRB_all(RR_time_412, RR_412);
+[HRB_414, HRB_time_414] = findHRB_all(RR_time_414, RR_414);
+[HRB_416, HRB_time_416] = findHRB_all(RR_time_416, RR_416);
+[HRB_408, HRB_time_408] = findHRB_all(RR_time_408, RR_408);
+[HRB_484, HRB_time_484] = findHRB_all(RR_time_484, RR_484);
+[HRB_468, HRB_time_468] = findHRB_all(RR_time_468, RR_468);
 
 
 %% Get HRB based sigma/NE across laser on/off
@@ -1285,7 +1285,7 @@ summaryTable = table( summary_subject, ...
 
 % Save summary table to a CSV file
 filename = 'Mouse_HRB_amplitude_R_data.csv';
-writetable(summaryTable, filename);
+%writetable(summaryTable, filename);
 disp(['Summary table saved to ', filename]);
 
 % Read the summary table from a CSV file (if not already in memory)
